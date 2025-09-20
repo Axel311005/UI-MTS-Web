@@ -24,7 +24,6 @@ export const CustomSideBar = ({
   navigationItems = [],
   catalogItems = [],
   systemItems = [],
-  isCollapsed = false,
 }: SidebarProps) => {
   const location = useLocation();
 
@@ -43,10 +42,14 @@ export const CustomSideBar = ({
       <SidebarHeader className="p-4 border-b border-sidebar-border">
         <div className="flex items-center gap-2 group-data-[state=collapsed]:hidden">
           <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">MTS</span>
+            <span className="text-primary-foreground font-bold text-sm">
+              MTS
+            </span>
           </div>
           <div className="flex flex-col">
-            <span className="font-semibold text-sidebar-foreground">Sistema</span>
+            <span className="font-semibold text-sidebar-foreground">
+              Sistema
+            </span>
             <span className="text-xs text-sidebar-foreground/70">Taller</span>
           </div>
         </div>
@@ -67,9 +70,14 @@ export const CustomSideBar = ({
                 {navigationItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
-                      <NavLink to={item.url} className={getNavCls({ isActive: isActive(item.url) })}>
+                      <NavLink
+                        to={item.url}
+                        className={getNavCls({ isActive: isActive(item.url) })}
+                      >
                         {item.icon && <item.icon className="h-4 w-4" />}
-                        <span className="group-data-[state=collapsed]:hidden">{item.title}</span>
+                        <span className="group-data-[state=collapsed]:hidden">
+                          {item.title}
+                        </span>
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -89,9 +97,14 @@ export const CustomSideBar = ({
                 {catalogItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
-                      <NavLink to={item.url} className={getNavCls({ isActive: isActive(item.url) })}>
+                      <NavLink
+                        to={item.url}
+                        className={getNavCls({ isActive: isActive(item.url) })}
+                      >
                         {item.icon && <item.icon className="h-4 w-4" />}
-                        <span className="group-data-[state=collapsed]:hidden">{item.title}</span>
+                        <span className="group-data-[state=collapsed]:hidden">
+                          {item.title}
+                        </span>
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -111,9 +124,14 @@ export const CustomSideBar = ({
                 {systemItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
-                      <NavLink to={item.url} className={getNavCls({ isActive: isActive(item.url) })}>
+                      <NavLink
+                        to={item.url}
+                        className={getNavCls({ isActive: isActive(item.url) })}
+                      >
                         {item.icon && <item.icon className="h-4 w-4" />}
-                        <span className="group-data-[state=collapsed]:hidden">{item.title}</span>
+                        <span className="group-data-[state=collapsed]:hidden">
+                          {item.title}
+                        </span>
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

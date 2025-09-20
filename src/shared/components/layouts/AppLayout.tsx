@@ -3,6 +3,7 @@ import { AppHeader } from './AppHeader';
 import { Breadcrumbs } from './Breadcrumbs';
 import type { MenuItem } from '@/shared/config/navigation';
 import { CustomSideBar } from '../custom/CustomSideBar';
+import { Outlet } from 'react-router';
 
 interface AppLayoutProps {
   navigationItems?: MenuItem[];
@@ -34,6 +35,7 @@ export const AppLayout = ({
           <main className="flex-1 p-6 space-y-6">
             <Breadcrumbs />
             <div className="animate-fade-in">{children}</div>
+            <Outlet />
           </main>
         </div>
       </div>

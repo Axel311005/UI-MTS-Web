@@ -1,9 +1,12 @@
 import { createBrowserRouter } from 'react-router';
 import { AppLayout } from '@/shared/components/layouts/AppLayout';
-
 import { getGroupedNavigationItems } from '@/shared/config/navigation';
+import { FacturasPage } from '@/facturas/pages/FacturasPage';
 
-const { navigationItems, catalogItems, systemItems } = getGroupedNavigationItems('admin');
+const USER_TYPE = 'vendedor'; //Admin o vendedor
+
+const { navigationItems, catalogItems, systemItems } =
+  getGroupedNavigationItems(USER_TYPE);
 
 export const appRouter = createBrowserRouter([
   {
@@ -13,9 +16,25 @@ export const appRouter = createBrowserRouter([
         navigationItems={navigationItems}
         catalogItems={catalogItems}
         systemItems={systemItems}
-      >
-        {/* Aquí van los hijos o páginas principales */}
-      </AppLayout>
+      />
     ),
+
+    children: [
+      {
+        path: 'facturas',
+        element: <FacturasPage />,
+        handle: {
+          crumb: 'Facturas',
+        },
+      },
+      // Agrega aquí más rutas con sus respectivos handles
+      // {
+      //   path: 'clientes',
+      //   element: <ClientesPage />,
+      //   handle: {
+      //     crumb: 'Clientes',
+      //   },
+      // },
+    ],
   },
 ]);
