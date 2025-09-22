@@ -1,16 +1,10 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import {
-  Search,
-  Filter,
-  X,
-  FileText,
-  Calendar,
-  DollarSign,
-} from 'lucide-react';
+import { Filter, X, FileText, Calendar, DollarSign } from 'lucide-react';
 import type { Factura } from '@/interfaces/FacturaInterface';
 import { Input } from '@/shared/components/ui/input';
+import { CustomSearchControl } from '@/shared/components/custom/CustomSearchControl';
 import { Button } from '@/shared/components/ui/button';
 import {
   Card,
@@ -148,13 +142,15 @@ export const FacturaSearch = ({ facturas, onFilter }: FacturaSearchProps) => {
     <div className="space-y-4">
       {/* Barra de búsqueda */}
       <div className="flex items-center space-x-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            placeholder="Buscar facturas..."
+        <div className="flex-1">
+          <CustomSearchControl
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            onChange={(v) => setSearchTerm(v)}
+            placeholder="Buscar facturas..."
+            debounceMs={300}
+            className="w-full"
+            ariaLabel="Buscar facturas"
+            clearable
           />
         </div>
         <Button
