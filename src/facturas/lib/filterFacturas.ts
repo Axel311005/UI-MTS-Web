@@ -1,7 +1,6 @@
 import type { Factura } from '@/interfaces/FacturaInterface';
 import type { Filter } from '@/interfaces/FilterState';
 
-// Sentinelas que significan "no filtrar"
 const SENTINELS = new Set<string>([
   'Todos los estados',
   'Todos los tipos',

@@ -1,7 +1,6 @@
 import { createBrowserRouter } from 'react-router';
 import { AppLayout } from '@/shared/components/layouts/AppLayout';
 import { getGroupedNavigationItems } from '@/shared/config/navigation';
-import { FacturasPage } from '@/facturas/pages/FacturasPage';
 
 const USER_TYPE = 'vendedor'; //Admin o vendedor
 
@@ -22,7 +21,10 @@ export const appRouter = createBrowserRouter([
     children: [
       {
         path: 'facturas',
-        element: <FacturasPage />,
+        lazy: async () => {
+          const mod = await import('@/facturas/pages/FacturasPage');
+          return { Component: mod.FacturasPage };
+        },
         handle: {
           crumb: 'Facturas',
         },

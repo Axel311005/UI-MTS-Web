@@ -11,4 +11,3 @@ export interface Factura {
   bodega: string;
   impuesto: string;
 }
-

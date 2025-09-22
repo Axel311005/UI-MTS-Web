@@ -1,18 +1,14 @@
-import { Plus, Eye, Edit, Trash2, FileText } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/shared/components/ui/dropdown-menu';
+import { lazy, Suspense, useState } from 'react';
 
 import {
   Table,
@@ -24,11 +20,11 @@ import {
 } from '@/shared/components/ui/table';
 import type { Factura } from '@/interfaces/FacturaInterface';
 import { FacturaSearch } from '@/facturas/ui/FacturaSearch';
-import { useState } from 'react';
 import { Badge } from '@/shared/components/ui/badge';
 
+const FacturaRowActions = lazy(() => import('../ui/FacturaRowActions'));
+
 const mockFacturas: Factura[] = [
-  // ... (tu lista de facturas)
   {
     id: 1,
     numero: 'FAC-001',
@@ -108,8 +104,11 @@ export const FacturasPage = () => {
 
       {/* Resto de tu código (la Card y la tabla) */}
       <Card className="card-elegant">
-        <CardHeader>
+        <CardHeader className="text-left text-xl">
           <CardTitle>Lista de Facturas</CardTitle>
+          <CardDescription>
+            {filteredFacturas.length} facturas encontradas
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -148,32 +147,13 @@ export const FacturasPage = () => {
                   <TableCell>{factura.bodega}</TableCell>
                   <TableCell>{factura.impuesto}</TableCell>
                   <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">Abrir menú</span>
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <Eye className="mr-2 h-4 w-4" />
-                          Ver detalles
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <FileText className="mr-2 h-4 w-4" />
-                          Generar PDF
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Editar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Eliminar
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <Suspense
+                      fallback={
+                        <div className="text-xs text-muted-foreground">...</div>
+                      }
+                    >
+                      <FacturaRowActions factura={factura} />
+                    </Suspense>
                   </TableCell>
                 </TableRow>
               ))}
