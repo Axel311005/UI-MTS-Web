@@ -20,6 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/components/ui/select';
+import type { Filter as FilterState } from '@/interfaces/FilterState';
+import { filterFacturas } from '@/facturas/lib/filterFacturas';
 
 interface FacturaSearchProps {
   facturas: Factura[];
@@ -63,7 +65,7 @@ const badgeLabelMap: Record<string, string> = {
 export const FacturaSearch = ({ facturas, onFilter }: FacturaSearchProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<FilterState>({
     estado: 'Todos los estados',
     tipoPago: 'Todos los tipos',
     cliente: 'Todos los clientes',
@@ -107,31 +109,7 @@ export const FacturaSearch = ({ facturas, onFilter }: FacturaSearchProps) => {
   );
 
   const filteredFacturas = useMemo(() => {
-    return facturas.filter(
-      (f) =>
-        (f.numero.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          f.cliente.toLowerCase().includes(searchTerm.toLowerCase())) &&
-        (filters.codigoFactura === '' ||
-          f.numero.includes(filters.codigoFactura)) &&
-        (filters.cliente === 'Todos los clientes' ||
-          f.cliente === filters.cliente) &&
-        (filters.estado === 'Todos los estados' ||
-          f.estado === filters.estado) &&
-        (filters.tipoPago === 'Todos los tipos' ||
-          f.tipoPago === filters.tipoPago) &&
-        (filters.moneda === 'Todas las monedas' ||
-          f.moneda === filters.moneda) &&
-        (filters.bodega === 'Todas las bodegas' ||
-          f.bodega === filters.bodega) &&
-        (filters.impuesto === 'Todos los impuestos' ||
-          f.impuesto === filters.impuesto) &&
-        (!filters.fechaDesde ||
-          new Date(f.fecha) >= new Date(filters.fechaDesde)) &&
-        (!filters.fechaHasta ||
-          new Date(f.fecha) <= new Date(filters.fechaHasta)) &&
-        (!filters.montoMin || f.total >= parseFloat(filters.montoMin)) &&
-        (!filters.montoMax || f.total <= parseFloat(filters.montoMax))
-    );
+    return filterFacturas({ items: facturas, filters, search: searchTerm });
   }, [facturas, searchTerm, filters]);
 
   useEffect(() => {
