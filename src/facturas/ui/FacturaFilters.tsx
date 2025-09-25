@@ -16,7 +16,7 @@ import {
 } from '@/shared/components/ui/select';
 import { Calendar, DollarSign, FileText, Filter, X } from 'lucide-react';
 import React from 'react';
-import type { Filter as FilterState } from '@/interfaces/FilterState';
+import type { Filter as FilterState } from '@/facturas/interfaces/FilterState';
 
 export interface FacturaFiltersProps {
   filters: FilterState;

@@ -1,5 +1,5 @@
-import type { Factura } from '@/interfaces/FacturaInterface';
-import type { Filter } from '@/interfaces/FilterState';
+import type { Factura } from '@/facturas/interfaces/FacturaInterface';
+import type { Filter } from '@/facturas/interfaces/FilterState';
 
 const SENTINELS = new Set<string>([
   'Todos los estados',
