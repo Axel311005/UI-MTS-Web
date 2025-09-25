@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState, lazy, Suspense } from 'react';
 import { Filter } from 'lucide-react';
-import type { Factura } from '@/interfaces/FacturaInterface';
+import type { Factura } from '@/facturas/interfaces/FacturaInterface';
 import { CustomSearchControl } from '@/shared/components/custom/CustomSearchControl';
 import { Button } from '@/shared/components/ui/button';
-import type { Filter as FilterState } from '@/interfaces/FilterState';
+import type { Filter as FilterState } from '@/facturas/interfaces/FilterState';
 import { filterFacturas } from '@/facturas/lib/filterFacturas';
 import { selectOptions, badgeLabelMap } from '@/facturas/config/filters.config';
 

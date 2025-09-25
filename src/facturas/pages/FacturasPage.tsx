@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/shared/components/ui/table';
-import type { Factura } from '@/interfaces/FacturaInterface';
+import type { Factura } from '@/facturas/interfaces/FacturaInterface';
 import { FacturaSearch } from '@/facturas/ui/FacturaSearch';
 import { Badge } from '@/shared/components/ui/badge';
 

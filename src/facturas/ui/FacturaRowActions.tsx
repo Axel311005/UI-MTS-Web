@@ -6,7 +6,7 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
 import { Edit, Eye, FileText, Trash2 } from 'lucide-react';
-import type { Factura } from '@/interfaces/FacturaInterface';
+import type { Factura } from '@/facturas/interfaces/FacturaInterface';
 
 interface Props {
   factura: Factura;

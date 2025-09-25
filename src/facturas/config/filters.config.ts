@@ -1,6 +1,3 @@
-// Configuration for Facturas filters UI: select options and badge labels
-// Keeping these centralized lets us reuse and lazy-load UI without duplicating strings.
-
 export const selectOptions = {
   cliente: [
     'Todos los clientes',
