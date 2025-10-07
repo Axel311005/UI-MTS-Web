@@ -7,11 +7,8 @@ export const useFactura = () => {
     queryKey: ['facturas'],
     queryFn: getFacturasAction,
     staleTime: 1000 * 60 * 5, // 5 minutos
-    initialData: [],
   });
   return {
     facturas: query.data,
-    isLoading: query.isLoading,
-    isFetching: query.isFetching,
   };
 };

@@ -27,19 +27,11 @@ export const AppLayout = ({
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         {/* Sidebar */}
-        <Suspense
-          fallback={
-            <div className="w-60 p-4 text-xs text-muted-foreground">
-              Cargando menú...
-            </div>
-          }
-        >
-          <CustomSideBarLazy
-            navigationItems={navigationItems}
-            catalogItems={catalogItems}
-            systemItems={systemItems}
-          />
-        </Suspense>
+        <CustomSideBarLazy
+          navigationItems={navigationItems}
+          catalogItems={catalogItems}
+          systemItems={systemItems}
+        />
 
         {/* Contenido principal */}
         <div className="flex-1 flex flex-col">

@@ -24,15 +24,16 @@ import { FacturaSearch } from '../ui/FacturaSearch';
 import { FacturaFilters } from '../ui/FacturaFilters';
 import { formatDate, formatMoney } from '@/shared/utils/formatters';
 import { useFactura } from '../hooks/useFactura';
-import { Skeleton } from '@/shared/components/ui/skeleton';
 const FacturaRowActions = lazy(() => import('../ui/FacturaRowActions'));
 
 export const FacturasPage = () => {
-  const { facturas, isLoading } = useFactura();
+  const { facturas } = useFactura();
 
   const [showFilters, setShowFilters] = useState(false);
 
-  if (!facturas) return <Navigate to="/" />;
+  if (!facturas) {
+    return <Navigate to="/" />;
+  }
   const ESTADO_BADGE_VARIANTS: Record<
     string,
     'secondary' | 'outline' | 'destructive' | 'default'
@@ -108,89 +109,66 @@ export const FacturasPage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {isLoading &&
-                  [...Array(6)].map((_, i) => (
-                    <TableRow key={i}>
-                      <TableCell colSpan={12} className="p-0">
-                        <div className="grid grid-cols-12 gap-2 py-2 px-2">
-                          {[...Array(12)].map((_, c) => (
-                            <Skeleton key={c} className="h-4 w-full" />
-                          ))}
+                {rows.map((factura) => {
+                  const estadoNorm = normalizeEstado(factura.estado);
+                  return (
+                    <TableRow
+                      key={factura.id_factura}
+                      className="table-row-hover"
+                    >
+                      <TableCell className="font-medium">
+                        {factura.codigoFactura}
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">
+                            {factura.cliente?.nombre}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {factura.cliente?.ruc}
+                          </div>
                         </div>
                       </TableCell>
-                    </TableRow>
-                  ))}
-                {!isLoading && rows.length === 0 && (
-                  <TableRow>
-                    <TableCell
-                      colSpan={12}
-                      className="h-32 text-center text-sm text-muted-foreground"
-                    >
-                      No hay facturas todavía
-                    </TableCell>
-                  </TableRow>
-                )}
-                {!isLoading &&
-                  rows.map((factura) => {
-                    const estadoNorm = normalizeEstado(factura.estado);
-                    return (
-                      <TableRow
-                        key={factura.id_factura}
-                        className="table-row-hover"
-                      >
-                        <TableCell className="font-medium">
-                          {factura.codigoFactura}
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <div className="font-medium">
-                              {factura.cliente?.nombre}
-                            </div>
+                      <TableCell>{formatDate(factura.fecha)}</TableCell>
+                      <TableCell>
+                        {factura.bodega?.descripcion ?? '—'}
+                      </TableCell>
+                      <TableCell>
+                        {factura.moneda?.descripcion ?? '—'}
+                      </TableCell>
+                      <TableCell>{formatMoney(factura.subtotal)}</TableCell>
+                      <TableCell className="text-xs">
+                        {factura.porcentajeDescuento}% (
+                        {formatMoney(factura.totalDescuento)})
+                      </TableCell>
+                      <TableCell>
+                        {formatMoney(factura.totalImpuesto)}
+                      </TableCell>
+                      <TableCell className="font-semibold">
+                        {formatMoney(factura.total)}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getEstadoBadgeVariant(estadoNorm)}>
+                          {estadoNorm}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {factura.tipoPago?.descripcion ?? '—'}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Suspense
+                          fallback={
                             <div className="text-xs text-muted-foreground">
-                              {factura.cliente?.ruc}
+                              …
                             </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>{formatDate(factura.fecha)}</TableCell>
-                        <TableCell>
-                          {factura.bodega?.descripcion ?? '—'}
-                        </TableCell>
-                        <TableCell>
-                          {factura.moneda?.descripcion ?? '—'}
-                        </TableCell>
-                        <TableCell>{formatMoney(factura.subtotal)}</TableCell>
-                        <TableCell className="text-xs">
-                          {factura.porcentajeDescuento}% (
-                          {formatMoney(factura.totalDescuento)})
-                        </TableCell>
-                        <TableCell>
-                          {formatMoney(factura.totalImpuesto)}
-                        </TableCell>
-                        <TableCell className="font-semibold">
-                          {formatMoney(factura.total)}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={getEstadoBadgeVariant(estadoNorm)}>
-                            {estadoNorm}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {factura.tipoPago?.descripcion ?? '—'}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Suspense
-                            fallback={
-                              <div className="text-xs text-muted-foreground">
-                                …
-                              </div>
-                            }
-                          >
-                            <FacturaRowActions factura={factura} />
-                          </Suspense>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                          }
+                        >
+                          <FacturaRowActions factura={factura} />
+                        </Suspense>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
