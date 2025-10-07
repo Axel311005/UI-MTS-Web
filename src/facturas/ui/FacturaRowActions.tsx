@@ -6,7 +6,8 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
 import { Edit, Eye, FileText, Trash2 } from 'lucide-react';
-import type { Factura } from '@/facturas/interfaces/FacturaInterface';
+import type { Factura } from '../types/Factura.interface';
+
 
 interface Props {
   factura: Factura;
@@ -24,7 +25,7 @@ export default function FacturaRowActions({ factura }: Props) {
         <Button
           variant="ghost"
           className="h-8 w-8 p-0"
-          aria-label={`Acciones para factura ${factura.numero}`}
+          aria-label={`Acciones para factura ${factura.codigoFactura}`}
         >
           <span className="sr-only">Abrir menú</span>
           <Eye className="h-4 w-4" />
