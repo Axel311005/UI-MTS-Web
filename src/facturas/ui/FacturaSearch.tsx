@@ -24,7 +24,7 @@ export const FacturaSearch = ({
       <CustomSearchControl
         value={value}
         onChange={handleChange}
-        placeholder={`${placeholder} (solo UI)`}
+        placeholder={`${placeholder}`}
         debounceMs={debounceMs}
         className={className}
         ariaLabel="Buscar facturas"

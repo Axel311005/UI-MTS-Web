@@ -1,3 +1,4 @@
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { Plus } from 'lucide-react';
 import {
   Card,
@@ -7,7 +8,6 @@ import {
 } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 
-import { lazy, Suspense, useMemo, useState } from 'react';
 import { Filter } from 'lucide-react';
 
 import {
@@ -19,56 +19,35 @@ import {
   TableRow,
 } from '@/shared/components/ui/table';
 import { Badge } from '@/shared/components/ui/badge';
-import { getFacturasAction } from '../actions/get-facturas';
-import { useQuery } from '@tanstack/react-query';
 import { Navigate } from 'react-router';
-import type { Factura } from '../types/Factura.interface';
 import { FacturaSearch } from '../ui/FacturaSearch';
 import { FacturaFilters } from '../ui/FacturaFilters';
-
+import { formatDate, formatMoney } from '@/shared/utils/formatters';
+import { useFactura } from '../hooks/useFactura';
 const FacturaRowActions = lazy(() => import('../ui/FacturaRowActions'));
 
 export const FacturasPage = () => {
-  const { data: facturas } = useQuery<Factura[]>({
-    queryKey: ['facturas'],
-    queryFn: getFacturasAction,
-    staleTime: 1000 * 60 * 5, // 5 minutos
-  });
+  const { facturas } = useFactura();
 
   const [showFilters, setShowFilters] = useState(false);
 
   if (!facturas) {
     return <Navigate to="/" />;
   }
-  const normalizeEstado = (raw: string) => raw?.toUpperCase?.() ?? '';
-  const getEstadoBadgeVariant = (estadoRaw: string) => {
-    const estado = normalizeEstado(estadoRaw);
-    switch (estado) {
-      case 'PAGADA':
-        return 'secondary';
-      case 'PENDIENTE':
-        return 'outline';
-      case 'VENCIDA':
-        return 'destructive';
-      case 'ANULADA':
-        return 'destructive';
-      default:
-        return 'default';
-    }
+  const ESTADO_BADGE_VARIANTS: Record<
+    string,
+    'secondary' | 'outline' | 'destructive' | 'default'
+  > = {
+    PAGADA: 'secondary',
+    PENDIENTE: 'outline',
+    VENCIDA: 'destructive',
+    ANULADA: 'destructive',
   };
 
-  const formatDate = (iso: any) => {
-    if (!iso) return '—';
-    const d = iso instanceof Date ? iso : new Date(iso);
-    if (isNaN(d.getTime())) return '—';
-    return d.toLocaleDateString('es-ES');
-  };
-  const toNumber = (v: any) => {
-    if (v === null || v === undefined || v === '') return 0;
-    const n = typeof v === 'number' ? v : parseFloat(v);
-    return isNaN(n) ? 0 : n;
-  };
-  const formatMoney = (v: any) => `$${toNumber(v).toFixed(2)}`;
+  const normalizeEstado = (raw: string) => raw?.toUpperCase?.() ?? '';
+
+  const getEstadoBadgeVariant = (estadoRaw: string) =>
+    ESTADO_BADGE_VARIANTS[normalizeEstado(estadoRaw)] ?? 'default';
 
   const rows = useMemo(() => facturas ?? [], [facturas]);
 
