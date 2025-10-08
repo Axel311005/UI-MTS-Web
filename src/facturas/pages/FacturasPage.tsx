@@ -23,10 +23,23 @@ import { FacturaSearch } from '../ui/FacturaSearch';
 import { FacturaFilters } from '../ui/FacturaFilters';
 import { formatDate, formatMoney } from '@/shared/utils/formatters';
 import { useFactura } from '../hooks/useFactura';
+import { useSearchParams } from 'react-router';
+import { useQuery } from '@tanstack/react-query';
+import { SearchFacturaAction } from '../actions/search-facturas-action';
+
 const FacturaRowActions = lazy(() => import('../ui/FacturaRowActions'));
 
 export const FacturasPage = () => {
   const { facturas } = useFactura();
+  const [searchParams] = useSearchParams();
+  const codigoLike = searchParams.get('codigoLike')?.trim() || '';
+
+  const { data: facturasFiltradas = [], isFetching: buscando } = useQuery({
+    queryKey: ['facturas.search', codigoLike],
+    queryFn: () => SearchFacturaAction({ codigoLike }),
+    enabled: !!codigoLike,
+    staleTime: 1000 * 60 * 5,
+  });
 
   const [showFilters, setShowFilters] = useState(false);
 
@@ -45,7 +58,10 @@ export const FacturasPage = () => {
   const getEstadoBadgeVariant = (estadoRaw: string) =>
     ESTADO_BADGE_VARIANTS[normalizeEstado(estadoRaw)] ?? 'default';
 
-  const rows = useMemo(() => facturas ?? [], [facturas]);
+  const rows = useMemo(() => {
+    const data = codigoLike ? facturasFiltradas : facturas;
+    return Array.isArray(data) ? data : [];
+  }, [codigoLike, facturasFiltradas, facturas]);
 
   return (
     <div className="space-y-6">
@@ -86,7 +102,7 @@ export const FacturasPage = () => {
               <FacturaFilters />
             </div>
           )}
-          <div className="overflow-auto rounded-md border max-h-[480px]">
+          <div className="overflow-auto rounded-md border max-h-[480px] relative">
             <Table className="min-w-[1000px]">
               <TableHeader>
                 <TableRow>

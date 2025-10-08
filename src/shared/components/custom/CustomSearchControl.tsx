@@ -1,13 +1,12 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X } from '@/shared/icons';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 
 interface CustomSearchControlProps {
   value?: string;
-  onChange?: (v: string) => void;
+  onKeyDown?: (v: string) => void;
   placeholder?: string;
-  debounceMs?: number;
   className?: string;
   ariaLabel?: string;
   clearable?: boolean;
@@ -15,71 +14,44 @@ interface CustomSearchControlProps {
 
 export const CustomSearchControl: React.FC<CustomSearchControlProps> = ({
   value,
-  onChange,
+  onKeyDown,
   placeholder,
-  debounceMs,
   className,
   ariaLabel,
   clearable = true,
 }) => {
   const [internalValue, setInternalValue] = useState<string>(value ?? '');
-  const timerRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     setInternalValue(value ?? '');
   }, [value]);
 
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) {
-        window.clearTimeout(timerRef.current);
-      }
-    };
-  }, []);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInternalValue(e.target.value);
+  };
 
-  const triggerChange = useCallback(
-    (val: string, immediate = false) => {
-      if (!onChange) return;
-
-      if (immediate || !debounceMs || debounceMs <= 0) {
-        if (timerRef.current) {
-          window.clearTimeout(timerRef.current);
-        }
-        onChange(val);
-        return;
-      }
-
-      if (timerRef.current) {
-        window.clearTimeout(timerRef.current);
-      }
-      timerRef.current = window.setTimeout(() => {
-        onChange(val);
-      }, debounceMs) as unknown as number;
-    },
-    [debounceMs, onChange]
-  );
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const v = e.target.value;
-    setInternalValue(v);
-    triggerChange(v);
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && onKeyDown) {
+      onKeyDown(internalValue);
+    }
   };
 
   const handleClear = () => {
     setInternalValue('');
-    triggerChange('', true);
+    if (onKeyDown) onKeyDown('');
   };
 
   return (
     <div className="relative w-full">
       <Input
         value={internalValue}
-        onChange={handleChange}
+        onChange={handleInputChange}
+        onKeyDown={handleInputKeyDown}
         placeholder={placeholder}
         className={className}
         aria-label={ariaLabel}
       />
-      {clearable && internalValue.length > 0 && onChange && (
+      {clearable && internalValue.length > 0 && (
         <div className="absolute right-1 top-1/2 -translate-y-1/2">
           <Button
             size="icon"

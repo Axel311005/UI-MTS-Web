@@ -1,3 +1,4 @@
+import { useBodega } from '@/bodega/hook/useBodega';
 import { Button } from '@/shared/components/ui/button';
 import {
   Card,
@@ -17,12 +18,13 @@ import { Calendar, DollarSign, FileText, Filter, X } from '@/shared/icons';
 
 // Componente placeholder (solo UI, sin lógica de filtros)
 export const FacturaFilters = () => {
+  const { bodegas } = useBodega();
   return (
     <Card className="border-l-4 border-l-blue-500 shadow-sm">
       <CardHeader className="pb-4 flex justify-between items-center">
         <div className="flex items-center gap-2">
           <Filter className="h-5 w-5 text-blue-500" />
-          <CardTitle className="text-lg">Filtros (Diseño)</CardTitle>
+          <CardTitle className="text-lg">Filtros</CardTitle>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm">
@@ -41,30 +43,44 @@ export const FacturaFilters = () => {
             </label>
             <Input placeholder="FAC-001" className="h-9" />
           </div>
-          {(
-            [
-              'cliente',
-              'estado',
-              'tipoPago',
-              'moneda',
-              'bodega',
-              'impuesto',
-            ] as const
-          ).map((key) => (
-            <div key={key} className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
-                {key.charAt(0).toUpperCase() + key.slice(1)}
-              </label>
-              <Select>
-                <SelectTrigger className="h-9">
-                  <SelectValue placeholder="Todos" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Todos">Todos</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          ))}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+              Estado
+            </label>
+            <Select>
+              <SelectTrigger className="h-9">
+                <SelectValue placeholder="Todos" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="PENDIENTE">Pendiente</SelectItem>
+                <SelectItem value="PAGADA">Pagada</SelectItem>
+                <SelectItem value="VENCIDA">Vencida</SelectItem>
+                <SelectItem value="ANULADA">Anulada</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+              Bodega
+            </label>
+            <Select>
+              <SelectTrigger className="h-9">
+                <SelectValue placeholder="Todos" />
+              </SelectTrigger>
+              <SelectContent>
+                {bodegas?.map((bodega) => (
+                  <SelectItem
+                    key={bodega.idBodega.toString()}
+                    value={bodega.descripcion}
+                  >
+                    {bodega.descripcion}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {(['fechaDesde', 'fechaHasta'] as const).map((key) => (
             <div key={key} className="space-y-2">
               <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">

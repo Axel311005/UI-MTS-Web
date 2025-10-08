@@ -29,6 +29,16 @@ export const appRouter = createBrowserRouter([
           crumb: 'Facturas',
         },
       },
+      {
+        path: 'facturas/search',
+        lazy: async () => {
+          const mod = await import('@/facturas/pages/FacturasPage');
+          return { Component: mod.FacturasPage };
+        },
+        handle: {
+          crumb: 'Buscar',
+        },
+      },
       // Agrega aquí más rutas con sus respectivos handles
       // {
       //   path: 'clientes',

@@ -17,8 +17,15 @@ export interface Factura {
     total:               number;
     tipoCambioUsado:     number;
     comentario:          string;
-    lineas:              any[];
+    lineas:              FacturaLinea[];
     consecutivo:         Consecutivo | null;
+}
+    
+export interface FacturaLinea {
+    idFacturaLinea: number;
+    cantidad:       number;
+    precioUnitario: number;
+    totalLinea:     number;
 }
 
 export interface TipoPago {
