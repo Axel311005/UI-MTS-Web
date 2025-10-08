@@ -10,7 +10,7 @@ import {
   Ruler,
   CreditCard,
   Shield,
-} from 'lucide-react';
+} from '@/shared/icons';
 
 export interface MenuItem {
   title: string;

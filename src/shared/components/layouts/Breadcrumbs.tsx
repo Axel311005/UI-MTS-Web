@@ -1,5 +1,5 @@
 import { Link, useMatches } from 'react-router';
-import { ChevronRight, Home } from 'lucide-react';
+import { ChevronRight, Home } from '@/shared/icons';
 import {
   Breadcrumb,
   BreadcrumbItem,

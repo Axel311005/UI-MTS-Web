@@ -1,6 +1,6 @@
 // src/shared/components/layouts/AppHeader.tsx
 
-import { Search, Bell, User, Sun, Moon, Menu } from 'lucide-react';
+import { Search, Bell, User, Sun, Moon, Menu } from '@/shared/icons';
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 import { SidebarTrigger } from '@/shared/components/ui/sidebar';
 import { Button } from '../ui/button';

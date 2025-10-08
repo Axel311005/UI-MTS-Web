@@ -27,15 +27,17 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          react: ['react', 'react-dom'],
-          radix: [
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-select',
-            '@radix-ui/react-slot',
-            '@radix-ui/react-tooltip',
-          ],
-          icons: ['lucide-react'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react-router')) return 'router';
+            if (id.includes('@tanstack/react-query')) return 'react-query';
+            if (id.includes('@radix-ui')) return 'radix';
+            if (id.includes('lucide-react')) return 'icons';
+            if (id.includes('react') || id.includes('scheduler'))
+              return 'react-core';
+            return 'vendor';
+          }
+          if (id.includes('/src/facturas/')) return 'facturas';
         },
       },
     },

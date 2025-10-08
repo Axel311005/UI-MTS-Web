@@ -10,5 +10,7 @@ export const useFactura = () => {
   });
   return {
     facturas: query.data,
+    isLoading: query.isLoading,
+    isError: query.isError,
   };
 };

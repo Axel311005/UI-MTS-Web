@@ -11,7 +11,7 @@ import {
   SidebarMenuButton,
 } from '../ui/sidebar';
 import type { MenuItem } from '@/shared/config/navigation';
-import { FileText } from 'lucide-react';
+import { FileText } from '@/shared/icons';
 
 interface SidebarProps {
   navigationItems: MenuItem[];

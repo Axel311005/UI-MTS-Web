@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/components/ui/select';
-import { Calendar, DollarSign, FileText, Filter, X } from 'lucide-react';
+import { Calendar, DollarSign, FileText, Filter, X } from '@/shared/icons';
 
 export const FacturaFilters = () => {
   return (
