@@ -2,7 +2,7 @@ import { createBrowserRouter } from 'react-router';
 import { AppLayout } from '@/shared/components/layouts/AppLayout';
 import { getGroupedNavigationItems } from '@/shared/config/navigation';
 
-const USER_TYPE = 'vendedor'; //Admin o vendedor
+const USER_TYPE = 'admin'; //Admin o vendedor
 
 const { navigationItems, catalogItems, systemItems } =
   getGroupedNavigationItems(USER_TYPE);

@@ -95,12 +95,10 @@ export const FacturasPage = () => {
                   <TableHead>Fecha</TableHead>
                   <TableHead>Bodega</TableHead>
                   <TableHead>Moneda</TableHead>
-                  <TableHead>Subtotal</TableHead>
-                  <TableHead>Descuento</TableHead>
-                  <TableHead>Impuesto</TableHead>
                   <TableHead>Total</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead>Tipo Pago</TableHead>
+                  <TableHead>Comentario</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
@@ -144,14 +142,6 @@ export const FacturasPage = () => {
                         <TableCell>
                           {factura.moneda?.descripcion ?? '—'}
                         </TableCell>
-                        <TableCell>{formatMoney(factura.subtotal)}</TableCell>
-                        <TableCell className="text-xs">
-                          {factura.porcentajeDescuento}% (
-                          {formatMoney(factura.totalDescuento)})
-                        </TableCell>
-                        <TableCell>
-                          {formatMoney(factura.totalImpuesto)}
-                        </TableCell>
                         <TableCell className="font-semibold">
                           {formatMoney(factura.total)}
                         </TableCell>
@@ -163,6 +153,7 @@ export const FacturasPage = () => {
                         <TableCell>
                           {factura.tipoPago?.descripcion ?? '—'}
                         </TableCell>
+                        <TableCell>{factura.comentario ?? '—'}</TableCell>
                         <TableCell className="text-right">
                           <Suspense
                             fallback={

@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link, useMatches } from 'react-router';
 import { ChevronRight, Home } from '@/shared/icons';
 import {
@@ -8,7 +9,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/shared/components/ui/breadcrumb';
-import React from 'react';
 
 interface CrumbHandle {
   crumb: string | ((data: any) => string);
