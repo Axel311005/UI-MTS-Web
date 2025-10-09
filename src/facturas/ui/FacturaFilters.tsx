@@ -47,6 +47,8 @@ export const FacturaFilters = ({ onClose }: Props) => {
     const keys = [
       'codigoLike',
       'codigo_factura',
+      'clienteNombre',
+      'empleadoNombre',
       'estado',
       'bodegaNombre',
       'dateFrom',
@@ -61,6 +63,8 @@ export const FacturaFilters = ({ onClose }: Props) => {
   };
 
   const codigoExactoValue = searchParams.get('codigo_factura') ?? '';
+  const nombreClienteValue = searchParams.get('clienteNombre') ?? '';
+  const nombreEmpleadoValue = searchParams.get('empleadoNombre') ?? '';
 
   const filterKeys: Array<{ key: string; label: string; value: string }> = [
     {
@@ -69,6 +73,16 @@ export const FacturaFilters = ({ onClose }: Props) => {
       value: searchParams.get('codigoLike') ?? '',
     },
     { key: 'codigoExacto', label: 'Código exacto', value: codigoExactoValue },
+    {
+      key: 'clienteNombre',
+      label: 'Cliente',
+      value: nombreClienteValue,
+    },
+    {
+      key: 'empleadoNombre',
+      label: 'Empleado',
+      value: nombreEmpleadoValue,
+    },
     { key: 'estado', label: 'Estado', value: searchParams.get('estado') ?? '' },
     {
       key: 'bodegaNombre',
@@ -185,6 +199,40 @@ export const FacturaFilters = ({ onClose }: Props) => {
                     sp.delete('codigo_factura');
                   }
                   setSearchParams(sp, { replace: true });
+                }
+              }}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+              <FileText className="h-3 w-3" /> Nombre del Cliente
+            </label>
+            <Input
+              key={`clienteNombre:${nombreClienteValue}`}
+              placeholder="Nombre del Cliente"
+              className="h-9"
+              defaultValue={nombreClienteValue}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === 'NumpadEnter') {
+                  const v = (e.target as HTMLInputElement).value;
+                  commitParam('clienteNombre', v);
+                }
+              }}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+              <FileText className="h-3 w-3" /> Nombre del Empleado
+            </label>
+            <Input
+              key={`empleadoNombre:${nombreEmpleadoValue}`}
+              placeholder="Nombre del Empleado"
+              className="h-9"
+              defaultValue={nombreEmpleadoValue}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === 'NumpadEnter') {
+                  const v = (e.target as HTMLInputElement).value;
+                  commitParam('empleadoNombre', v);
                 }
               }}
             />

@@ -38,6 +38,8 @@ export const FacturasPage = () => {
   const codigoFactura = searchParams.get('codigo_factura')?.trim() || '';
   const estado = searchParams.get('estado')?.trim() || '';
   const bodegaNombre = searchParams.get('bodegaNombre')?.trim() || '';
+  const clienteNombre = searchParams.get('clienteNombre')?.trim() || '';
+  const empleadoNombre = searchParams.get('empleadoNombre')?.trim() || '';
   const fechaInicio = searchParams.get('dateFrom')?.trim() || '';
   const fechaFin = searchParams.get('dateTo')?.trim() || '';
   const minTotal = searchParams.get('minTotal')?.trim() || '';
@@ -49,6 +51,8 @@ export const FacturasPage = () => {
         codigoLike,
         codigoFactura,
         estado,
+        clienteNombre,
+        empleadoNombre,
         bodegaNombre,
         fechaInicio,
         fechaFin,
@@ -59,6 +63,8 @@ export const FacturasPage = () => {
       codigoLike,
       codigoFactura,
       estado,
+      clienteNombre,
+      empleadoNombre,
       bodegaNombre,
       fechaInicio,
       fechaFin,
@@ -73,6 +79,8 @@ export const FacturasPage = () => {
       codigoLike,
       codigoFactura,
       estado,
+      clienteNombre,
+      empleadoNombre,
       bodegaNombre,
       fechaInicio,
       fechaFin,
@@ -84,6 +92,8 @@ export const FacturasPage = () => {
         codigoLike,
         codigo_factura: codigoFactura,
         estado,
+        clienteNombre,
+        empleadoNombre,
         bodegaNombre,
         dateFrom: fechaInicio,
         dateTo: fechaFin,

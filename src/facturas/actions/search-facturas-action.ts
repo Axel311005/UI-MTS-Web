@@ -6,6 +6,7 @@ interface SearchFacturaOptions {
   codigo_factura?: string; // exacto (backend expects snake_case)
   codigoLike?: string; // parcial
   clienteNombre?: string;
+  empleadoNombre?: string;
   bodegaNombre?: string;
   estado?: string;
   anulada?: string | boolean;
@@ -24,6 +25,7 @@ export const SearchFacturaAction = async (options: SearchFacturaOptions) => {
     codigo_factura,
     codigoLike,
     clienteNombre,
+    empleadoNombre,
     bodegaNombre,
     estado,
     anulada,
@@ -41,6 +43,7 @@ export const SearchFacturaAction = async (options: SearchFacturaOptions) => {
     codigo_factura,
     codigoLike,
     clienteNombre,
+    empleadoNombre,
     bodegaNombre,
     estado,
     anulada,
@@ -58,6 +61,7 @@ export const SearchFacturaAction = async (options: SearchFacturaOptions) => {
   if (codigoExacto) params.codigo_factura = codigoExacto;
   if (codigoLike) params.codigoLike = codigoLike;
   if (clienteNombre) params.clienteNombre = clienteNombre;
+  if (empleadoNombre) params.empleadoNombre = empleadoNombre;
   if (bodegaNombre) params.bodegaNombre = bodegaNombre;
   if (estado) params.estado = estado;
   if (anulada !== undefined) {
