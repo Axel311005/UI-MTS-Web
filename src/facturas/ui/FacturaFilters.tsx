@@ -18,6 +18,7 @@ import {
 import { Calendar, DollarSign, FileText, Filter, X } from '@/shared/icons';
 import { useTipoPago } from '@/tiposPago/hook/useMoneda';
 import { useSearchParams } from 'react-router';
+import { ClienteSelect } from './ClienteSelect';
 
 type Props = {
   onClose?: () => void;
@@ -136,10 +137,10 @@ export const FacturaFilters = ({ onClose }: Props) => {
   };
 
   return (
-    <Card className="border-l-4 border-l-blue-500 shadow-sm">
+    <Card className="border-l-4 border-l-primary shadow-sm">
       <CardHeader className="pb-4 flex flex-col gap-3">
         <div className="flex items-center gap-2 justify-between">
-          <Filter className="h-5 w-5 text-blue-500" />
+          <Filter className="h-5 w-5 text-primary" />
           <CardTitle className="text-lg">Filtros</CardTitle>
           <div className="flex items-center gap-2 ml-auto">
             <Button variant="ghost" size="sm" onClick={clearFilters}>
@@ -203,21 +204,14 @@ export const FacturaFilters = ({ onClose }: Props) => {
               }}
             />
           </div>
-          <div className="space-y-2">
+          <div>
             <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
               <FileText className="h-3 w-3" /> Nombre del Cliente
             </label>
-            <Input
-              key={`clienteNombre:${nombreClienteValue}`}
-              placeholder="Nombre del Cliente"
-              className="h-9"
-              defaultValue={nombreClienteValue}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === 'NumpadEnter') {
-                  const v = (e.target as HTMLInputElement).value;
-                  commitParam('clienteNombre', v);
-                }
-              }}
+            <ClienteSelect
+              value={nombreClienteValue}
+              onSelect={(nombre) => commitParam('clienteNombre', nombre)}
+              onClear={() => commitParam('clienteNombre', '')}
             />
           </div>
           <div className="space-y-2">
