@@ -34,7 +34,7 @@ export const FacturasPage = () => {
   const [searchParams] = useSearchParams();
   const codigoLike = searchParams.get('codigoLike')?.trim() || '';
 
-  const { data: facturasFiltradas = [], isFetching: buscando } = useQuery({
+  const { data: facturasFiltradas = [] } = useQuery({
     queryKey: ['facturas.search', codigoLike],
     queryFn: () => SearchFacturaAction({ codigoLike }),
     enabled: !!codigoLike,
