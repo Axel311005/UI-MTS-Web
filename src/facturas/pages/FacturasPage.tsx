@@ -32,12 +32,65 @@ const FacturaRowActions = lazy(() => import('../ui/FacturaRowActions'));
 export const FacturasPage = () => {
   const { facturas } = useFactura();
   const [searchParams] = useSearchParams();
+
+  // Leer parámetros de búsqueda/filtros desde la URL
   const codigoLike = searchParams.get('codigoLike')?.trim() || '';
+  const codigoFactura = searchParams.get('codigo_factura')?.trim() || '';
+  const estado = searchParams.get('estado')?.trim() || '';
+  const bodegaNombre = searchParams.get('bodegaNombre')?.trim() || '';
+  const fechaInicio = searchParams.get('dateFrom')?.trim() || '';
+  const fechaFin = searchParams.get('dateTo')?.trim() || '';
+  const minTotal = searchParams.get('minTotal')?.trim() || '';
+  const maxTotal = searchParams.get('maxTotal')?.trim() || '';
+
+  const hasAnyFilter = useMemo(
+    () =>
+      [
+        codigoLike,
+        codigoFactura,
+        estado,
+        bodegaNombre,
+        fechaInicio,
+        fechaFin,
+        minTotal,
+        maxTotal,
+      ].some((v) => v !== undefined && v !== null && String(v).trim() !== ''),
+    [
+      codigoLike,
+      codigoFactura,
+      estado,
+      bodegaNombre,
+      fechaInicio,
+      fechaFin,
+      minTotal,
+      maxTotal,
+    ]
+  );
 
   const { data: facturasFiltradas = [] } = useQuery({
-    queryKey: ['facturas.search', codigoLike],
-    queryFn: () => SearchFacturaAction({ codigoLike }),
-    enabled: !!codigoLike,
+    queryKey: [
+      'facturas.search',
+      codigoLike,
+      codigoFactura,
+      estado,
+      bodegaNombre,
+      fechaInicio,
+      fechaFin,
+      minTotal,
+      maxTotal,
+    ],
+    queryFn: () =>
+      SearchFacturaAction({
+        codigoLike,
+        codigo_factura: codigoFactura,
+        estado,
+        bodegaNombre,
+        dateFrom: fechaInicio,
+        dateTo: fechaFin,
+        minTotal,
+        maxTotal,
+      }),
+    enabled: hasAnyFilter,
     staleTime: 1000 * 60 * 5,
   });
 
@@ -59,9 +112,9 @@ export const FacturasPage = () => {
     ESTADO_BADGE_VARIANTS[normalizeEstado(estadoRaw)] ?? 'default';
 
   const rows = useMemo(() => {
-    const data = codigoLike ? facturasFiltradas : facturas;
+    const data = hasAnyFilter ? facturasFiltradas : facturas;
     return Array.isArray(data) ? data : [];
-  }, [codigoLike, facturasFiltradas, facturas]);
+  }, [hasAnyFilter, facturasFiltradas, facturas]);
 
   return (
     <div className="space-y-6">
@@ -97,9 +150,10 @@ export const FacturasPage = () => {
               {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
             </Button>
           </div>
+          {/* Los chips de filtros activos ahora se muestran dentro del panel de filtros */}
           {showFilters && (
             <div className="animate-in fade-in-50 slide-in-from-top-1">
-              <FacturaFilters />
+              <FacturaFilters onClose={() => setShowFilters(false)} />
             </div>
           )}
           <div className="overflow-auto rounded-md border max-h-[480px] relative">

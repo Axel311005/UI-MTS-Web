@@ -4,10 +4,9 @@ import { CustomSearchControl } from '@/shared/components/custom/CustomSearchCont
 interface FacturaSearchProps {
   placeholder?: string;
   className?: string;
-  paramName?: string; // nombre del query param (default 'q')
+  paramName?: string;
 }
 
-// Búsqueda sin useState: solo URLSearchParams. Actualiza al presionar Enter.
 export const FacturaSearch = ({
   placeholder = 'Buscar por código',
   className = 'w-full',
@@ -22,7 +21,6 @@ export const FacturaSearch = ({
     setSearchParams((prev) => {
       if (value) prev.set(paramName, value);
       else prev.delete(paramName);
-      // reset page if exists
       prev.delete('page');
       return prev;
     });
@@ -39,5 +37,3 @@ export const FacturaSearch = ({
     />
   );
 };
-
-export default FacturaSearch;
