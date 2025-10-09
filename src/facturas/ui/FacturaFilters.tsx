@@ -1,4 +1,5 @@
 import { useBodega } from '@/bodega/hook/useBodega';
+import { useMoneda } from '@/moneda/hook/useMoneda';
 import { Button } from '@/shared/components/ui/button';
 import {
   Card,
@@ -15,15 +16,16 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select';
 import { Calendar, DollarSign, FileText, Filter, X } from '@/shared/icons';
+import { useTipoPago } from '@/tiposPago/hook/useMoneda';
 import { useSearchParams } from 'react-router';
 
 type Props = {
   onClose?: () => void;
 };
-
-// Filtros: sin estado local; se escriben parámetros en la URL al presionar Enter o al cambiar selects
 export const FacturaFilters = ({ onClose }: Props) => {
   const { bodegas } = useBodega();
+  const { monedas } = useMoneda();
+  const { tipoPagos } = useTipoPago();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const commitParam = (key: string, value?: string | number | null) => {
@@ -51,12 +53,13 @@ export const FacturaFilters = ({ onClose }: Props) => {
       'dateTo',
       'minTotal',
       'maxTotal',
+      'moneda',
+      'tipo_pago',
     ];
     keys.forEach((k) => sp.delete(k));
     setSearchParams(sp, { replace: true });
   };
 
-  // Active filter chips (derived from URL)
   const codigoExactoValue = searchParams.get('codigo_factura') ?? '';
 
   const filterKeys: Array<{ key: string; label: string; value: string }> = [
@@ -91,6 +94,16 @@ export const FacturaFilters = ({ onClose }: Props) => {
       key: 'maxTotal',
       label: 'Monto máximo',
       value: searchParams.get('maxTotal') ?? '',
+    },
+    {
+      key: 'moneda',
+      label: 'Moneda',
+      value: searchParams.get('moneda') ?? '',
+    },
+    {
+      key: 'tipo_pago',
+      label: 'Tipo de Pago',
+      value: searchParams.get('tipo_pago') ?? '',
     },
   ];
   const activeFilters = filterKeys.filter(
@@ -216,6 +229,54 @@ export const FacturaFilters = ({ onClose }: Props) => {
                     value={bodega.descripcion}
                   >
                     {bodega.descripcion}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+              Moneda
+            </label>
+            <Select
+              key={`moneda:${searchParams.get('moneda') ?? ''}`}
+              defaultValue={searchParams.get('moneda') ?? undefined}
+              onValueChange={(v) => commitParam('moneda', v)}
+            >
+              <SelectTrigger className="h-9">
+                <SelectValue placeholder="Todos" />
+              </SelectTrigger>
+              <SelectContent>
+                {monedas?.map((moneda) => (
+                  <SelectItem
+                    key={moneda.idMoneda.toString()}
+                    value={moneda.descripcion}
+                  >
+                    {moneda.descripcion}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+              Tipo de pago
+            </label>
+            <Select
+              key={`tipo_pago:${searchParams.get('tipo_pago') ?? ''}`}
+              defaultValue={searchParams.get('tipo_pago') ?? undefined}
+              onValueChange={(v) => commitParam('tipo_pago', v)}
+            >
+              <SelectTrigger className="h-9">
+                <SelectValue placeholder="Todos" />
+              </SelectTrigger>
+              <SelectContent>
+                {tipoPagos?.map((tipoPago) => (
+                  <SelectItem
+                    key={tipoPago.idTipoPago.toString()}
+                    value={tipoPago.descripcion}
+                  >
+                    {tipoPago.descripcion}
                   </SelectItem>
                 ))}
               </SelectContent>
