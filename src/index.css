@@ -2,164 +2,146 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Billing System Design System - Custom Color Palette
-All colors MUST be HSL for perfect theming.
---color-1: #f47e52 (warm orange - primary accent)
---color-2: #f3ce5e (warm yellow - secondary accent) 
---color-3: #f5f5f5 (light gray - backgrounds)
---color-4: #616161 (medium gray - text)
---color-5: #404040 (dark gray - primary text)
+/* Sistema de Facturación - Paleta de Colores Personalizada
+Todos los colores en HSL para theming perfecto y accesibilidad ISO/WCAG.
+--color-primary: #f6b0a2 (coral suave - color principal)
+--color-secondary: #a2d5f6 (azul suave - complementario)
+--color-accent: #f6d9a2 (melocotón - acento cálido)
 */
 
 @layer base {
   :root {
-    /* Clean backgrounds using color-3 as base */
-    --background: 0 0% 96%;
-    --foreground: 0 0% 25%; /* color-5 equivalent */
+    /* Fondos limpios y profesionales */
+    --background: 0 0% 98%;
+    --foreground: 0 0% 20%;
 
-    /* Clean card system */
+    /* Sistema de tarjetas */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 25%;
+    --card-foreground: 0 0% 20%;
 
-    /* Popover system */
+    /* Sistema de popover */
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 25%;
+    --popover-foreground: 0 0% 20%;
 
-    /* Orange primary (color-1) used sparingly */
-    --primary: 18 92% 64%; /* #f47e52 in HSL */
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 18 92% 74%;
+    /* Coral suave como primario #f6b0a2 */
+    --primary: 10 81% 80%;
+    --primary-foreground: 0 0% 20%;
+    --primary-glow: 10 81% 88%;
 
-    /* Soft secondary using color-3 */
-    --secondary: 0 0% 94%;
-    --secondary-foreground: 0 0% 25%;
+    /* Azul suave complementario #a2d5f6 */
+    --secondary: 204 81% 80%;
+    --secondary-foreground: 0 0% 20%;
 
-    /* Muted tones using color-3 variations */
+    /* Tonos neutros suaves */
     --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 38%; /* color-4 equivalent */
+    --muted-foreground: 0 0% 45%;
 
-    /* Yellow accent (color-2) for highlights */
-    --accent: 48 87% 67%; /* #f3ce5e in HSL */
-    --accent-foreground: 0 0% 25%;
+    /* Melocotón cálido para acentos #f6d9a2 */
+    --accent: 41 81% 80%;
+    --accent-foreground: 0 0% 20%;
 
-    /* Professional destructive */
-    --destructive: 0 70% 55%;
+    /* Destructivo profesional */
+    --destructive: 0 65% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Subtle borders using color-4 */
-    --border: 0 0% 88%;
-    --input: 0 0% 92%;
-    --ring: 18 92% 64%;
+    /* Bordes sutiles */
+    --border: 0 0% 90%;
+    --input: 0 0% 94%;
+    --ring: 10 81% 80%;
 
     --radius: 0.5rem;
 
-    /* Professional gradients */
+    /* Gradientes suaves */
     --gradient-primary: linear-gradient(
       135deg,
-      hsl(var(--primary)),
-      hsl(var(--primary-glow))
+      hsl(10 81% 80%),
+      hsl(10 81% 88%)
     );
-    --gradient-card: linear-gradient(
-      145deg,
-      hsl(var(--card)),
-      hsl(210 20% 99%)
-    );
-    --gradient-muted: linear-gradient(
-      180deg,
-      hsl(var(--muted)),
-      hsl(210 15% 93%)
-    );
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(0 0% 99%));
+    --gradient-muted: linear-gradient(180deg, hsl(0 0% 96%), hsl(0 0% 94%));
 
-    /* Elegant shadows */
-    --shadow-card: 0 4px 20px -2px hsl(215 25% 15% / 0.08);
-    --shadow-header: 0 2px 16px -4px hsl(215 25% 15% / 0.06);
-    --shadow-hover: 0 8px 32px -4px hsl(217 87% 54% / 0.15);
+    /* Sombras elegantes */
+    --shadow-card: 0 4px 20px -2px hsl(10 20% 50% / 0.08);
+    --shadow-header: 0 2px 16px -4px hsl(10 20% 50% / 0.06);
+    --shadow-hover: 0 8px 32px -4px hsl(10 81% 80% / 0.2);
 
-    /* Smooth transitions */
+    /* Transiciones suaves */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
-    /* Light sidebar */
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 215 25% 15%;
-    --sidebar-primary: 217 87% 54%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 15% 95%;
-    --sidebar-accent-foreground: 215 25% 15%;
-    --sidebar-border: 215 15% 88%;
-    --sidebar-ring: 217 87% 54%;
+    /* Sidebar claro */
+    --sidebar-background: 0 0% 99%;
+    --sidebar-foreground: 0 0% 20%;
+    --sidebar-primary: 10 81% 75%;
+    --sidebar-primary-foreground: 0 0% 20%;
+    --sidebar-accent: 0 0% 96%;
+    --sidebar-accent-foreground: 0 0% 20%;
+    --sidebar-border: 0 0% 92%;
+    --sidebar-ring: 10 81% 80%;
   }
 
   .dark {
-    /* Dark professional background */
-    --background: 0 0% 10%;
-    --foreground: 0 0% 92%;
+    /* Fondo oscuro profesional */
+    --background: 0 0% 8%;
+    --foreground: 0 0% 95%;
 
-    /* Dark cards */
-    --card: 0 0% 12%;
-    --card-foreground: 0 0% 92%;
+    /* Tarjetas oscuras */
+    --card: 0 0% 11%;
+    --card-foreground: 0 0% 95%;
 
-    /* Dark popover */
-    --popover: 0 0% 12%;
-    --popover-foreground: 0 0% 92%;
+    /* Popover oscuro */
+    --popover: 0 0% 11%;
+    --popover-foreground: 0 0% 95%;
 
-    /* Orange primary slightly brighter for dark mode */
-    --primary: 18 92% 68%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 18 92% 78%;
+    /* Coral más vibrante para modo oscuro */
+    --primary: 10 75% 70%;
+    --primary-foreground: 0 0% 10%;
+    --primary-glow: 10 75% 78%;
 
-    /* Dark secondary */
-    --secondary: 0 0% 18%;
-    --secondary-foreground: 0 0% 88%;
+    /* Azul suave para modo oscuro */
+    --secondary: 204 60% 65%;
+    --secondary-foreground: 0 0% 10%;
 
-    /* Dark muted */
-    --muted: 0 0% 16%;
-    --muted-foreground: 0 0% 65%;
+    /* Neutros oscuros */
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 70%;
 
-    /* Yellow accent for dark mode */
-    --accent: 48 87% 72%;
-    --accent-foreground: 0 0% 15%;
+    /* Melocotón para modo oscuro */
+    --accent: 41 65% 70%;
+    --accent-foreground: 0 0% 10%;
 
-    /* Dark destructive */
-    --destructive: 0 65% 58%;
+    /* Destructivo oscuro */
+    --destructive: 0 60% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Dark borders */
+    /* Bordes oscuros */
     --border: 0 0% 20%;
-    --input: 0 0% 18%;
-    --ring: 18 92% 68%;
+    --input: 0 0% 16%;
+    --ring: 10 75% 70%;
 
-    /* Dark gradients */
+    /* Gradientes oscuros */
     --gradient-primary: linear-gradient(
       135deg,
-      hsl(var(--primary)),
-      hsl(var(--primary-glow))
+      hsl(10 75% 70%),
+      hsl(10 75% 78%)
     );
-    --gradient-card: linear-gradient(
-      145deg,
-      hsl(var(--card)),
-      hsl(215 25% 14%)
-    );
-    --gradient-muted: linear-gradient(
-      180deg,
-      hsl(var(--muted)),
-      hsl(215 20% 14%)
-    );
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 11%), hsl(0 0% 13%));
+    --gradient-muted: linear-gradient(180deg, hsl(0 0% 15%), hsl(0 0% 13%));
 
-    /* Dark shadows */
-    --shadow-card: 0 4px 20px -2px hsl(0 0% 0% / 0.3);
-    --shadow-header: 0 2px 16px -4px hsl(0 0% 0% / 0.2);
-    --shadow-hover: 0 8px 32px -4px hsl(217 87% 58% / 0.25);
+    /* Sombras oscuras */
+    --shadow-card: 0 4px 20px -2px hsl(0 0% 0% / 0.4);
+    --shadow-header: 0 2px 16px -4px hsl(0 0% 0% / 0.3);
+    --shadow-hover: 0 8px 32px -4px hsl(10 75% 70% / 0.3);
 
-    /* Dark sidebar */
-    --sidebar-background: 215 28% 10%;
-    --sidebar-foreground: 210 15% 88%;
-    --sidebar-primary: 217 87% 58%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 25% 15%;
-    --sidebar-accent-foreground: 210 15% 85%;
-    --sidebar-border: 215 20% 18%;
-    --sidebar-ring: 217 87% 58%;
+    /* Sidebar oscuro */
+    --sidebar-background: 0 0% 9%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 10 70% 65%;
+    --sidebar-primary-foreground: 0 0% 10%;
+    --sidebar-accent: 0 0% 14%;
+    --sidebar-accent-foreground: 0 0% 85%;
+    --sidebar-border: 0 0% 18%;
+    --sidebar-ring: 10 70% 65%;
   }
 }
 

@@ -108,10 +108,10 @@ export const FacturasPage = () => {
 
   const ESTADO_BADGE_VARIANTS: Record<
     string,
-    'paid' | 'pending' | 'destructive' | 'default'
+    'secondary' | 'outline' | 'destructive' | 'default'
   > = {
-    PAGADA: 'paid',
-    PENDIENTE: 'pending',
+    PAGADA: 'secondary',
+    PENDIENTE: 'outline',
     VENCIDA: 'destructive',
     ANULADA: 'destructive',
   };
