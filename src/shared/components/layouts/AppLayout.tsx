@@ -1,14 +1,17 @@
 import { SidebarProvider } from '@/shared/components/ui/sidebar';
 import { AppHeader } from './AppHeader';
-import { Suspense, lazy, useEffect } from 'react';
+import { Suspense, lazy } from 'react';
+import { Outlet } from 'react-router';
+import { useAuthStore } from '@/auth/store/auth.store';
+import { getGroupedNavigationItems } from '@/shared/config/navigation';
+import type { MenuItem } from '@/shared/config/navigation';
+
 const Breadcrumbs = lazy(() =>
   import('./Breadcrumbs').then((m) => ({ default: m.Breadcrumbs }))
 );
 const CustomSideBarLazy = lazy(() =>
   import('../custom/CustomSideBar').then((m) => ({ default: m.CustomSideBar }))
 );
-import type { MenuItem } from '@/shared/config/navigation';
-import { Outlet } from 'react-router';
 
 interface AppLayoutProps {
   navigationItems?: MenuItem[];
@@ -16,41 +19,62 @@ interface AppLayoutProps {
   systemItems?: MenuItem[];
 }
 
-const SidebarFallback = () => (
-  <div className="w-56 shrink-0 border-r bg-muted/30 p-4 space-y-4 animate-pulse">
-    <div className="h-8 w-32 rounded bg-muted" />
-    {Array.from({ length: 5 }).map((_, i) => (
-      <div key={i} className="h-4 w-40 rounded bg-muted" />
-    ))}
-  </div>
-);
+const SidebarFallback = () => {
+  return (
+    <div className="w-56 shrink-0 border-r bg-muted/30 p-4 space-y-4 animate-pulse">
+      <div className="h-8 w-32 rounded bg-muted" />
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className="h-4 w-40 rounded bg-muted" />
+      ))}
+    </div>
+  );
+};
 
 const BreadcrumbsFallback = () => (
   <div className="h-5 w-48 rounded bg-muted animate-pulse" />
 );
 
 export const AppLayout = ({
-  navigationItems = [],
-  catalogItems = [],
-  systemItems = [],
+  navigationItems,
+  catalogItems,
+  systemItems,
 }: AppLayoutProps) => {
-  useEffect(() => {
-    // Se dispara sólo si por algún motivo el Suspense aún no lo cargó.
-    import('../custom/CustomSideBar');
-  }, []);
+  const user = useAuthStore((s) => s.user);
+
+  // Generar navegación según roles (solo 'gerente' y 'vendedor')
+  let finalNavigationItems: MenuItem[] = navigationItems ?? [];
+  let finalCatalogItems = catalogItems;
+  let finalSystemItems = systemItems;
+
+  if (!navigationItems) {
+    const getUserType = (roles: string[]): 'gerente' | 'vendedor' => {
+      const lower = roles.map((r) => String(r).toLowerCase().trim());
+      if (lower.includes('gerente') || lower.includes('admin'))
+        return 'gerente';
+      return 'vendedor';
+    };
+
+    const rolesRaw = ((user as any)?.roles ??
+      (user as any)?.user?.roles ??
+      []) as string[];
+    const userType = user ? getUserType(rolesRaw as string[]) : 'vendedor';
+    const grouped = getGroupedNavigationItems(userType);
+    finalNavigationItems = grouped.navigationItems;
+    finalCatalogItems = grouped.catalogItems;
+    finalSystemItems = grouped.systemItems;
+  }
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
-        {/* Sidebar lazy con ancho reservado para evitar CLS */}
         <Suspense fallback={<SidebarFallback />}>
           <CustomSideBarLazy
-            navigationItems={navigationItems}
-            catalogItems={catalogItems}
-            systemItems={systemItems}
+            navigationItems={finalNavigationItems}
+            catalogItems={finalCatalogItems}
+            systemItems={finalSystemItems}
           />
         </Suspense>
 
-        {/* Contenido principal */}
         <div className="flex-1 flex flex-col">
           <AppHeader />
           <main

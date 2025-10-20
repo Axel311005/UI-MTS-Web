@@ -16,100 +16,94 @@ export interface MenuItem {
   title: string;
   url: string;
   icon: React.ComponentType<{ className?: string }>;
-  userTypes: ('admin' | 'vendedor')[];
+  userTypes: ('gerente' | 'vendedor')[];
 }
 
-// Configuración completa de navegación
+// Solo 'gerente' y 'vendedor'. Elimina 'admin'.
 export const navigationConfig: MenuItem[] = [
-  // Navegación principal (para ambos tipos de usuario)
+  // Navegación principal
   {
     title: 'Dashboard',
     url: '/',
     icon: Home,
-    userTypes: ['admin', 'vendedor'],
+    userTypes: ['gerente', 'vendedor'],
   },
   {
     title: 'Productos',
     url: '/productos',
     icon: Package,
-    userTypes: ['admin', 'vendedor'],
+    userTypes: ['gerente', 'vendedor'],
   },
   {
     title: 'Clientes',
     url: '/clientes',
     icon: Users,
-    userTypes: ['admin', 'vendedor'],
+    userTypes: ['gerente', 'vendedor'],
   },
   {
     title: 'Facturas',
     url: '/facturas',
     icon: FileText,
-    userTypes: ['admin', 'vendedor'],
+    userTypes: ['gerente', 'vendedor'],
   },
   {
     title: 'Compras',
     url: '/compras',
     icon: ShoppingCart,
-    userTypes: ['admin', 'vendedor'],
+    userTypes: ['gerente', 'vendedor'],
   },
-  // Sistema (solo para admin)
+  // Catálogos y sistema (solo 'gerente')
   {
     title: 'Clasificaciones',
     url: '/clasificaciones',
     icon: Tag,
-    userTypes: ['admin'],
+    userTypes: ['gerente'],
   },
   {
     title: 'Unidades de Medida',
     url: '/unidades-medida',
     icon: Ruler,
-    userTypes: ['admin'],
+    userTypes: ['gerente'],
   },
   {
     title: 'Tipos de Pago',
     url: '/tipos-pago',
     icon: CreditCard,
-    userTypes: ['admin'],
+    userTypes: ['gerente'],
   },
-
   {
     title: 'Reportes',
     url: '/reportes',
     icon: BarChart3,
-    userTypes: ['admin'],
+    userTypes: ['gerente'],
   },
   {
     title: 'Configuración',
     url: '/configuracion',
     icon: Settings,
-    userTypes: ['admin'],
+    userTypes: ['gerente'],
   },
   {
     title: 'Administración',
     url: '/admin',
     icon: Shield,
-    userTypes: ['admin'],
+    userTypes: ['gerente'],
   },
 ];
 
-export const getNavigationItems = (userType: 'admin' | 'vendedor') => {
+export const getNavigationItems = (userType: 'gerente' | 'vendedor') => {
   return navigationConfig.filter((item) => item.userTypes.includes(userType));
 };
 
-// Función para separar items en grupos
-export const getGroupedNavigationItems = (userType: 'admin' | 'vendedor') => {
+export const getGroupedNavigationItems = (userType: 'gerente' | 'vendedor') => {
   const allItems = getNavigationItems(userType);
 
   const navigationItems = allItems.filter((item) =>
-    ['Dashboard', 'Productos', 'Clientes', 'Facturas', 'Compras'].includes(
-      item.title
-    )
+    ['Dashboard', 'Productos', 'Clientes', 'Facturas', 'Compras'].includes(item.title)
   );
 
   const catalogItems = allItems.filter((item) =>
-    ['Clasificaciones', 'Unidades de Medida', 'Tipos de Pago'].includes(
-      item.title
-    )
+    ['Clasificaciones', 'Unidades de Medida', 'Tipos de Pago'].includes(item.title)
   );
 
   const systemItems = allItems.filter((item) =>

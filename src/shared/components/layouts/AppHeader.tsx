@@ -1,6 +1,6 @@
 // src/shared/components/layouts/AppHeader.tsx
 
-import { Search, Bell, User, Sun, Moon, Menu } from '@/shared/icons';
+import { Search, Bell, User, Sun, Moon, Menu, LogOut } from '@/shared/icons';
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 import { SidebarTrigger } from '@/shared/components/ui/sidebar';
 import { Button } from '../ui/button';
@@ -14,9 +14,20 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 import { Badge } from '../ui/badge';
+import { useAuthStore } from '@/auth/store/auth.store';
+import { useNavigate } from 'react-router';
+import { toast } from 'sonner';
 
 export const AppHeader = () => {
   const { theme, setTheme } = useTheme();
+  const { user, logout } = useAuthStore();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    toast.success('Sesión cerrada correctamente');
+    navigate('/auth/login');
+  };
 
   return (
     <header className="header-glass h-16 flex items-center justify-between px-4 md:px-6 border-b border-sidebar-border">
@@ -65,7 +76,7 @@ export const AppHeader = () => {
             <Button variant="ghost" size="sm" className="button-hover">
               <Avatar className="h-8 w-8">
                 <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                  AD
+                  {user?.email ? user.email.charAt(0).toUpperCase() : 'U'}
                 </AvatarFallback>
               </Avatar>
             </Button>
@@ -77,7 +88,11 @@ export const AppHeader = () => {
               Mi Perfil
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
+            <DropdownMenuItem
+              className="text-destructive"
+              onClick={handleLogout}
+            >
+              <LogOut className="h-4 w-4 mr-2" />
               Cerrar Sesión
             </DropdownMenuItem>
           </DropdownMenuContent>

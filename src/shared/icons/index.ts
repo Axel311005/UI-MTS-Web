@@ -32,4 +32,5 @@ export {
   Ruler,
   CreditCard,
   Shield,
+  LogOut,
 } from 'lucide-react';

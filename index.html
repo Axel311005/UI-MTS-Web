@@ -6,18 +6,10 @@
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>UI MTS</title>
-  <!-- Preload fonts -->
-  <link rel="preload" href="/fonts/Inter-Variable.woff2" as="font" type="font/woff2" crossorigin>
+  <!-- Removed font preload for missing Inter; falls back to system fonts -->
   <style>
-    @font-face {
-      font-family: 'Inter';
-      src: url('/fonts/Inter-Variable.woff2') format('woff2');
-      font-weight: 100 900;
-      font-display: swap;
-    }
-
     :root {
-      font-family: 'Inter', system-ui, sans-serif;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
     }
   </style>
 

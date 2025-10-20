@@ -1,52 +1,84 @@
-import { createBrowserRouter } from 'react-router';
+import { lazy } from 'react';
+import { createBrowserRouter, Navigate } from 'react-router';
+import LoginPage from '@/auth/pages/LoginPage';
 import { AppLayout } from '@/shared/components/layouts/AppLayout';
-import { getGroupedNavigationItems } from '@/shared/config/navigation';
+import { ProtectedRoute } from '@/shared/components/routes/ProtectedRoute';
+import { NotAuthenticatedRoute } from '@/shared/components/routes/NotAuthenticatedRoute';
+import { RoleGuard } from '@/shared/components/routes/RoleGuard';
 
-const USER_TYPE = 'admin'; //Admin o vendedor
+// Lazy loaded pages
+const FacturasPage = lazy(() =>
+  import('@/facturas/pages/FacturasPage').then((m) => ({
+    default: m.FacturasPage,
+  }))
+);
 
-const { navigationItems, catalogItems, systemItems } =
-  getGroupedNavigationItems(USER_TYPE);
+const ClientePage = lazy(() =>
+  import('@/clientes/pages/ClientePage').then((m) => ({
+    default: m.ClientesPage,
+  }))
+);
 
 export const appRouter = createBrowserRouter([
+  // Rutas de la app (protegidas)
   {
-    path: '/',
-    element: (
-      <AppLayout
-        navigationItems={navigationItems}
-        catalogItems={catalogItems}
-        systemItems={systemItems}
-      />
-    ),
-
+    element: <ProtectedRoute />, // protege todo debajo
     children: [
       {
-        path: 'facturas',
-        lazy: async () => {
-          const mod = await import('@/facturas/pages/FacturasPage');
-          return { Component: mod.FacturasPage };
-        },
-        handle: {
-          crumb: 'Facturas',
-        },
+        path: '/',
+        element: <AppLayout />,
+        children: [
+          { index: true, element: <Navigate to="/facturas" replace /> },
+          {
+            path: 'facturas',
+            element: <FacturasPage />,
+            handle: { crumb: 'Facturas' },
+          },
+          {
+            path: 'facturas/search',
+            element: <FacturasPage />,
+            handle: { crumb: 'Buscar' },
+          },
+          {
+            path: 'clientes',
+            element: <ClientePage />,
+            handle: { crumb: 'Clientes' },
+          },
+        ],
       },
       {
-        path: 'facturas/search',
-        lazy: async () => {
-          const mod = await import('@/facturas/pages/FacturasPage');
-          return { Component: mod.FacturasPage };
-        },
-        handle: {
-          crumb: 'Buscar',
-        },
+        path: '/admin',
+        element: <RoleGuard allow={['admin', 'gerente']} />, // mapea 'admin' a 'gerente'
+        children: [
+          {
+            element: <AppLayout />,
+            children: [
+              {
+                path: 'facturas',
+                element: <FacturasPage />,
+                handle: { crumb: 'Facturas' },
+              },
+              {
+                path: 'clientes',
+                element: <ClientePage />,
+                handle: { crumb: 'Clientes' },
+              },
+            ],
+          },
+        ],
       },
-      // Agrega aquí más rutas con sus respectivos handles
-      // {
-      //   path: 'clientes',
-      //   element: <ClientesPage />,
-      //   handle: {
-      //     crumb: 'Clientes',
-      //   },
-      // },
     ],
   },
+
+  // Auth
+  {
+    path: '/auth',
+    element: <NotAuthenticatedRoute />,
+    children: [
+      { index: true, element: <Navigate to="/auth/login" replace /> },
+      { path: 'login', element: <LoginPage /> },
+    ],
+  },
+
+  { path: '*', element: <Navigate to="/" replace /> },
 ]);

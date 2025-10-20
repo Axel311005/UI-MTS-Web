@@ -2,7 +2,7 @@ import { CustomSideBar } from '@/shared/components/custom/CustomSideBar';
 import { getGroupedNavigationItems } from '@/shared/config/navigation';
 
 interface AdminSideBarProps {
-  userType: 'admin' | 'vendedor';
+  userType: 'gerente' | 'vendedor';
 }
 
 export const AdminSideBar = ({ userType }: AdminSideBarProps) => {
