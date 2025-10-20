@@ -1,5 +1,4 @@
 import { Navigate, Outlet, useLocation } from 'react-router';
-import { useEffect } from 'react';
 import { useAuthStore } from '@/auth/store/auth.store';
 
 export function ProtectedRoute() {
@@ -7,21 +6,21 @@ export function ProtectedRoute() {
   const allowed = useAuthStore((s) => s.hasAnyRole(['gerente', 'vendedor']));
   const location = useLocation();
 
+  const isAuthenticated = authStatus === 'authenticated';
+
   if (authStatus === 'checking') {
     return <div style={{ padding: 16 }} />;
   }
 
-  const isAuthenticated = authStatus === 'authenticated';
-
-  // If authenticated but with a disallowed role, notify and logout
-  useEffect(() => {
-    if (isAuthenticated && !allowed) {
-      useAuthStore.getState().logout();
-    }
-  }, [isAuthenticated, allowed]);
-
   if (isAuthenticated && !allowed) {
-    return <Navigate to="/auth/login" replace state={{ from: location }} />;
+    // Redirect to login with reason, NotAuthenticatedRoute will handle messaging/log-out
+    return (
+      <Navigate
+        to="/auth/login"
+        replace
+        state={{ from: location, reason: 'unauthorized' }}
+      />
+    );
   }
 
   if (!isAuthenticated) {
