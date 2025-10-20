@@ -1,9 +1,7 @@
 import { create } from 'zustand';
-
 import { loginAction } from '../actions/login.action';
-import type { User } from '../types/user.response';
-
 import { checkAuthAction } from '../actions/check-status';
+import type { AuthResponse } from '../types/auth.response';
 
 type AuthStatus = 'authenticated' | 'not-authenticated' | 'checking';
 
@@ -11,7 +9,7 @@ type AuthState = {
   // Utils
   hasAnyRole(mapped: ('gerente' | 'vendedor')[]): boolean;
   // Properties
-  user: User | null;
+  user: AuthUser | null;
   token: string | null;
   authStatus: AuthStatus;
 
@@ -24,6 +22,8 @@ type AuthState = {
   checkAuthStatus: () => Promise<boolean>;
 };
 
+type AuthUser = Omit<AuthResponse, 'token'>;
+
 export const useAuthStore = create<AuthState>()((set, get) => ({
   user: null,
   token: null,
@@ -31,8 +31,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
   // Getters
   hasAnyRole: (mapped: ('gerente' | 'vendedor')[]) => {
-    const rawRoles =
-      (get().user as any)?.roles ?? (get().user as any)?.user?.roles ?? [];
+    const rawRoles = get().user?.roles ?? [];
     const roles = Array.isArray(rawRoles)
       ? rawRoles.map((r) => String(r).toLowerCase().trim())
       : [];
@@ -41,8 +40,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
     );
   },
   isAdmin: () => {
-    const rawRoles =
-      (get().user as any)?.roles ?? (get().user as any)?.user?.roles ?? [];
+    const rawRoles = get().user?.roles ?? [];
     const roles = Array.isArray(rawRoles)
       ? rawRoles.map((r) => String(r).toLowerCase().trim())
       : [];
@@ -54,18 +52,11 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   login: async (email: string, password: string) => {
     try {
       const data = await loginAction(email, password);
-      localStorage.setItem('token', data.token);
-      if (data.user) localStorage.setItem('user', JSON.stringify(data.user));
+      const { token, ...user } = data as AuthResponse;
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
 
-      try {
-        const ok = await get().checkAuthStatus();
-        if (ok) return true;
-      } catch {
-        // ignore and fallback
-      }
-
-      // 3) Fallback to login payload if check-status is not available
-      set({ user: data.user, token: data.token, authStatus: 'authenticated' });
+      set({ user, token, authStatus: 'authenticated' });
       return true;
     } catch (error) {
       localStorage.removeItem('token');
@@ -83,35 +74,26 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
   checkAuthStatus: async () => {
     try {
-      const data: any = await checkAuthAction();
+      const data = await checkAuthAction();
+      const newToken = (data as any)?.token ?? localStorage.getItem('token');
+      if (!newToken) throw new Error('No token');
 
-      // Accept both shapes: { user, token } OR { id, email, roles, token }
-      const resolvedToken: string | null =
-        data?.token ?? localStorage.getItem('token');
-      const resolvedUser: User | null = data?.user
-        ? (data.user as User)
-        : data?.id && data?.email
-        ? {
-            id: String(data.id),
-            email: String(data.email),
-            isActive: Boolean(data.isActive ?? true),
-            roles: Array.isArray(data.roles)
-              ? (data.roles as any[]).map((r) => String(r))
-              : [],
-          }
+      // Refresh token, keep user from storage (do not take roles from check-status)
+      localStorage.setItem('token', newToken);
+      const storedUser = localStorage.getItem('user');
+      const parsedUser: AuthUser | null = storedUser
+        ? (() => {
+            try {
+              return JSON.parse(storedUser) as AuthUser;
+            } catch {
+              return null;
+            }
+          })()
         : null;
 
-      if (!resolvedToken || !resolvedUser) {
-        throw new Error('Invalid check-status response');
-      }
-
-      // Persist to storage
-      localStorage.setItem('token', resolvedToken);
-      localStorage.setItem('user', JSON.stringify(resolvedUser));
-
       set({
-        user: resolvedUser,
-        token: resolvedToken,
+        user: parsedUser ?? get().user,
+        token: newToken,
         authStatus: 'authenticated',
       });
       return true;

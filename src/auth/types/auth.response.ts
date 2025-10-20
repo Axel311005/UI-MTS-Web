@@ -1,6 +1,13 @@
-import type { User } from './user.response';
-
 export interface AuthResponse {
-  user: User;
-  token: string;
+  id:       string;
+  email:    string;
+  roles:    string[];
+  empleado: Empleado;
+  cliente:  null;
+  token:    string;
+}
+
+export interface Empleado {
+  id:             number;
+  nombreCompleto: string;
 }

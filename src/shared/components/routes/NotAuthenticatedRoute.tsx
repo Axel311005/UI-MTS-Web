@@ -9,10 +9,6 @@ export function NotAuthenticatedRoute() {
   const logout = useAuthStore((s) => s.logout);
   const reason = (location.state as any)?.reason as string | undefined;
 
-  if (authStatus === 'checking') {
-    return <div style={{ padding: 16 }} />;
-  }
-
   // If we arrived here due to unauthorized access from ProtectedRoute
   useEffect(() => {
     if (reason === 'unauthorized') {
@@ -22,6 +18,10 @@ export function NotAuthenticatedRoute() {
       logout();
     }
   }, [reason, logout]);
+
+  if (authStatus === 'checking') {
+    return <div style={{ padding: 16 }} />;
+  }
 
   if (authStatus === 'authenticated') {
     const from = (location.state as any)?.from?.pathname || '/facturas';

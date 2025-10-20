@@ -1,4 +1,5 @@
 import { lazy, Suspense, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { Plus } from '@/shared/icons';
 import {
   Card,
@@ -32,6 +33,7 @@ const FacturaRowActions = lazy(() => import('../ui/FacturaRowActions'));
 export const FacturasPage = () => {
   const { facturas } = useFactura();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   // Leer parámetros de búsqueda/filtros desde la URL
   const codigoLike = searchParams.get('codigoLike')?.trim() || '';
@@ -137,35 +139,37 @@ export const FacturasPage = () => {
             Gestiona las facturas y documentos de venta
           </p>
         </div>
-        <Button className="button-hover">
+        <Button
+          className="button-hover"
+          onClick={() => navigate('/facturas/nueva')}
+        >
           <Plus className="h-4 w-4 mr-2" />
           Nueva Factura
         </Button>
       </div>
-
+      {/* Barra de búsqueda reutilizando componente existente */}
+      <div className="flex items-center gap-4">
+        <FacturaSearch className="max-w-sm" />
+        <Button
+          variant={showFilters ? 'default' : 'outline'}
+          onClick={() => setShowFilters((s) => !s)}
+          className="whitespace-nowrap"
+        >
+          <Filter className="h-4 w-4 mr-2" />
+          {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
+        </Button>
+      </div>
+      {/* Los chips de filtros activos ahora se muestran dentro del panel de filtros */}
+      {showFilters && (
+        <div className="animate-in fade-in-50 slide-in-from-top-1">
+          <FacturaFilters onClose={() => setShowFilters(false)} />
+        </div>
+      )}
       <Card className="card-elegant">
         <CardHeader>
           <CardTitle>Lista de Facturas</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Barra de búsqueda reutilizando componente existente */}
-          <div className="flex items-center gap-4">
-            <FacturaSearch className="max-w-sm" />
-            <Button
-              variant={showFilters ? 'default' : 'outline'}
-              onClick={() => setShowFilters((s) => !s)}
-              className="whitespace-nowrap"
-            >
-              <Filter className="h-4 w-4 mr-2" />
-              {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
-            </Button>
-          </div>
-          {/* Los chips de filtros activos ahora se muestran dentro del panel de filtros */}
-          {showFilters && (
-            <div className="animate-in fade-in-50 slide-in-from-top-1">
-              <FacturaFilters onClose={() => setShowFilters(false)} />
-            </div>
-          )}
           <div className="overflow-auto rounded-md border max-h-[480px] relative">
             <Table className="min-w-[1000px]">
               <TableHeader>

@@ -34,8 +34,11 @@ export default function LoginPage() {
       const ok = await login(email, password);
       if (ok) {
         const allowed = getHasAnyRole(['gerente', 'vendedor']);
+        const user = useAuthStore.getState().user?.empleado.nombreCompleto;
         if (allowed) {
-          toast.success('Inicio de sesión exitoso', { position: 'top-right' });
+          toast.success(`Inicio de sesión exitoso. Bienvenido ${user}`, {
+            position: 'top-right',
+          });
           const from = (location.state as any)?.from?.pathname || '/facturas';
           navigate(from, { replace: true });
         } else {
