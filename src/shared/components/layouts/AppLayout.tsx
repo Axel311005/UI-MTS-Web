@@ -40,6 +40,7 @@ export const AppLayout = ({
   systemItems,
 }: AppLayoutProps) => {
   const user = useAuthStore((s) => s.user);
+  const isAdmin = useAuthStore((s) => s.isAdmin());
 
   // Generar navegación según roles (solo 'gerente' y 'vendedor')
   let finalNavigationItems: MenuItem[] = navigationItems ?? [];
@@ -47,17 +48,8 @@ export const AppLayout = ({
   let finalSystemItems = systemItems;
 
   if (!navigationItems) {
-    const getUserType = (roles: string[]): 'gerente' | 'vendedor' => {
-      const lower = roles.map((r) => String(r).toLowerCase().trim());
-      if (lower.includes('gerente') || lower.includes('admin'))
-        return 'gerente';
-      return 'vendedor';
-    };
-
-    const rolesRaw = ((user as any)?.roles ??
-      (user as any)?.user?.roles ??
-      []) as string[];
-    const userType = user ? getUserType(rolesRaw as string[]) : 'vendedor';
+    const userType: 'gerente' | 'vendedor' =
+      user && isAdmin ? 'gerente' : 'vendedor';
     const grouped = getGroupedNavigationItems(userType);
     finalNavigationItems = grouped.navigationItems;
     finalCatalogItems = grouped.catalogItems;

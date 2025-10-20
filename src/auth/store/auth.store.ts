@@ -8,7 +8,8 @@ import { checkAuthAction } from '../actions/check-status';
 type AuthStatus = 'authenticated' | 'not-authenticated' | 'checking';
 
 type AuthState = {
-  hasAnyRole(mapped: ("gerente" | "vendedor")[]): unknown;
+  // Utils
+  hasAnyRole(mapped: ('gerente' | 'vendedor')[]): boolean;
   // Properties
   user: User | null;
   token: string | null;
@@ -29,19 +30,41 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   authStatus: 'checking',
 
   // Getters
+  hasAnyRole: (mapped: ('gerente' | 'vendedor')[]) => {
+    const rawRoles =
+      (get().user as any)?.roles ?? (get().user as any)?.user?.roles ?? [];
+    const roles = Array.isArray(rawRoles)
+      ? rawRoles.map((r) => String(r).toLowerCase().trim())
+      : [];
+    return roles.some((role: string) =>
+      mapped.includes(role as 'gerente' | 'vendedor')
+    );
+  },
   isAdmin: () => {
-    const roles = get().user?.roles || [];
-    return roles.includes('gerente');
+    const rawRoles =
+      (get().user as any)?.roles ?? (get().user as any)?.user?.roles ?? [];
+    const roles = Array.isArray(rawRoles)
+      ? rawRoles.map((r) => String(r).toLowerCase().trim())
+      : [];
+
+    return roles.includes('gerente') || roles.includes('admin');
   },
 
   // Actions
   login: async (email: string, password: string) => {
     try {
       const data = await loginAction(email, password);
-
       localStorage.setItem('token', data.token);
       if (data.user) localStorage.setItem('user', JSON.stringify(data.user));
 
+      try {
+        const ok = await get().checkAuthStatus();
+        if (ok) return true;
+      } catch {
+        // ignore and fallback
+      }
+
+      // 3) Fallback to login payload if check-status is not available
       set({ user: data.user, token: data.token, authStatus: 'authenticated' });
       return true;
     } catch (error) {
@@ -60,12 +83,37 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
   checkAuthStatus: async () => {
     try {
-      const { user, token } = await checkAuthAction();
-      // Persist to storage
-      localStorage.setItem('token', token);
-      if (user) localStorage.setItem('user', JSON.stringify(user));
+      const data: any = await checkAuthAction();
 
-      set({ user, token, authStatus: 'authenticated' });
+      // Accept both shapes: { user, token } OR { id, email, roles, token }
+      const resolvedToken: string | null =
+        data?.token ?? localStorage.getItem('token');
+      const resolvedUser: User | null = data?.user
+        ? (data.user as User)
+        : data?.id && data?.email
+        ? {
+            id: String(data.id),
+            email: String(data.email),
+            isActive: Boolean(data.isActive ?? true),
+            roles: Array.isArray(data.roles)
+              ? (data.roles as any[]).map((r) => String(r))
+              : [],
+          }
+        : null;
+
+      if (!resolvedToken || !resolvedUser) {
+        throw new Error('Invalid check-status response');
+      }
+
+      // Persist to storage
+      localStorage.setItem('token', resolvedToken);
+      localStorage.setItem('user', JSON.stringify(resolvedUser));
+
+      set({
+        user: resolvedUser,
+        token: resolvedToken,
+        authStatus: 'authenticated',
+      });
       return true;
     } catch (error) {
       localStorage.removeItem('token');

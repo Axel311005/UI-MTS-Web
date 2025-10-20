@@ -7,7 +7,6 @@ export const loginAction = async (
 ): Promise<AuthResponse> => {
   try {
     const { data } = await tallerApi.post('/auth/login', { email, password });
-    console.log(data);
     return data;
   } catch (error) {
     console.error('Login failed', error);

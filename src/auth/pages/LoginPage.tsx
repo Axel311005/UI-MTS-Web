@@ -21,6 +21,7 @@ export default function LoginPage() {
   const location = useLocation();
 
   const login = useAuthStore((s) => s.login);
+  const getHasAnyRole = useAuthStore((s) => s.hasAnyRole);
 
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -32,9 +33,20 @@ export default function LoginPage() {
     try {
       const ok = await login(email, password);
       if (ok) {
-        toast.success('Inicio de sesión exitoso', { position: 'top-right' });
-        const from = (location.state as any)?.from?.pathname || '/facturas';
-        navigate(from, { replace: true });
+        const allowed = getHasAnyRole(['gerente', 'vendedor']);
+        if (allowed) {
+          toast.success('Inicio de sesión exitoso', { position: 'top-right' });
+          const from = (location.state as any)?.from?.pathname || '/facturas';
+          navigate(from, { replace: true });
+        } else {
+          toast.error(
+            'Tu cuenta no tiene permisos para acceder. Solo vendedor o gerente.',
+            { position: 'top-right' }
+          );
+          // Cerrar sesión y permanecer/volver en login
+          useAuthStore.getState().logout();
+          navigate('/auth/login', { replace: true });
+        }
       } else {
         toast.error('Error al iniciar sesión. Verifica tus credenciales.', {
           position: 'top-right',

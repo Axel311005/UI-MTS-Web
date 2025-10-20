@@ -9,7 +9,6 @@ export const checkAuthAction = async (): Promise<AuthResponse> => {
     const { data } = await tallerApi.get<AuthResponse>('/auth/check-status');
 
     localStorage.setItem('token', data.token);
-
     return data;
   } catch (error) {
     console.log(error);

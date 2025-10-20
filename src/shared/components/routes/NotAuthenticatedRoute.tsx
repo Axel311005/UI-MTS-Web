@@ -5,6 +5,10 @@ export function NotAuthenticatedRoute() {
   const authStatus = useAuthStore((s) => s.authStatus);
   const location = useLocation();
 
+  if (authStatus === 'checking') {
+    return <div style={{ padding: 16 }} />;
+  }
+
   if (authStatus === 'authenticated') {
     const from = (location.state as any)?.from?.pathname || '/facturas';
     return <Navigate to={from} replace />;
