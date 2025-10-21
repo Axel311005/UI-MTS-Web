@@ -39,6 +39,7 @@ interface InvoiceLine {
 interface InvoiceLinesTableProps {
   lines: InvoiceLine[];
   onLinesChange: (lines: InvoiceLine[]) => void;
+  monedaId?: number | '';
   errors?: Array<{
     cantidad?: string;
     precioUnitario?: string;
@@ -51,6 +52,7 @@ interface InvoiceLinesTableProps {
 export function FacturaLineaTabla({
   lines,
   onLinesChange,
+  monedaId,
   errors = [],
 }: InvoiceLinesTableProps) {
   const addLine = () => {
@@ -114,6 +116,27 @@ export function FacturaLineaTabla({
                       <ItemCombobox
                         value={line.itemId}
                         onChange={(value) => updateLine(index, 'itemId', value)}
+                        onItemPick={(item) => {
+                          // Auto set price from item when selected
+                          // Infer USD by idMoneda === 1 (sample data shows id 1 is Dólar)
+                          const isUSD = Number(monedaId) === 1;
+                          const priceStr = isUSD
+                            ? item.precioBaseDolar
+                            : item.precioBaseLocal;
+                          const autoPrice = Number(priceStr) || 0;
+                          const newLines = [...lines];
+                          const current = newLines[index];
+                          const qtyNum = Number(current.cantidad) || 0;
+                          newLines[index] = {
+                            ...current,
+                            // set selected item too to avoid losing selection due to stale updates
+                            itemId: item.idItem,
+                            precioUnitario: autoPrice,
+                            // if missing or zero, default to 1 to make the line valid
+                            cantidad: qtyNum > 0 ? qtyNum : 1,
+                          } as InvoiceLine;
+                          onLinesChange(newLines);
+                        }}
                         error={errors[index]?.item}
                       />
                     </TableCell>
@@ -168,11 +191,18 @@ export function FacturaLineaTabla({
                       )}
                     </TableCell>
                     <TableCell>
-                      <Input
-                        value={line.totalLinea.toFixed(2)}
-                        readOnly
-                        className="bg-muted"
-                      />
+                      {(() => {
+                        const qty = Number(line.cantidad) || 0;
+                        const price = Number(line.precioUnitario) || 0;
+                        const total = qty * price;
+                        return (
+                          <Input
+                            value={total.toFixed(2)}
+                            readOnly
+                            className="bg-muted"
+                          />
+                        );
+                      })()}
                     </TableCell>
                     <TableCell>
                       <Button
@@ -199,15 +229,17 @@ function ItemCombobox({
   value,
   onChange,
   error,
+  onItemPick,
 }: {
   value: number | '';
   onChange: (value: number | '') => void;
   error?: string;
+  onItemPick?: (item: ItemResponse) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const { items } = useItem();
-  const list: ItemResponse[] = items ?? [];
+  const list: ItemResponse[] = Array.isArray(items) ? items : [];
   const selectedItem = useMemo(
     () => list.find((i) => i.idItem === value),
     [list, value]
@@ -223,7 +255,7 @@ function ItemCombobox({
   return (
     <div className="w-full">
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
+        <PopoverTrigger asChild disabled={list.length === 0}>
           <Button
             variant="outline"
             role="combobox"
@@ -238,6 +270,8 @@ function ItemCombobox({
               <span className="truncate">
                 {selectedItem.codigoItem} - {selectedItem.descripcion}
               </span>
+            ) : list.length === 0 ? (
+              'Cargando items...'
             ) : (
               'Seleccionar item...'
             )}
@@ -250,6 +284,8 @@ function ItemCombobox({
               placeholder="Buscar item..."
               value={query}
               onValueChange={setQuery}
+              // Keep focus in search to allow quick selection
+              autoFocus
             />
             <CommandList>
               <CommandEmpty>No se encontraron items.</CommandEmpty>
@@ -260,7 +296,14 @@ function ItemCombobox({
                     value={`${item.codigoItem} ${item.descripcion}`}
                     onSelect={() => {
                       onChange(item.idItem);
-                      setOpen(false);
+                      onItemPick?.(item);
+                      // If the line still lacks qty or price, keep it open for quick edits
+                      const needsMore = !value;
+                      if (needsMore) {
+                        setOpen(true);
+                      } else {
+                        setTimeout(() => setOpen(false), 0);
+                      }
                     }}
                   >
                     <Check

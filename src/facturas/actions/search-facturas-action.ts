@@ -76,14 +76,7 @@ export const SearchFacturaAction = async (options: SearchFacturaOptions) => {
   if (maxTotal !== undefined && maxTotal !== '') params.maxTotal = maxTotal;
 
   const response = await facturaApi.get('/search', { params });
-  // Debug
-  // eslint-disable-next-line no-console
-  console.log('[SearchFacturaAction] GET /search', {
-    requestedParams: params,
-    url: facturaApi.getUri({ url: '/search', params }),
-    raw: response.data,
-  });
-
+  
   const raw = response.data;
   if (Array.isArray(raw)) return raw as Factura[];
   if (raw && Array.isArray(raw.data)) return raw.data as Factura[];
