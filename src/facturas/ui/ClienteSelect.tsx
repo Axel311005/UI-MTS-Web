@@ -12,13 +12,19 @@ import { X } from '@/shared/icons';
 import { useCliente } from '@/clientes/hook/useCliente';
 
 type Props = {
-  value: string;
-  onSelect: (nombre: string) => void;
+  // Prefer id-based selection
+  selectedId?: number | '';
+  onSelectId?: (id: number) => void;
+  // Backwards compatibility: name-based selection
+  value?: string;
+  onSelect?: (nombre: string) => void;
   onClear: () => void;
   error?: string;
 };
 
 export const ClienteSelect: React.FC<Props> = ({
+  selectedId,
+  onSelectId,
   value,
   onSelect,
   onClear,
@@ -40,9 +46,15 @@ export const ClienteSelect: React.FC<Props> = ({
   }, [clientes, query]);
 
   const selected = useMemo(() => {
-    if (!value) return undefined;
-    return clientes?.find((c) => c.nombre === value);
-  }, [clientes, value]);
+    const list = Array.isArray(clientes) ? clientes : [];
+    if (selectedId !== undefined && selectedId !== '') {
+      return list.find((c) => c.idCliente === selectedId);
+    }
+    if (value) {
+      return list.find((c) => c.nombre === value);
+    }
+    return undefined;
+  }, [clientes, selectedId, value]);
 
   return (
     <div className="space-y-2">
@@ -68,7 +80,7 @@ export const ClienteSelect: React.FC<Props> = ({
         </div>
       ) : (
         <DropdownMenu open={open} onOpenChange={setOpen}>
-          <DropdownMenuTrigger asChild className='h-9'>
+          <DropdownMenuTrigger asChild className="h-9">
             <Button
               variant="outline"
               role="combobox"
@@ -94,7 +106,7 @@ export const ClienteSelect: React.FC<Props> = ({
                       e.currentTarget as HTMLInputElement
                     ).value.trim();
                     if (v) {
-                      onSelect(v);
+                      if (onSelect) onSelect(v);
                       setOpen(false);
                     }
                   }
@@ -108,7 +120,8 @@ export const ClienteSelect: React.FC<Props> = ({
                     <DropdownMenuItem
                       key={c.idCliente}
                       onClick={() => {
-                        onSelect(c.nombre);
+                        if (onSelectId) onSelectId(c.idCliente);
+                        else if (onSelect) onSelect(c.nombre);
                         setOpen(false);
                       }}
                       className="cursor-pointer"

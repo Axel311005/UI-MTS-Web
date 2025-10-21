@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select';
 import { Calendar, DollarSign, FileText, Filter, X } from '@/shared/icons';
-import { useTipoPago } from '@/tiposPago/hook/useMoneda';
+import { useTipoPago } from '@/tiposPago/hook/useTipoPago';
 import { useSearchParams } from 'react-router';
 import { ClienteSelect } from './ClienteSelect';
 

@@ -1,4 +1,3 @@
-
 import { Check, ChevronsUpDown, Plus, Trash2 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/components/ui/button';
@@ -25,13 +24,10 @@ import {
   TableRow,
 } from '@/shared/components/ui/table';
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useItem } from '@/items/hooks/useItem';
 
-interface Item {
-  idItem: number;
-  codigoItem: string;
-  descripcion: string;
-}
+import type { ItemResponse } from '@/items/types/item.response';
 
 interface InvoiceLine {
   itemId: number | '';
@@ -50,14 +46,7 @@ interface InvoiceLinesTableProps {
   }>;
 }
 
-// Mock data
-const mockItems: Item[] = [
-  { idItem: 1, codigoItem: 'PROD001', descripcion: 'Producto A' },
-  { idItem: 2, codigoItem: 'PROD002', descripcion: 'Producto B' },
-  { idItem: 3, codigoItem: 'PROD003', descripcion: 'Producto C' },
-  { idItem: 4, codigoItem: 'SERV001', descripcion: 'Servicio de consultoría' },
-  { idItem: 5, codigoItem: 'SERV002', descripcion: 'Mantenimiento' },
-];
+// Items come from API via hook
 
 export function FacturaLineaTabla({
   lines,
@@ -216,7 +205,20 @@ function ItemCombobox({
   error?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const selectedItem = mockItems.find((i) => i.idItem === value);
+  const [query, setQuery] = useState('');
+  const { items } = useItem();
+  const list: ItemResponse[] = items ?? [];
+  const selectedItem = useMemo(
+    () => list.find((i) => i.idItem === value),
+    [list, value]
+  );
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return list;
+    return list.filter((i) =>
+      `${i.codigoItem} ${i.descripcion}`.toLowerCase().includes(q)
+    );
+  }, [list, query]);
 
   return (
     <div className="w-full">
@@ -244,11 +246,15 @@ function ItemCombobox({
         </PopoverTrigger>
         <PopoverContent className="w-[400px] p-0" align="start">
           <Command>
-            <CommandInput placeholder="Buscar item..." />
+            <CommandInput
+              placeholder="Buscar item..."
+              value={query}
+              onValueChange={setQuery}
+            />
             <CommandList>
               <CommandEmpty>No se encontraron items.</CommandEmpty>
               <CommandGroup>
-                {mockItems.map((item) => (
+                {filtered.map((item) => (
                   <CommandItem
                     key={item.idItem}
                     value={`${item.codigoItem} ${item.descripcion}`}

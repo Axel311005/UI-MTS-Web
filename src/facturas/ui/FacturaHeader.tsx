@@ -1,4 +1,4 @@
-import { Check, ChevronsUpDown, RefreshCw, User } from 'lucide-react';
+import { Check, ChevronsUpDown, User } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/components/ui/button';
 
@@ -8,7 +8,6 @@ import {
   PopoverTrigger,
 } from '@/shared/components/ui/popover';
 import { Input } from '@/shared/components/ui/input';
-import { Badge } from '@/shared/components/ui/badge';
 import {
   Command,
   CommandEmpty,
@@ -19,13 +18,8 @@ import {
 } from '@/shared/components/ui/command';
 import { useState } from 'react';
 import { useAuthStore } from '@/auth/store/auth.store';
-
-interface Consecutivo {
-  idConsecutivo: number;
-  descripcion: string;
-  mascara: string;
-  ultimoValor: number;
-}
+import { useConsecutivo } from '@/consecutivo/hooks/useConsecutivo';
+import type { Consecutivo } from '@/consecutivo/types/consecutivo.response';
 
 interface InvoiceHeaderProps {
   consecutivoId: number | '';
@@ -33,6 +27,8 @@ interface InvoiceHeaderProps {
   codigoPreview: string;
   fecha: string;
   onFechaChange: (value: string) => void;
+  estado: 'PENDIENTE' | 'PAGADO';
+  onEstadoChange: (value: 'PENDIENTE' | 'PAGADO') => void;
   empleado: { id: number; nombre: string };
   errors?: {
     consecutivo?: string;
@@ -40,41 +36,36 @@ interface InvoiceHeaderProps {
   };
 }
 
-// Mock data
-const mockConsecutivos: Consecutivo[] = [
-  {
-    idConsecutivo: 1,
-    descripcion: 'Consecutivo para facturas de venta',
-    mascara: 'FAC-{0}',
-    ultimoValor: 9,
-  },
-  {
-    idConsecutivo: 2,
-    descripcion: 'Consecutivo para facturas de venta',
-    mascara: 'FAC-{0}',
-    ultimoValor: 7,
-  },
-];
+// Ya no usamos mock; se consume desde el hook useConsecutivo
 
 export function FacturaHeader({
   consecutivoId,
   onConsecutivoChange,
-  codigoPreview,
   fecha,
   onFechaChange,
-  empleado,
+  estado,
+  onEstadoChange,
   errors = {},
 }: InvoiceHeaderProps) {
   const [open, setOpen] = useState(false);
+  const [openEstado, setOpenEstado] = useState(false);
   const empleadoAuth = useAuthStore(
     (state) => state.user?.empleado.nombreCompleto
   );
-  const selectedConsecutivo = mockConsecutivos.find(
+  const { consecutivos } = useConsecutivo();
+  const options: Consecutivo[] = Array.isArray(consecutivos)
+    ? consecutivos
+    : [];
+  const selectedConsecutivo = options.find(
     (c) => c.idConsecutivo === consecutivoId
   );
+  const estadosFactura = [
+    { value: 'PENDIENTE' as const, label: 'Pendiente' },
+    { value: 'PAGADO' as const, label: 'Pagado' },
+  ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {/* Consecutivo */}
       <div className="space-y-2">
         <label className="text-sm font-medium">
@@ -105,7 +96,7 @@ export function FacturaHeader({
               <CommandList>
                 <CommandEmpty>No se encontraron consecutivos.</CommandEmpty>
                 <CommandGroup>
-                  {mockConsecutivos.map((consecutivo) => (
+                  {options.map((consecutivo) => (
                     <CommandItem
                       key={consecutivo.idConsecutivo}
                       value={consecutivo.descripcion}
@@ -142,26 +133,6 @@ export function FacturaHeader({
         )}
       </div>
 
-      {/* Vista previa del código
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Código de factura</label>
-        <div className="flex gap-2">
-          <Input
-            value={codigoPreview || "---"}
-            readOnly
-            className="bg-muted"
-          />
-          <Button
-            variant="outline"
-            size="icon"
-            aria-label="Refrescar vista previa"
-            onClick={() => {}}
-          >
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-        </div>
-      </div> */}
-
       {/* Fecha */}
       <div className="space-y-2">
         <label className="text-sm font-medium">
@@ -181,10 +152,50 @@ export function FacturaHeader({
       {/* Estado y Empleado */}
       <div className="space-y-2">
         <label className="text-sm font-medium">Estado</label>
-        <Badge variant="secondary" className="w-full justify-center py-2">
-          PENDIENTE
-        </Badge>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
+        <Popover open={openEstado} onOpenChange={setOpenEstado}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={openEstado}
+              aria-label="Seleccionar estado"
+              className="w-full justify-between"
+            >
+              {estadosFactura.find((e) => e.value === estado)?.label ||
+                'Seleccionar...'}
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[200px] p-0" align="start">
+            <Command>
+              <CommandList>
+                <CommandGroup>
+                  {estadosFactura.map((estadoItem) => (
+                    <CommandItem
+                      key={estadoItem.value}
+                      value={estadoItem.value}
+                      onSelect={() => {
+                        onEstadoChange(estadoItem.value);
+                        setOpenEstado(false);
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          'mr-2 h-4 w-4',
+                          estado === estadoItem.value
+                            ? 'opacity-100'
+                            : 'opacity-0'
+                        )}
+                      />
+                      {estadoItem.label}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground pt-1">
           <User className="h-4 w-4" />
           <span>Atendido por: {empleadoAuth}</span>
         </div>

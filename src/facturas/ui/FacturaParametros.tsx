@@ -1,4 +1,3 @@
-
 import {
   Select,
   SelectContent,
@@ -8,6 +7,10 @@ import {
 } from '@/shared/components/ui/select';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { cn } from '@/shared/lib/utils';
+import { useMoneda } from '@/moneda/hook/useMoneda';
+import { useTipoPago } from '@/tiposPago/hook/useTipoPago';
+import { useBodega } from '@/bodega/hook/useBodega';
+import { useImpuesto } from '@/impuesto/hook/useImpuesto';
 
 interface InvoiceParamsProps {
   monedaId: number | '';
@@ -28,29 +31,6 @@ interface InvoiceParamsProps {
   };
 }
 
-// Mock data
-const mockMonedas = [
-  { idMoneda: 1, descripcion: 'Dólar Estadounidense' },
-  { idMoneda: 2, descripcion: 'Guaraní' },
-];
-
-const mockTiposPago = [
-  { idTipoPago: 1, descripcion: 'Efectivo' },
-  { idTipoPago: 2, descripcion: 'Tarjeta' },
-  { idTipoPago: 3, descripcion: 'Transferencia' },
-];
-
-const mockImpuestos = [
-  { idImpuesto: 1, descripcion: 'IVA 10%' },
-  { idImpuesto: 2, descripcion: 'IVA 5%' },
-  { idImpuesto: 3, descripcion: 'Exento' },
-];
-
-const mockBodegas = [
-  { idBodega: 1, descripcion: 'Bodega Principal' },
-  { idBodega: 2, descripcion: 'Bodega Secundaria' },
-];
-
 export function FacturaParametros({
   monedaId,
   onMonedaChange,
@@ -64,6 +44,10 @@ export function FacturaParametros({
   onComentarioChange,
   errors = {},
 }: InvoiceParamsProps) {
+  const { monedas } = useMoneda();
+  const { tipoPagos } = useTipoPago();
+  const { bodegas } = useBodega();
+  const { impuestos } = useImpuesto();
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* Moneda */}
@@ -82,7 +66,7 @@ export function FacturaParametros({
             <SelectValue placeholder="Seleccionar moneda..." />
           </SelectTrigger>
           <SelectContent>
-            {mockMonedas.map((moneda) => (
+            {(monedas ?? []).map((moneda) => (
               <SelectItem
                 key={moneda.idMoneda}
                 value={moneda.idMoneda.toString()}
@@ -113,7 +97,7 @@ export function FacturaParametros({
             <SelectValue placeholder="Seleccionar tipo de pago..." />
           </SelectTrigger>
           <SelectContent>
-            {mockTiposPago.map((tipo) => (
+            {(tipoPagos ?? []).map((tipo) => (
               <SelectItem
                 key={tipo.idTipoPago}
                 value={tipo.idTipoPago.toString()}
@@ -144,7 +128,7 @@ export function FacturaParametros({
             <SelectValue placeholder="Seleccionar impuesto..." />
           </SelectTrigger>
           <SelectContent>
-            {mockImpuestos.map((impuesto) => (
+            {(impuestos ?? []).map((impuesto) => (
               <SelectItem
                 key={impuesto.idImpuesto}
                 value={impuesto.idImpuesto.toString()}
@@ -175,7 +159,7 @@ export function FacturaParametros({
             <SelectValue placeholder="Seleccionar bodega..." />
           </SelectTrigger>
           <SelectContent>
-            {mockBodegas.map((bodega) => (
+            {(bodegas ?? []).map((bodega) => (
               <SelectItem
                 key={bodega.idBodega}
                 value={bodega.idBodega.toString()}
