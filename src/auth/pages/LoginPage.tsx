@@ -119,7 +119,7 @@ export default function LoginPage() {
                 <input type="checkbox" className="rounded border-input" />
                 <span className="text-muted-foreground">Recordarme</span>
               </label>
-              <a href="#" className="text-primary hover:underline">
+              <a className="text-primary hover:underline">
                 ¿Olvidaste tu contraseña?
               </a>
             </div>
