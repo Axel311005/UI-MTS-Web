@@ -19,6 +19,12 @@ const NuevaFacturaPage = lazy(() =>
   }))
 );
 
+const EditarFacturaPage = lazy(() =>
+  import('@/facturas/pages/EditarFacturaPage').then((m) => ({
+    default: m.default,
+  }))
+);
+
 const ClientePage = lazy(() =>
   import('@/clientes/pages/ClientePage').then((m) => ({
     default: m.ClientesPage,
@@ -44,6 +50,11 @@ export const appRouter = createBrowserRouter([
             path: 'facturas/nueva',
             element: <NuevaFacturaPage />,
             handle: { crumb: 'Nueva factura' },
+          },
+          {
+            path: 'facturas/:id/editar',
+            element: <EditarFacturaPage />,
+            handle: { crumb: 'Editar factura' },
           },
           {
             path: 'facturas/search',

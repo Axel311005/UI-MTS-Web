@@ -201,6 +201,10 @@ export default function NuevaFacturaPage() {
       toast.error('Faltan datos obligatorios');
       return;
     }
+    if (!facturaId) {
+      toast.error('Primero guarda la factura para obtener su ID');
+      return;
+    }
     const dismiss = toast.loading('Guardando líneas de factura...');
     setIsSaving(true);
     try {

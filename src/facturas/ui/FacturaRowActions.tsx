@@ -6,6 +6,7 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
 import { Edit, Eye, FileText, Trash2 } from '@/shared/icons';
+import { useNavigate } from 'react-router';
 import type { Factura } from '../types/Factura.interface';
 
 interface Props {
@@ -13,9 +14,16 @@ interface Props {
 }
 
 export default function FacturaRowActions({ factura }: Props) {
+  const navigate = useNavigate();
   const onView = () => {};
   const onPdf = () => {};
-  const onEdit = () => {};
+  const onEdit = () => {
+    const id =
+      (factura as any)?.id_factura ??
+      (factura as any)?.id ??
+      (factura as any)?.idFactura;
+    if (id) navigate(`/facturas/${id}/editar`);
+  };
   const onDelete = () => {};
 
   return (
