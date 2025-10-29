@@ -20,12 +20,7 @@ interface ClienteFormProps {
   showEstadoToggle?: boolean;
 }
 
-export function ClienteForm({
-  values,
-  onChange,
-  errors,
-  showEstadoToggle = false,
-}: ClienteFormProps) {
+export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
   const handleChange = (
     field: keyof ClienteFormValues,
     value: string | boolean
@@ -142,22 +137,6 @@ export function ClienteForm({
                   {errors.porcentajeExonerado}
                 </p>
               )}
-            </div>
-          )}
-
-          {showEstadoToggle && (
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="activo">Estado del Cliente</Label>
-                <p className="text-sm text-muted-foreground">
-                  ¿Este cliente está activo?
-                </p>
-              </div>
-              <Switch
-                id="activo"
-                checked={values.activo}
-                onCheckedChange={(checked) => handleChange('activo', checked)}
-              />
             </div>
           )}
         </CardContent>

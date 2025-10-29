@@ -69,7 +69,7 @@ export default function EditarClientePage() {
           telefono: cliente.telefono ?? '',
           esExonerado: Boolean(cliente.esExonerado),
           porcentajeExonerado: porcentajeValue,
-          activo: Boolean(cliente.activo),
+          activo: true,
           notas: cliente.notas ?? '',
         });
       } catch (error: any) {
@@ -124,7 +124,7 @@ export default function EditarClientePage() {
       : 0,
     direccion: formValues.direccion.trim(),
     telefono: formValues.telefono.trim(),
-    activo: formValues.activo,
+    activo: true,
     notas: formValues.notas.trim(),
   });
 

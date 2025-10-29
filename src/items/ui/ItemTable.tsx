@@ -22,7 +22,8 @@ interface ItemTableProps {
 }
 
 export function ItemTable({ items }: ItemTableProps) {
-  const total = items.length;
+  const activos = items.filter((item) => item.activo !== false);
+  const total = activos.length;
 
   return (
     <Card className="card-elegant">
@@ -45,7 +46,7 @@ export function ItemTable({ items }: ItemTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {items.map((item) => {
+            {activos.map((item) => {
               const clasificacion = item.clasificacion?.descripcion ?? '—';
               const precioCordobaValue = Number.parseFloat(
                 item.precioBaseLocal ?? '0'
