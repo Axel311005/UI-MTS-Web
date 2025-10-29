@@ -19,15 +19,13 @@ export const patchFacturaLinea = async (payload: CreateFacturaLineaPayload) => {
     totalLinea: Number(payload.totalLinea),
   } as const;
   try {
-    // eslint-disable-next-line no-console
     console.log('[patchFacturaLinea] sending body:', body);
     const url = payload.id ? `/factura-linea/${payload.id}` : '/factura-linea';
     const { data } = await tallerApi.patch(url, body);
-    // eslint-disable-next-line no-console
+
     console.log('Factura linea editada:', data);
     return data;
   } catch (err: any) {
-    // eslint-disable-next-line no-console
     console.error('[patchFacturaLinea] error:', {
       status: err?.response?.status,
       data: err?.response?.data,

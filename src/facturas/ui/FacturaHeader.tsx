@@ -27,7 +27,7 @@ interface InvoiceHeaderProps {
   codigoPreview: string;
   fecha: string;
   onFechaChange: (value: string) => void;
-  estado: 'PENDIENTE' | 'PAGADO';
+  estado: 'PENDIENTE' | 'PAGADO' | 'ANULADA';
   onEstadoChange: (value: 'PENDIENTE' | 'PAGADO') => void;
   empleado: { id: number; nombre: string };
   errors?: {
@@ -59,10 +59,22 @@ export function FacturaHeader({
   const selectedConsecutivo = options.find(
     (c) => c.idConsecutivo === consecutivoId
   );
-  const estadosFactura = [
-    { value: 'PENDIENTE' as const, label: 'Pendiente' },
-    { value: 'PAGADO' as const, label: 'Pagado' },
+  const opcionesEstado: Array<{
+    value: 'PENDIENTE' | 'PAGADO';
+    label: string;
+  }> = [
+    { value: 'PENDIENTE', label: 'Pendiente' },
+    { value: 'PAGADO', label: 'Pagado' },
   ];
+
+  const estadoLabels: Record<'PENDIENTE' | 'PAGADO' | 'ANULADA', string> = {
+    PENDIENTE: 'Pendiente',
+    PAGADO: 'Pagado',
+    ANULADA: 'Anulada',
+  };
+  const estadoActualLabel = estadoLabels[estado] ?? 'Seleccionar...';
+  const estadoEsAnulada = estado === 'ANULADA';
+  const estadoPopoverOpen = estadoEsAnulada ? false : openEstado;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -152,48 +164,56 @@ export function FacturaHeader({
       {/* Estado y Empleado */}
       <div className="space-y-2">
         <label className="text-sm font-medium">Estado</label>
-        <Popover open={openEstado} onOpenChange={setOpenEstado}>
+        <Popover
+          open={estadoPopoverOpen}
+          onOpenChange={(nextOpen) => {
+            if (estadoEsAnulada) return;
+            setOpenEstado(nextOpen);
+          }}
+        >
           <PopoverTrigger asChild>
             <Button
               variant="outline"
               role="combobox"
-              aria-expanded={openEstado}
+              aria-expanded={estadoPopoverOpen}
               aria-label="Seleccionar estado"
               className="w-full justify-between"
+              disabled={estadoEsAnulada}
             >
-              {estadosFactura.find((e) => e.value === estado)?.label ||
-                'Seleccionar...'}
+              {estadoActualLabel}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[200px] p-0" align="start">
-            <Command>
-              <CommandList>
-                <CommandGroup>
-                  {estadosFactura.map((estadoItem) => (
-                    <CommandItem
-                      key={estadoItem.value}
-                      value={estadoItem.value}
-                      onSelect={() => {
-                        onEstadoChange(estadoItem.value);
-                        setOpenEstado(false);
-                      }}
-                    >
-                      <Check
-                        className={cn(
-                          'mr-2 h-4 w-4',
-                          estado === estadoItem.value
-                            ? 'opacity-100'
-                            : 'opacity-0'
-                        )}
-                      />
-                      {estadoItem.label}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
+          {!estadoEsAnulada && (
+            <PopoverContent className="w-[200px] p-0" align="start">
+              <Command>
+                <CommandList>
+                  <CommandGroup>
+                    {opcionesEstado.map((estadoItem) => (
+                      <CommandItem
+                        key={estadoItem.value}
+                        value={estadoItem.value}
+                        onSelect={() => {
+                          onEstadoChange(estadoItem.value);
+                          setOpenEstado(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            'mr-2 h-4 w-4',
+                            estado === estadoItem.value
+                              ? 'opacity-100'
+                              : 'opacity-0'
+                          )}
+                        />
+                        {estadoItem.label}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          )}
         </Popover>
         <div className="flex items-center gap-2 text-sm text-muted-foreground pt-1">
           <User className="h-4 w-4" />

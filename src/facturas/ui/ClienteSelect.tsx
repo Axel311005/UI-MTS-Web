@@ -34,27 +34,35 @@ export const ClienteSelect: React.FC<Props> = ({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
 
+  const allClientes = useMemo(
+    () => (Array.isArray(clientes) ? clientes : []),
+    [clientes]
+  );
+  const activeClientes = useMemo(
+    () => allClientes.filter((cliente) => cliente.activo),
+    [allClientes]
+  );
+
   const filtered = useMemo(() => {
-    const list = Array.isArray(clientes) ? clientes : [];
     const q = query.trim().toLowerCase();
+    const list = activeClientes;
     if (!q) return list;
     return list.filter(
       (c) =>
         (c.nombre?.toLowerCase?.() ?? '').includes(q) ||
         (c.ruc?.toLowerCase?.() ?? '').includes(q)
     );
-  }, [clientes, query]);
+  }, [activeClientes, query]);
 
   const selected = useMemo(() => {
-    const list = Array.isArray(clientes) ? clientes : [];
     if (selectedId !== undefined && selectedId !== '') {
-      return list.find((c) => c.idCliente === selectedId);
+      return allClientes.find((c) => c.idCliente === selectedId);
     }
     if (value) {
-      return list.find((c) => c.nombre === value);
+      return allClientes.find((c) => c.nombre === value);
     }
     return undefined;
-  }, [clientes, selectedId, value]);
+  }, [allClientes, selectedId, value]);
 
   return (
     <div className="space-y-2">

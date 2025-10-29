@@ -123,9 +123,22 @@ export const FacturasPage = () => {
   const getEstadoBadgeVariant = (estadoRaw: string) =>
     ESTADO_BADGE_VARIANTS[normalizeEstado(estadoRaw)] ?? 'default';
 
+  const isAnulada = (value: unknown) => {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') return value.toLowerCase() === 'true';
+    return false;
+  };
+
+  const isEstadoAnulado = (estadoRaw: unknown) =>
+    typeof estadoRaw === 'string' && normalizeEstado(estadoRaw) === 'ANULADA';
+
   const rows = useMemo(() => {
     const data = hasAnyFilter ? facturasFiltradas : facturas;
-    return Array.isArray(data) ? data : [];
+    if (!Array.isArray(data)) return [];
+    return data.filter(
+      (factura) =>
+        !isAnulada(factura.anulada) && !isEstadoAnulado(factura.estado)
+    );
   }, [hasAnyFilter, facturasFiltradas, facturas]);
 
   return (

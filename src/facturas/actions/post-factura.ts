@@ -8,10 +8,12 @@ export interface CreateFacturaPayload {
   bodegaId: number;
   consecutivoId: number;
   empleadoId: number;
-  estado: 'PENDIENTE' | 'PAGADO';
+  estado: 'PENDIENTE' | 'PAGADO' | 'ANULADA';
   porcentajeDescuento: number;
   tipoCambioUsado: number;
   comentario: string;
+  anulada?: boolean;
+  fechaAnulacion?: string | null;
 }
 
 // No confíes en un solo nombre; el backend puede cambiarlo

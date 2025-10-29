@@ -18,6 +18,8 @@ import { patchFactura } from '../actions/patch-factura';
 import { patchFacturaLinea } from '../actions/patch-facturaLinea';
 import { getFacturaById } from '../actions/get-factura-by-id';
 
+type InvoiceStatus = 'PENDIENTE' | 'PAGADO' | 'ANULADA';
+
 // Línea de factura para edición
 interface EditInvoiceLine {
   id?: number;
@@ -30,7 +32,6 @@ interface InvoiceFormValues {
   // Header
   consecutivoId: number | '';
   fecha: string;
-  estado: 'PENDIENTE' | 'PAGADO';
   empleadoId: number;
 
   // Cliente
@@ -61,7 +62,6 @@ export default function EditarFacturaPage() {
   const [formValues, setFormValues] = React.useState<InvoiceFormValues>({
     consecutivoId: '',
     fecha: new Date().toISOString().split('T')[0],
-    estado: 'PENDIENTE',
     empleadoId: 1,
     clienteId: '',
     monedaId: '',
@@ -73,6 +73,9 @@ export default function EditarFacturaPage() {
     descuentoPct: '',
     tipoCambioUsado: 7000,
   });
+
+  const [estadoFactura, setEstadoFactura] =
+    React.useState<InvoiceStatus>('PENDIENTE');
 
   const [errors] = React.useState<Record<string, string>>({});
   const [lineErrors] = React.useState<
@@ -94,10 +97,11 @@ export default function EditarFacturaPage() {
           throw new Error('ID de factura inválido');
         }
         const factura = await getFacturaById(numericId);
+        const estadoBackend = (factura.estado as InvoiceStatus) ?? 'PENDIENTE';
+        setEstadoFactura(estadoBackend);
         setFormValues({
           consecutivoId: factura.consecutivo?.idConsecutivo ?? '',
           fecha: new Date(factura.fecha).toISOString().split('T')[0],
-          estado: (factura.estado as 'PENDIENTE' | 'PAGADO') ?? 'PENDIENTE',
           empleadoId: 1,
           clienteId: factura.cliente?.idCliente ?? '',
           monedaId: factura.moneda?.idMoneda ?? '',
@@ -180,13 +184,13 @@ export default function EditarFacturaPage() {
       bodegaId: Number(formValues.bodegaId),
       consecutivoId: Number(formValues.consecutivoId),
       empleadoId: Number(formValues.empleadoId),
-      estado: formValues.estado,
+      estado: estadoFactura,
       porcentajeDescuento:
         formValues.descuentoPct === '' ? 0 : Number(formValues.descuentoPct),
       tipoCambioUsado: Number(formValues.tipoCambioUsado),
       comentario: formValues.comentario ?? '',
     }),
-    [formValues]
+    [formValues, estadoFactura]
   );
 
   const buildLinesPayload = React.useCallback(() => {
@@ -306,10 +310,8 @@ export default function EditarFacturaPage() {
                 onFechaChange={(value) =>
                   setFormValues((prev) => ({ ...prev, fecha: value }))
                 }
-                estado={formValues.estado}
-                onEstadoChange={(value) =>
-                  setFormValues((prev) => ({ ...prev, estado: value }))
-                }
+                estado={estadoFactura}
+                onEstadoChange={(value) => setEstadoFactura(value)}
                 empleado={{ id: 1, nombre: 'Usuario Actual' }}
                 errors={errors}
               />

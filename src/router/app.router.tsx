@@ -25,9 +25,33 @@ const EditarFacturaPage = lazy(() =>
   }))
 );
 
+const VerDetallesFacturaPage = lazy(() =>
+  import('@/facturas/pages/VerDetallesFacturaPage').then((m) => ({
+    default: m.default,
+  }))
+);
+
 const ClientePage = lazy(() =>
   import('@/clientes/pages/ClientePage').then((m) => ({
     default: m.ClientesPage,
+  }))
+);
+
+const NuevoClientePage = lazy(() =>
+  import('@/clientes/pages/NuevoClientePage').then((m) => ({
+    default: m.default,
+  }))
+);
+
+const EditarClientePage = lazy(() =>
+  import('@/clientes/pages/EditarClientePage').then((m) => ({
+    default: m.default,
+  }))
+);
+
+const VerDetallesClientePage = lazy(() =>
+  import('@/clientes/pages/VerDetallesClientePage').then((m) => ({
+    default: m.default,
   }))
 );
 
@@ -57,6 +81,11 @@ export const appRouter = createBrowserRouter([
             handle: { crumb: 'Editar factura' },
           },
           {
+            path: 'facturas/:id',
+            element: <VerDetallesFacturaPage />,
+            handle: { crumb: 'Factura' },
+          },
+          {
             path: 'facturas/search',
             element: <FacturasPage />,
             handle: { crumb: 'Buscar' },
@@ -65,6 +94,21 @@ export const appRouter = createBrowserRouter([
             path: 'clientes',
             element: <ClientePage />,
             handle: { crumb: 'Clientes' },
+          },
+          {
+            path: 'clientes/nuevo',
+            element: <NuevoClientePage />,
+            handle: { crumb: 'Nuevo cliente' },
+          },
+          {
+            path: 'clientes/:id/editar',
+            element: <EditarClientePage />,
+            handle: { crumb: 'Editar cliente' },
+          },
+          {
+            path: 'clientes/:id',
+            element: <VerDetallesClientePage />,
+            handle: { crumb: 'Cliente' },
           },
         ],
       },
@@ -84,6 +128,21 @@ export const appRouter = createBrowserRouter([
                 path: 'clientes',
                 element: <ClientePage />,
                 handle: { crumb: 'Clientes' },
+              },
+              {
+                path: 'clientes/nuevo',
+                element: <NuevoClientePage />,
+                handle: { crumb: 'Nuevo cliente' },
+              },
+              {
+                path: 'clientes/:id/editar',
+                element: <EditarClientePage />,
+                handle: { crumb: 'Editar cliente' },
+              },
+              {
+                path: 'clientes/:id',
+                element: <VerDetallesClientePage />,
+                handle: { crumb: 'Cliente' },
               },
             ],
           },
