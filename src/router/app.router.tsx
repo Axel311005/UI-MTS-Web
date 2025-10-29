@@ -70,6 +70,11 @@ const NuevoItemPage = lazy(() =>
     default: m.default,
   }))
 );
+const VerDetallesItemPage = lazy(() =>
+  import('@/items/pages/VerDetallesItemPage').then((m) => ({
+    default: m.default,
+  }))
+);
 
 export const appRouter = createBrowserRouter([
   // Rutas de la app (protegidas)
@@ -137,6 +142,11 @@ export const appRouter = createBrowserRouter([
             handle: { crumb: 'Nuevo producto' },
           },
           {
+            path: 'productos/:id',
+            element: <VerDetallesItemPage />,
+            handle: { crumb: 'Producto' },
+          },
+          {
             path: 'productos/:id/editar',
             element: <EditarItemPage />,
             handle: { crumb: 'Editar producto' },
@@ -184,6 +194,16 @@ export const appRouter = createBrowserRouter([
                 path: 'productos/nuevo',
                 element: <NuevoItemPage />,
                 handle: { crumb: 'Nuevo producto' },
+              },
+              {
+                path: 'productos/:id',
+                element: <VerDetallesItemPage />,
+                handle: { crumb: 'Producto' },
+              },
+              {
+                path: 'productos/:id/editar',
+                element: <EditarItemPage />,
+                handle: { crumb: 'Editar producto' },
               },
             ],
           },
