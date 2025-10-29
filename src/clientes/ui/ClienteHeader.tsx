@@ -9,7 +9,9 @@ export function ClienteHeader({ onNewClient }: ClienteHeaderProps) {
   return (
     <div className="flex items-center justify-between">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Clientes</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-left">
+          Clientes
+        </h1>
         <p className="text-muted-foreground">
           Gestiona la información de tus clientes
         </p>

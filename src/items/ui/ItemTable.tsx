@@ -37,6 +37,7 @@ export function ItemTable({ items }: ItemTableProps) {
               <TableHead>Código</TableHead>
               <TableHead>Nombre</TableHead>
               <TableHead>Clasificación</TableHead>
+              <TableHead className="text-right">Precio Córdoba</TableHead>
               <TableHead className="text-right">Precio USD</TableHead>
               <TableHead className="text-right">Stock disponible</TableHead>
               <TableHead>Estado</TableHead>
@@ -46,6 +47,12 @@ export function ItemTable({ items }: ItemTableProps) {
           <TableBody>
             {items.map((item) => {
               const clasificacion = item.clasificacion?.descripcion ?? '—';
+              const precioCordobaValue = Number.parseFloat(
+                item.precioBaseLocal ?? '0'
+              );
+              const precioCordoba = Number.isFinite(precioCordobaValue)
+                ? precioCordobaValue
+                : 0;
               const precioDolarValue = Number.parseFloat(
                 item.precioBaseDolar ?? '0'
               );
@@ -73,6 +80,13 @@ export function ItemTable({ items }: ItemTableProps) {
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline">{clasificacion}</Badge>
+                  </TableCell>
+                  <TableCell className="text-right font-mono">
+                    {precioCordoba.toLocaleString('es-NI', {
+                      style: 'currency',
+                      currency: 'NIO',
+                      minimumFractionDigits: 2,
+                    })}
                   </TableCell>
                   <TableCell className="text-right font-mono">
                     {precioDolar.toLocaleString('en-US', {
