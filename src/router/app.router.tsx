@@ -55,6 +55,12 @@ const VerDetallesClientePage = lazy(() =>
   }))
 );
 
+const ItemPage = lazy(() =>
+  import('@/items/pages/ItemPage').then((m) => ({
+    default: m.ItemPage,
+  }))
+);
+
 export const appRouter = createBrowserRouter([
   // Rutas de la app (protegidas)
   {
@@ -110,6 +116,11 @@ export const appRouter = createBrowserRouter([
             element: <VerDetallesClientePage />,
             handle: { crumb: 'Cliente' },
           },
+          {
+            path: 'productos',
+            element: <ItemPage />,
+            handle: { crumb: 'Productos' },
+          },
         ],
       },
       {
@@ -143,6 +154,11 @@ export const appRouter = createBrowserRouter([
                 path: 'clientes/:id',
                 element: <VerDetallesClientePage />,
                 handle: { crumb: 'Cliente' },
+              },
+              {
+                path: 'productos',
+                element: <ItemPage />,
+                handle: { crumb: 'Productos' },
               },
             ],
           },
