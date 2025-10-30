@@ -76,6 +76,28 @@ const VerDetallesItemPage = lazy(() =>
   }))
 );
 
+// Compras
+const ComprasPage = lazy(() =>
+  import('@/compra/pages/ComprasPage').then((m) => ({
+    default: m.ComprasPage,
+  }))
+);
+const NuevaCompraPage = lazy(() =>
+  import('@/compra/pages/NuevaCompraPage').then((m) => ({
+    default: m.default,
+  }))
+);
+const EditarCompraPage = lazy(() =>
+  import('@/compra/pages/EditarCompraPage').then((m) => ({
+    default: m.default,
+  }))
+);
+const VerDetallesCompraPage = lazy(() =>
+  import('@/compra/pages/VerDetallesCompraPage').then((m) => ({
+    default: m.default,
+  }))
+);
+
 export const appRouter = createBrowserRouter([
   // Rutas de la app (protegidas)
   {
@@ -92,9 +114,19 @@ export const appRouter = createBrowserRouter([
             handle: { crumb: 'Facturas' },
           },
           {
+            path: 'compras',
+            element: <ComprasPage />,
+            handle: { crumb: 'Compras' },
+          },
+          {
             path: 'facturas/nueva',
             element: <NuevaFacturaPage />,
             handle: { crumb: 'Nueva factura' },
+          },
+          {
+            path: 'compras/nueva',
+            element: <NuevaCompraPage />,
+            handle: { crumb: 'Nueva compra' },
           },
           {
             path: 'facturas/:id/editar',
@@ -102,9 +134,19 @@ export const appRouter = createBrowserRouter([
             handle: { crumb: 'Editar factura' },
           },
           {
+            path: 'compras/:id/editar',
+            element: <EditarCompraPage />,
+            handle: { crumb: 'Editar compra' },
+          },
+          {
             path: 'facturas/:id',
             element: <VerDetallesFacturaPage />,
             handle: { crumb: 'Factura' },
+          },
+          {
+            path: 'compras/:id',
+            element: <VerDetallesCompraPage />,
+            handle: { crumb: 'Compra' },
           },
           {
             path: 'facturas/search',
