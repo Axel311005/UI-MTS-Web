@@ -1,7 +1,7 @@
 import { tallerApi } from '@/shared/api/tallerApi';
 
 export interface CreateFacturaLineaPayload {
-  id?: number;
+  id: number; // requerido para PATCH
   facturaId: number;
   itemId: number;
   cantidad: number;
@@ -20,7 +20,10 @@ export const patchFacturaLinea = async (payload: CreateFacturaLineaPayload) => {
   } as const;
   try {
     console.log('[patchFacturaLinea] sending body:', body);
-    const url = payload.id ? `/factura-linea/${payload.id}` : '/factura-linea';
+    if (!payload.id) {
+      throw new Error('patchFacturaLinea: id es requerido para actualizar');
+    }
+    const url = `/factura-linea/${payload.id}`;
     const { data } = await tallerApi.patch(url, body);
 
     console.log('Factura linea editada:', data);

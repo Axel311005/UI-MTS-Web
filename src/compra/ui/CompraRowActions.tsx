@@ -13,6 +13,7 @@ import {
 import { Edit, Eye, Trash2 } from '@/shared/icons';
 import type { Compra } from '../types/Compra.interface';
 import { patchCompra } from '../actions/patch-compra';
+import { useAuthStore } from '@/auth/store/auth.store';
 
 interface Props {
   compra: Compra;
@@ -22,9 +23,12 @@ export default function CompraRowActions({ compra }: Props) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
+  const empleadoId = useAuthStore((state) => state.user?.empleado?.id ?? 1);
 
   const resolveCompraId = () =>
-    (compra as any)?.id_compra ?? (compra as any)?.id ?? (compra as any)?.idCompra;
+    (compra as any)?.id_compra ??
+    (compra as any)?.id ??
+    (compra as any)?.idCompra;
 
   const requireNumber = (label: string, value: unknown) => {
     const parsed = Number(value);
@@ -56,23 +60,38 @@ export default function CompraRowActions({ compra }: Props) {
     const dismiss = toast.loading('Anulando compra...');
     try {
       const payload = {
-        // En compras no tenemos proveedor en el tipo aún, enviamos mínimos requeridos
-        tipoPagoId: requireNumber('tipo de pago', (compra as any)?.tipoPago?.idTipoPago ?? 0),
-        monedaId: requireNumber('moneda', (compra as any)?.moneda?.idMoneda ?? 0),
-        impuestoId: requireNumber('impuesto', (compra as any)?.impuesto?.idImpuesto ?? 0),
-        bodegaId: requireNumber('bodega', (compra as any)?.bodega?.idBodega ?? 0),
-        consecutivoId: Number((compra as any)?.consecutivo?.idConsecutivo ?? 0) || 0,
-        empleadoId: 1,
+        // Enviamos solo campos permitidos por el DTO de compra (Partial<CreateCompraPayload>)
+        tipoPagoId: requireNumber(
+          'tipo de pago',
+          (compra as any)?.tipoPago?.idTipoPago
+        ),
+        monedaId: requireNumber('moneda', (compra as any)?.moneda?.idMoneda),
+        impuestoId: requireNumber(
+          'impuesto',
+          (compra as any)?.impuesto?.idImpuesto
+        ),
+        bodegaId: requireNumber('bodega', (compra as any)?.bodega?.idBodega),
+        consecutivoId: requireNumber(
+          'consecutivo',
+          (compra as any)?.consecutivo?.idConsecutivo
+        ),
+        empleadoId,
         estado: 'ANULADA' as const,
-        porcentajeDescuento: Number((compra as any)?.porcentajeDescuento ?? 0) || 0,
+        porcentajeDescuento:
+          Number((compra as any)?.porcentajeDescuento ?? 0) || 0,
         tipoCambioUsado: Number((compra as any)?.tipoCambioUsado ?? 0) || 0,
         comentario: (compra as any)?.comentario ?? '',
-        anulado: true,
-        fechaAnulacion: new Date().toISOString(),
       };
       await patchCompra(Number(id), payload);
       toast.success('Compra anulada');
-      await queryClient.invalidateQueries({ queryKey: ['compras'], exact: false });
+      await queryClient.invalidateQueries({
+        queryKey: ['compras'],
+        exact: false,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['compras.search'],
+        exact: false,
+      });
     } catch (error: any) {
       const raw = error?.response?.data;
       const message =
@@ -94,7 +113,9 @@ export default function CompraRowActions({ compra }: Props) {
           variant="ghost"
           className="h-8 w-8 p-0"
           disabled={isProcessing}
-          aria-label={`Acciones para compra ${(compra as any)?.codigoCompra ?? ''}`}
+          aria-label={`Acciones para compra ${
+            (compra as any)?.codigoCompra ?? ''
+          }`}
         >
           <span className="sr-only">Abrir menú</span>
           <Eye className="h-4 w-4" />
@@ -109,7 +130,11 @@ export default function CompraRowActions({ compra }: Props) {
           <Edit className="mr-2 h-4 w-4" />
           Editar
         </DropdownMenuItem>
-        <DropdownMenuItem className="text-destructive" onClick={onDelete} disabled={isProcessing}>
+        <DropdownMenuItem
+          className="text-destructive"
+          onClick={onDelete}
+          disabled={isProcessing}
+        >
           <Trash2 className="mr-2 h-4 w-4" />
           Eliminar
         </DropdownMenuItem>
@@ -117,5 +142,3 @@ export default function CompraRowActions({ compra }: Props) {
     </DropdownMenu>
   );
 }
-
-

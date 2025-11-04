@@ -10,6 +10,6 @@ export const useTipoPago = () => {
     staleTime: 1000 * 60 * 10,
   });
   return {
-    tipoPagos: query.data,
+    tipoPagos: query.data ?? [],
   };
 };

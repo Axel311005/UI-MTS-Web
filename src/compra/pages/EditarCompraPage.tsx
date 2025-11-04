@@ -1,60 +1,74 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
-import { useState, useEffect, useMemo } from "react"
-import { useParams } from 'react-router'
-import { toast } from "sonner"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/shared/components/ui/card';
+import { useState, useEffect, useMemo } from 'react';
+import { useParams } from 'react-router';
+import { toast } from 'sonner';
 
-import { Loader2 } from "lucide-react"
-import { CompraLineaTabla } from "../ui/CompraLineaTabla"
-import { CompraHeader } from "../ui/CompraHeader"
-import { CompraParametros } from "../ui/CompraParametros"
-import { CompraTotalCard } from "../ui/CompraTotalCard"
+import { Loader2 } from 'lucide-react';
+import { CompraLineaTabla } from '../ui/CompraLineaTabla';
+import { CompraHeader } from '../ui/CompraHeader';
+import { CompraParametros } from '../ui/CompraParametros';
+import { CompraTotalCard } from '../ui/CompraTotalCard';
+import { useQueryClient } from '@tanstack/react-query';
+import { patchCompra } from '../actions/patch-compra';
+import { patchCompraLinea } from '../actions/patch-compra-linea';
+import { postCompraLinea } from '../actions/post-compra-linea';
+import { useAuthStore } from '@/auth/store/auth.store';
+import { useMoneda } from '@/moneda/hook/useMoneda';
 
 interface CompraFormValues {
-  consecutivoId: number | ""
-  codigoPreview: string
-  fecha: string
-  empleado: { id: number; nombre: string }
-  estado: "PENDIENTE" | "COMPLETADA" | "ANULADA"
-  monedaId: number | ""
-  tipoPagoId: number | ""
-  impuestoId: number | ""
-  bodegaId: number | ""
-  comentario: string
-  descuentoPct: number | ""
+  consecutivoId: number | '';
+  codigoPreview: string;
+  fecha: string;
+  empleado: { id: number; nombre: string };
+  estado: 'PENDIENTE' | 'COMPLETADA' | 'ANULADA';
+  monedaId: number | '';
+  tipoPagoId: number | '';
+  impuestoId: number | '';
+  bodegaId: number | '';
+  comentario: string;
+  descuentoPct: number | '';
   lineas: Array<{
-    itemId: number | ""
-    cantidad: number | ""
-    precioUnitario: number | ""
-    totalLinea: number
-  }>
+    itemId: number | '';
+    cantidad: number | '';
+    precioUnitario: number | '';
+    totalLinea: number;
+  }>;
   totales: {
-    subtotal: number
-    totalDescuento: number
-    totalImpuesto: number
-    total: number
-  }
+    subtotal: number;
+    totalDescuento: number;
+    totalImpuesto: number;
+    total: number;
+  };
 }
 
 export default function EditarCompraPage() {
-  const { id } = useParams()
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
+  const { id } = useParams();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const queryClient = useQueryClient();
+  const empleado = useAuthStore((s) => s.user?.empleado);
+  const { monedas } = useMoneda();
 
   // Mock empleado data
-  const empleadoForForm = useMemo(() => ({ id: 1, nombre: "Juan Pérez" }), [])
+  const empleadoForForm = useMemo(() => ({ id: 1, nombre: 'Juan Pérez' }), []);
 
   const [formValues, setFormValues] = useState<CompraFormValues>({
-    consecutivoId: "",
-    codigoPreview: "",
-    fecha: new Date().toISOString().split("T")[0],
+    consecutivoId: '',
+    codigoPreview: '',
+    fecha: new Date().toISOString().split('T')[0],
     empleado: empleadoForForm,
-    estado: "PENDIENTE",
-    monedaId: "",
-    tipoPagoId: "",
-    impuestoId: "",
-    bodegaId: "",
-    comentario: "",
-    descuentoPct: "",
+    estado: 'PENDIENTE',
+    monedaId: '',
+    tipoPagoId: '',
+    impuestoId: '',
+    bodegaId: '',
+    comentario: '',
+    descuentoPct: '',
     lineas: [],
     totales: {
       subtotal: 0,
@@ -62,27 +76,27 @@ export default function EditarCompraPage() {
       totalImpuesto: 0,
       total: 0,
     },
-  })
+  });
 
   // Load compra data
   useEffect(() => {
     const loadCompra = async () => {
       try {
         // Mock API call - simulate loading existing compra
-        await new Promise((resolve) => setTimeout(resolve, 1000))
+        await new Promise((resolve) => setTimeout(resolve, 1000));
 
         // Mock data
         setFormValues({
           consecutivoId: 1,
-          codigoPreview: "CO-000001",
-          fecha: "2025-10-30",
+          codigoPreview: 'CO-000001',
+          fecha: '2025-10-30',
           empleado: empleadoForForm,
-          estado: "PENDIENTE",
+          estado: 'PENDIENTE',
           monedaId: 1,
           tipoPagoId: 1,
           impuestoId: 1,
           bodegaId: 1,
-          comentario: "Compra de insumos",
+          comentario: 'Compra de insumos',
           descuentoPct: 10,
           lineas: [
             {
@@ -98,58 +112,163 @@ export default function EditarCompraPage() {
             totalImpuesto: 135,
             total: 1035,
           },
-        })
+        });
       } catch (err) {
-        console.error("Error cargando compra:", err)
-        toast.error("No se pudo cargar la compra")
+        console.error('Error cargando compra:', err);
+        toast.error('No se pudo cargar la compra');
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    loadCompra()
-  }, [id, empleadoForForm])
+    loadCompra();
+  }, [id, empleadoForForm]);
+
+  // Compute currency name hint unconditionally to keep hook order stable
+  const currencyNameHint = useMemo(() => {
+    const idNum =
+      typeof formValues.monedaId === 'number'
+        ? formValues.monedaId
+        : Number(formValues.monedaId);
+    const found = (monedas ?? []).find((m) => m.idMoneda === idNum);
+    return found?.descripcion ?? '';
+  }, [formValues.monedaId, monedas]);
+
+  const getTipoCambioUsado = () => {
+    const idNum =
+      typeof formValues.monedaId === 'number'
+        ? formValues.monedaId
+        : Number(formValues.monedaId);
+    const m = (monedas ?? []).find((mm) => mm.idMoneda === idNum);
+    return m ? Number(m.tipoCambio) : 0;
+  };
 
   const isFormValid = () => {
-    const hasSomeItem = formValues.lineas.some((l) => l.itemId !== "")
+    const hasSomeItem = formValues.lineas.some((l) => l.itemId !== '');
     return (
-      formValues.consecutivoId !== "" &&
-      formValues.fecha !== "" &&
-      formValues.monedaId !== "" &&
-      formValues.tipoPagoId !== "" &&
-      formValues.impuestoId !== "" &&
-      formValues.bodegaId !== "" &&
+      formValues.consecutivoId !== '' &&
+      formValues.fecha !== '' &&
+      formValues.monedaId !== '' &&
+      formValues.tipoPagoId !== '' &&
+      formValues.impuestoId !== '' &&
+      formValues.bodegaId !== '' &&
       hasSomeItem
-    )
-  }
+    );
+  };
+
+  const buildLinesPayload = () => {
+    return (formValues.lineas || [])
+      .filter(
+        (l) =>
+          l.itemId !== '' &&
+          l.cantidad !== '' &&
+          l.precioUnitario !== '' &&
+          Number(l.cantidad) > 0 &&
+          Number(l.precioUnitario) > 0
+      )
+      .map((l) => {
+        const qty = Number(l.cantidad);
+        const priceRaw = Number(l.precioUnitario);
+        const price = Number(priceRaw.toFixed(2));
+        const totalRaw =
+          typeof l.totalLinea === 'number' && l.totalLinea > 0
+            ? l.totalLinea
+            : qty * price;
+        const totalLinea = Number(Number(totalRaw).toFixed(2));
+        return {
+          id: (l as any).id as number | undefined,
+          compraId: Number(id),
+          itemId: Number(l.itemId),
+          cantidad: qty,
+          precioUnitario: price,
+          totalLinea,
+        };
+      });
+  };
 
   const handleSave = async () => {
-    if (isSaving) return
+    if (isSaving) return;
     if (!isFormValid()) {
-      toast.error("Faltan datos obligatorios")
-      return
+      toast.error('Faltan datos obligatorios');
+      return;
     }
-    const dismiss = toast.loading("Actualizando compra...")
-    setIsSaving(true)
+    const dismiss = toast.loading('Actualizando compra...');
+    setIsSaving(true);
     try {
-      console.log("Actualizando compra:", formValues)
+      // 1) Actualizar encabezado de compra
+      const headerPayload = {
+        consecutivoId: Number(formValues.consecutivoId),
+        bodegaId: Number(formValues.bodegaId),
+        monedaId: Number(formValues.monedaId),
+        tipoPagoId: Number(formValues.tipoPagoId),
+        impuestoId: Number(formValues.impuestoId),
+        empleadoId: Number(empleado?.id ?? 0),
+        estado: formValues.estado,
+        porcentajeDescuento:
+          formValues.descuentoPct === '' ? 0 : Number(formValues.descuentoPct),
+        tipoCambioUsado: getTipoCambioUsado(),
+        comentario: formValues.comentario ?? '',
+      };
+      await patchCompra(Number(id), headerPayload);
 
-      // Mock API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      // 2) Crear/actualizar líneas
+      const lines = buildLinesPayload();
+      const createPromises: Promise<any>[] = [];
+      const updatePromises: Promise<any>[] = [];
+      for (const line of lines) {
+        if (line.id) {
+          updatePromises.push(
+            patchCompraLinea(Number(line.id), {
+              compraId: line.compraId,
+              itemId: line.itemId,
+              cantidad: line.cantidad,
+              precioUnitario: line.precioUnitario,
+              totalLinea: line.totalLinea,
+            })
+          );
+        } else {
+          createPromises.push(
+            postCompraLinea({
+              compraId: line.compraId,
+              itemId: line.itemId,
+              cantidad: line.cantidad,
+              precioUnitario: line.precioUnitario,
+              totalLinea: line.totalLinea,
+            })
+          );
+        }
+      }
+      if (updatePromises.length) await Promise.all(updatePromises);
+      if (createPromises.length) await Promise.all(createPromises);
 
-      toast.success("Compra actualizada correctamente")
+      toast.success('Compra actualizada correctamente');
+
+      // Invalidate compras caches so lists refresh immediately
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['compras'], exact: false }),
+        queryClient.invalidateQueries({
+          queryKey: ['compras.search'],
+          exact: false,
+        }),
+      ]);
     } catch (err: any) {
-      console.error("Error actualizando compra:", err)
-      toast.error("No se pudo actualizar la compra")
+      console.error('Error actualizando compra:', err);
+      const raw = err?.response?.data;
+      const message =
+        raw?.message ||
+        (typeof raw === 'string' ? raw : undefined) ||
+        (err instanceof Error ? err.message : undefined) ||
+        'No se pudo actualizar la compra';
+      toast.error(message);
     } finally {
-      toast.dismiss(dismiss)
-      setIsSaving(false)
+      toast.dismiss(dismiss);
+      setIsSaving(false);
     }
-  }
+  };
 
   const handleCancel = () => {
-    toast.info("Cancelado", { description: "Operación cancelada." })
-  }
+    toast.info('Cancelado', { description: 'Operación cancelada.' });
+  };
 
   if (isLoading) {
     return (
@@ -158,14 +277,16 @@ export default function EditarCompraPage() {
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="container mx-auto p-6 max-w-7xl">
       <div className="mb-6">
         <h1 className="text-3xl font-bold">Editar Compra</h1>
-        <p className="text-muted-foreground">Modifica los datos de la compra {formValues.codigoPreview}</p>
+        <p className="text-muted-foreground">
+          Modifica los datos de la compra {formValues.codigoPreview}
+        </p>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
@@ -176,12 +297,18 @@ export default function EditarCompraPage() {
             <CardContent>
               <CompraHeader
                 consecutivoId={formValues.consecutivoId}
-                onConsecutivoChange={(value) => setFormValues((prev) => ({ ...prev, consecutivoId: value }))}
+                onConsecutivoChange={(value) =>
+                  setFormValues((prev) => ({ ...prev, consecutivoId: value }))
+                }
                 fecha={formValues.fecha}
-                onFechaChange={(value) => setFormValues((prev) => ({ ...prev, fecha: value }))}
+                onFechaChange={(value) =>
+                  setFormValues((prev) => ({ ...prev, fecha: value }))
+                }
                 empleado={formValues.empleado}
                 estado={formValues.estado}
-                onEstadoChange={(value) => setFormValues((prev) => ({ ...prev, estado: value }))}
+                onEstadoChange={(value) =>
+                  setFormValues((prev) => ({ ...prev, estado: value }))
+                }
                 codigoPreview={formValues.codigoPreview}
               />
             </CardContent>
@@ -194,15 +321,25 @@ export default function EditarCompraPage() {
             <CardContent>
               <CompraParametros
                 monedaId={formValues.monedaId}
-                onMonedaChange={(value) => setFormValues((prev) => ({ ...prev, monedaId: value }))}
+                onMonedaChange={(value) =>
+                  setFormValues((prev) => ({ ...prev, monedaId: value }))
+                }
                 tipoPagoId={formValues.tipoPagoId}
-                onTipoPagoChange={(value) => setFormValues((prev) => ({ ...prev, tipoPagoId: value }))}
+                onTipoPagoChange={(value) =>
+                  setFormValues((prev) => ({ ...prev, tipoPagoId: value }))
+                }
                 impuestoId={formValues.impuestoId}
-                onImpuestoChange={(value) => setFormValues((prev) => ({ ...prev, impuestoId: value }))}
+                onImpuestoChange={(value) =>
+                  setFormValues((prev) => ({ ...prev, impuestoId: value }))
+                }
                 bodegaId={formValues.bodegaId}
-                onBodegaChange={(value) => setFormValues((prev) => ({ ...prev, bodegaId: value }))}
+                onBodegaChange={(value) =>
+                  setFormValues((prev) => ({ ...prev, bodegaId: value }))
+                }
                 comentario={formValues.comentario}
-                onComentarioChange={(value) => setFormValues((prev) => ({ ...prev, comentario: value }))}
+                onComentarioChange={(value) =>
+                  setFormValues((prev) => ({ ...prev, comentario: value }))
+                }
               />
             </CardContent>
           </Card>
@@ -212,7 +349,11 @@ export default function EditarCompraPage() {
               <CompraLineaTabla
                 lines={formValues.lineas}
                 monedaId={formValues.monedaId}
-                onLinesChange={(lines) => setFormValues((prev) => ({ ...prev, lineas: lines }))}
+                bodegaId={formValues.bodegaId}
+                currencyNameHint={currencyNameHint}
+                onLinesChange={(lines) =>
+                  setFormValues((prev) => ({ ...prev, lineas: lines }))
+                }
               />
             </CardContent>
           </Card>
@@ -223,7 +364,9 @@ export default function EditarCompraPage() {
             <CompraTotalCard
               totals={formValues.totales}
               descuentoPct={formValues.descuentoPct}
-              onDescuentoPctChange={(value) => setFormValues((prev) => ({ ...prev, descuentoPct: value }))}
+              onDescuentoPctChange={(value) =>
+                setFormValues((prev) => ({ ...prev, descuentoPct: value }))
+              }
               onSave={handleSave}
               onCancel={handleCancel}
               isValid={isFormValid() && !isSaving}
@@ -233,5 +376,5 @@ export default function EditarCompraPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

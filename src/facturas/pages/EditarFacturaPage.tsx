@@ -16,7 +16,9 @@ import { FacturaTotalCard } from '../ui/FacutraTotalCard';
 import { FacturaHeader } from '../ui/FacturaHeader';
 import { patchFactura } from '../actions/patch-factura';
 import { patchFacturaLinea } from '../actions/patch-facturaLinea';
+import { postFacturaLinea } from '../actions/post-facturalinea';
 import { getFacturaById } from '../actions/get-factura-by-id';
+import { useQueryClient } from '@tanstack/react-query';
 
 type InvoiceStatus = 'PENDIENTE' | 'PAGADO' | 'ANULADA';
 
@@ -39,6 +41,7 @@ interface InvoiceFormValues {
 
   // Params
   monedaId: number | '';
+  monedaNombre?: string;
   tipoPagoId: number | '';
   impuestoId: number | '';
   bodegaId: number | '';
@@ -55,6 +58,7 @@ interface InvoiceFormValues {
 export default function EditarFacturaPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
   const facturaId = React.useMemo(() => Number(id), [id]);
@@ -105,13 +109,14 @@ export default function EditarFacturaPage() {
           empleadoId: 1,
           clienteId: factura.cliente?.idCliente ?? '',
           monedaId: factura.moneda?.idMoneda ?? '',
+          monedaNombre: factura.moneda?.descripcion ?? '',
           tipoPagoId: factura.tipoPago?.idTipoPago ?? '',
           impuestoId: factura.impuesto?.idImpuesto ?? '',
           bodegaId: factura.bodega?.idBodega ?? '',
           comentario: factura.comentario ?? '',
           lineas: (factura.lineas || []).map((l) => ({
             id: (l as any).idFacturaLinea,
-            itemId: '' as any, // TODO: mapear itemId si el backend lo expone en la línea
+            itemId: ((l as any)?.item?.idItem ?? '') as any,
             cantidad: l.cantidad as any,
             precioUnitario: l.precioUnitario as any,
             totalLinea: l.totalLinea as any,
@@ -237,6 +242,13 @@ export default function EditarFacturaPage() {
       // eslint-disable-next-line no-console
       console.log('[EditarFactura] patchFactura ok, facturaId:', updatedId);
       toast.success(`Factura #${id} actualizada`);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['facturas'], exact: false }),
+        queryClient.invalidateQueries({
+          queryKey: ['facturas.search'],
+          exact: false,
+        }),
+      ]);
       // Opcional: navegar después de guardar
       // navigate("/facturas");
     } catch (error: any) {
@@ -383,6 +395,8 @@ export default function EditarFacturaPage() {
             <CardContent>
               <FacturaLineaTabla
                 lines={formValues.lineas}
+                bodegaId={formValues.bodegaId}
+                currencyNameHint={formValues.monedaNombre}
                 onLinesChange={(lines) =>
                   setFormValues((prev) => ({ ...prev, lineas: lines }))
                 }
@@ -419,8 +433,48 @@ export default function EditarFacturaPage() {
                   if (lines.length === 0) {
                     toast.warning('No hay líneas válidas para guardar');
                   } else {
-                    await Promise.all(lines.map((p) => patchFacturaLinea(p)));
+                    const createPromises: Promise<any>[] = [];
+                    const updatePromises: Promise<any>[] = [];
+                    for (const p of lines) {
+                      if ((p as any).id) {
+                        updatePromises.push(
+                          patchFacturaLinea({
+                            id: Number((p as any).id),
+                            facturaId: Number(p.facturaId),
+                            itemId: Number(p.itemId),
+                            cantidad: Number(p.cantidad),
+                            precioUnitario: Number(p.precioUnitario),
+                            totalLinea: Number(p.totalLinea),
+                          })
+                        );
+                      } else {
+                        createPromises.push(
+                          postFacturaLinea({
+                            facturaId: Number(p.facturaId),
+                            itemId: Number(p.itemId),
+                            cantidad: Number(p.cantidad),
+                            precioUnitario: Number(p.precioUnitario),
+                            totalLinea: Number(p.totalLinea),
+                          })
+                        );
+                      }
+                    }
+                    if (updatePromises.length)
+                      await Promise.all(updatePromises);
+                    if (createPromises.length)
+                      await Promise.all(createPromises);
+
                     toast.success('Líneas actualizadas');
+                    await Promise.all([
+                      queryClient.invalidateQueries({
+                        queryKey: ['facturas'],
+                        exact: false,
+                      }),
+                      queryClient.invalidateQueries({
+                        queryKey: ['facturas.search'],
+                        exact: false,
+                      }),
+                    ]);
                   }
                 } catch (error: any) {
                   console.error('Error guardando líneas:', error);

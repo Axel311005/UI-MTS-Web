@@ -98,6 +98,93 @@ const VerDetallesCompraPage = lazy(() =>
   }))
 );
 
+// Clasificaciones
+const ClasificacionesPage = lazy(() =>
+  import('@/clasificacion-item/pages/ClasificacionesPage').then((m) => ({
+    default: m.ClasificacionesPage,
+  }))
+);
+const NuevaClasificacionPage = lazy(() =>
+  import('@/clasificacion-item/pages/NuevaClasificacionPage').then((m) => ({
+    default: m.default,
+  }))
+);
+const EditarClasificacionPage = lazy(() =>
+  import('@/clasificacion-item/pages/EditarClasifacionPage').then((m) => ({
+    default: m.default,
+  }))
+);
+
+// Unidades de Medida
+const UnidadesMedidaPage = lazy(() =>
+  import('@/unidad-medida/pages/UnidadMedidaPage').then((m) => ({
+    default: m.UnidadesMedidaPage,
+  }))
+);
+const NuevaUnidadMedidaPage = lazy(() =>
+  import('@/unidad-medida/pages/NuevaUnidadMedidaPage').then((m) => ({
+    default: m.default,
+  }))
+);
+const EditarUnidadMedidaPage = lazy(() =>
+  import('@/unidad-medida/pages/EditarUnidadMedida').then((m) => ({
+    default: m.default,
+  }))
+);
+
+// Tipos de Pago
+const TiposPagoPage = lazy(() =>
+  import('@/tiposPago/pages/TipoPagoPage').then((m) => ({
+    default: m.TiposPagoPage,
+  }))
+);
+const NuevoTipoPagoPage = lazy(() =>
+  import('@/tiposPago/pages/NuevoTipoPago').then((m) => ({
+    default: m.default,
+  }))
+);
+const EditarTipoPagoPage = lazy(() =>
+  import('@/tiposPago/pages/EditarTipoPago').then((m) => ({
+    default: m.default,
+  }))
+);
+
+const BodegasPage = lazy(() =>
+  import('@/bodega/pages/BodegasPage').then((m) => ({
+    default: m.BodegasPage,
+  }))
+);
+
+const NuevaBodegaPage = lazy(() =>
+  import('@/bodega/pages/NuevaBodegaPage').then((m) => ({
+    default: m.default,
+  }))
+);
+
+const EditarBodegaPage = lazy(() =>
+  import('@/bodega/pages/EditarBodegaPage').then((m) => ({
+    default: m.default,
+  }))
+);
+
+const ExistenciaBodegaPage = lazy(() =>
+  import('@/existencia-bodega/pages/ExistenciaBodegaPage').then((m) => ({
+    default: m.ExistenciaBodegaPage,
+  }))
+);
+
+const NuevaExistenciaPage = lazy(() =>
+  import('@/existencia-bodega/pages/NuevaExistenciaPage').then((m) => ({
+    default: m.default,
+  }))
+);
+
+const EditarExistenciaPage = lazy(() =>
+  import('@/existencia-bodega/pages/EditarExistenciaPage').then((m) => ({
+    default: m.default,
+  }))
+);
+
 export const appRouter = createBrowserRouter([
   // Rutas de la app (protegidas)
   {
@@ -192,6 +279,86 @@ export const appRouter = createBrowserRouter([
             path: 'productos/:id/editar',
             element: <EditarItemPage />,
             handle: { crumb: 'Editar producto' },
+          },
+          {
+            path: 'clasificaciones',
+            element: <ClasificacionesPage />,
+            handle: { crumb: 'Clasificaciones' },
+          },
+          {
+            path: 'unidades-medida',
+            element: <UnidadesMedidaPage />,
+            handle: { crumb: 'Unidades de Medida' },
+          },
+          {
+            path: 'unidades-medida/nueva',
+            element: <NuevaUnidadMedidaPage />,
+            handle: { crumb: 'Nueva unidad de medida' },
+          },
+          {
+            path: 'unidades-medida/:id/editar',
+            element: <EditarUnidadMedidaPage />,
+            handle: { crumb: 'Editar unidad de medida' },
+          },
+          {
+            path: 'tipos-pago',
+            element: <TiposPagoPage />,
+            handle: { crumb: 'Tipos de Pago' },
+          },
+          {
+            path: 'tipos-pago/nuevo',
+            element: <NuevoTipoPagoPage />,
+            handle: { crumb: 'Nuevo tipo de pago' },
+          },
+          {
+            path: 'tipos-pago/:id/editar',
+            element: <EditarTipoPagoPage />,
+            handle: { crumb: 'Editar tipo de pago' },
+          },
+          {
+            path: 'clasificaciones/nueva',
+            element: <NuevaClasificacionPage />,
+            handle: { crumb: 'Nueva clasificación' },
+          },
+          {
+            path: 'clasificaciones/:id/editar',
+            element: <EditarClasificacionPage />,
+            handle: { crumb: 'Editar clasificación' },
+          },
+          {
+            element: <RoleGuard allow={['gerente']} />,
+            children: [
+              {
+                path: 'bodegas',
+                element: <BodegasPage />,
+                handle: { crumb: 'Bodegas' },
+              },
+              {
+                path: 'bodegas/nueva',
+                element: <NuevaBodegaPage />,
+                handle: { crumb: 'Nueva bodega' },
+              },
+              {
+                path: 'bodegas/editar/:id',
+                element: <EditarBodegaPage />,
+                handle: { crumb: 'Editar bodega' },
+              },
+              {
+                path: 'existencia-bodega',
+                element: <ExistenciaBodegaPage />,
+                handle: { crumb: 'Existencia en bodega' },
+              },
+              {
+                path: 'existencia-bodega/nueva',
+                element: <NuevaExistenciaPage />,
+                handle: { crumb: 'Nueva existencia' },
+              },
+              {
+                path: 'existencia-bodega/editar/:id',
+                element: <EditarExistenciaPage />,
+                handle: { crumb: 'Editar existencia' },
+              },
+            ],
           },
         ],
       },

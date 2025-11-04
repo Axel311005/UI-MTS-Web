@@ -1,21 +1,25 @@
+import type { ComponentType } from 'react';
+
 import {
-  Home,
+  LayoutDashboard,
   Package,
   ShoppingCart,
   FileText,
   Users,
   Settings,
-  BarChart3,
+  TrendingUp,
   Tag,
   Ruler,
   CreditCard,
   Shield,
+  Warehouse,
+  PackageSearch,
 } from '@/shared/icons';
 
 export interface MenuItem {
   title: string;
   url: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: ComponentType<{ className?: string }>;
   userTypes: ('gerente' | 'vendedor')[];
 }
 
@@ -25,7 +29,7 @@ export const navigationConfig: MenuItem[] = [
   {
     title: 'Dashboard',
     url: '/',
-    icon: Home,
+    icon: LayoutDashboard,
     userTypes: ['gerente', 'vendedor'],
   },
   {
@@ -52,6 +56,18 @@ export const navigationConfig: MenuItem[] = [
     icon: ShoppingCart,
     userTypes: ['gerente', 'vendedor'],
   },
+  {
+    title: 'Bodegas',
+    url: '/bodegas',
+    icon: Warehouse,
+    userTypes: ['gerente'],
+  },
+  {
+    title: 'Inventario',
+    url: '/existencia-bodega',
+    icon: PackageSearch,
+    userTypes: ['gerente'],
+  },
   // Catálogos y sistema (solo 'gerente')
   {
     title: 'Clasificaciones',
@@ -74,7 +90,7 @@ export const navigationConfig: MenuItem[] = [
   {
     title: 'Reportes',
     url: '/reportes',
-    icon: BarChart3,
+    icon: TrendingUp,
     userTypes: ['gerente'],
   },
   {
@@ -99,11 +115,21 @@ export const getGroupedNavigationItems = (userType: 'gerente' | 'vendedor') => {
   const allItems = getNavigationItems(userType);
 
   const navigationItems = allItems.filter((item) =>
-    ['Dashboard', 'Productos', 'Clientes', 'Facturas', 'Compras'].includes(item.title)
+    [
+      'Dashboard',
+      'Productos',
+      'Clientes',
+      'Facturas',
+      'Compras',
+      'Bodegas',
+      'Inventario',
+    ].includes(item.title)
   );
 
   const catalogItems = allItems.filter((item) =>
-    ['Clasificaciones', 'Unidades de Medida', 'Tipos de Pago'].includes(item.title)
+    ['Clasificaciones', 'Unidades de Medida', 'Tipos de Pago'].includes(
+      item.title
+    )
   );
 
   const systemItems = allItems.filter((item) =>

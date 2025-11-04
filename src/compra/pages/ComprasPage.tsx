@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/shared/components/ui/table';
-import { CustomSearchControl } from '@/shared/components/custom/CustomSearchControl';
+import { CompraSearch } from '../ui/CompraSearch';
 
 import { CompraFilters } from '../ui/CompraFilters';
 import { useCompra } from '../hooks/useCompra';
@@ -32,33 +32,91 @@ export function ComprasPage() {
   const { compras } = useCompra();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [search, setSearch] = useState('');
 
-  const estado = (searchParams.get('estado') || '').trim().toLowerCase();
+  // Lectura completa de filtros compatibles con backend
+  const codigoLike = (searchParams.get('codigoLike') || '').trim();
+  const codigo_compra = (searchParams.get('codigo_compra') || '').trim();
+  const estado = (searchParams.get('estado') || '').trim();
   const anulado = (searchParams.get('anulado') || '').trim();
-  // filtros removidos del backend: bodegaNombre, moneda, tipo_pago
+  const bodegaNombre = (searchParams.get('bodegaNombre') || '').trim();
+  const empleadoNombre = (searchParams.get('empleadoNombre') || '').trim();
+  const tipo_pago = (searchParams.get('tipo_pago') || '').trim();
+  const moneda = (searchParams.get('moneda') || '').trim();
+  const id_bodega = (searchParams.get('id_bodega') || '').trim();
+  const id_empleado = (searchParams.get('id_empleado') || '').trim();
+  const id_tipo_pago = (searchParams.get('id_tipo_pago') || '').trim();
+  const id_moneda = (searchParams.get('id_moneda') || '').trim();
   const dateFrom = searchParams.get('dateFrom') || '';
   const dateTo = searchParams.get('dateTo') || '';
-  const minTotal = searchParams.get('minTotal');
-  const maxTotal = searchParams.get('maxTotal');
-  const page = Number(searchParams.get('page') || '1');
-  const limit = Number(searchParams.get('limit') || '10');
-  const sortBy = (searchParams.get('sortBy') || 'FECHA') as 'FECHA' | 'TOTAL';
+  const minTotal = searchParams.get('minTotal') || '';
+  const maxTotal = searchParams.get('maxTotal') || '';
+  const page = searchParams.get('page') || '1';
+  const limit = searchParams.get('limit') || '10';
+  const sortBy = (searchParams.get('sortBy') || 'fecha') as
+    | 'fecha'
+    | 'total'
+    | 'codigo_compra'
+    | 'bodega'
+    | 'empleado'
+    | 'tipo_pago'
+    | 'moneda';
   const sortDir = (searchParams.get('sortDir') || 'DESC') as 'ASC' | 'DESC';
 
   const hasAnyFilter = useMemo(
     () =>
-      [estado, anulado, dateFrom, dateTo, minTotal, maxTotal].some(
-        (v) => (v ?? '').toString().trim() !== ''
-      ),
-    [estado, anulado, dateFrom, dateTo, minTotal, maxTotal]
+      [
+        codigoLike,
+        codigo_compra,
+        estado,
+        anulado,
+        bodegaNombre,
+        empleadoNombre,
+        tipo_pago,
+        moneda,
+        id_bodega,
+        id_empleado,
+        id_tipo_pago,
+        id_moneda,
+        dateFrom,
+        dateTo,
+        minTotal,
+        maxTotal,
+      ].some((v) => (v ?? '').toString().trim() !== ''),
+    [
+      codigoLike,
+      codigo_compra,
+      estado,
+      anulado,
+      bodegaNombre,
+      empleadoNombre,
+      tipo_pago,
+      moneda,
+      id_bodega,
+      id_empleado,
+      id_tipo_pago,
+      id_moneda,
+      dateFrom,
+      dateTo,
+      minTotal,
+      maxTotal,
+    ]
   );
 
   const { data: comprasFiltradasApi = [] } = useQuery({
     queryKey: [
       'compras.search',
+      codigoLike,
+      codigo_compra,
       estado,
       anulado,
+      bodegaNombre,
+      empleadoNombre,
+      tipo_pago,
+      moneda,
+      id_bodega,
+      id_empleado,
+      id_tipo_pago,
+      id_moneda,
       dateFrom,
       dateTo,
       minTotal,
@@ -70,12 +128,22 @@ export function ComprasPage() {
     ],
     queryFn: () =>
       SearchComprasAction({
+        codigo_compra: codigo_compra || undefined,
+        codigoLike: codigoLike || undefined,
         estado: estado || undefined,
-        anulado: anulado ? anulado === 'true' : undefined,
+        anulado: anulado || undefined,
+        bodegaNombre: bodegaNombre || undefined,
+        empleadoNombre: empleadoNombre || undefined,
+        tipo_pago: tipo_pago || undefined,
+        moneda: moneda || undefined,
+        id_bodega: id_bodega || undefined,
+        id_empleado: id_empleado || undefined,
+        id_tipo_pago: id_tipo_pago || undefined,
+        id_moneda: id_moneda || undefined,
         dateFrom: dateFrom || undefined,
         dateTo: dateTo || undefined,
-        minTotal: minTotal ? Number(minTotal) : undefined,
-        maxTotal: maxTotal ? Number(maxTotal) : undefined,
+        minTotal: minTotal || undefined,
+        maxTotal: maxTotal || undefined,
         page,
         limit,
         sortBy,
@@ -86,11 +154,6 @@ export function ComprasPage() {
   });
 
   const rows = hasAnyFilter ? comprasFiltradasApi : compras;
-
-  // Filtro simple local, solo por código de compra
-  const comprasFiltradas = rows.filter((c) =>
-    c.codigoCompra.toLowerCase().includes(search.toLowerCase())
-  );
 
   return (
     <div className="space-y-6">
@@ -113,12 +176,7 @@ export function ComprasPage() {
       </div>
 
       <div className="flex items-center gap-4">
-        <CustomSearchControl
-          className="max-w-sm"
-          placeholder="Buscar compra..."
-          value={search}
-          onKeyDown={setSearch}
-        />
+        <CompraSearch className="max-w-sm" placeholder="Buscar por código" />
         <Button
           variant={showFilters ? 'default' : 'outline'}
           onClick={() => setShowFilters((s) => !s)}
@@ -155,7 +213,7 @@ export function ComprasPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {comprasFiltradas.map((compra) => (
+                {rows.map((compra) => (
                   <TableRow key={compra.idCompra} className="table-row-hover">
                     <TableCell className="font-medium">
                       {compra.codigoCompra}

@@ -8,9 +8,9 @@ interface CompraSearchProps {
 }
 
 export const CompraSearch = ({
-  placeholder = 'Buscar por número',
+  placeholder = 'Buscar por código',
   className = 'w-full',
-  paramName = 'numeroLike',
+  paramName = 'codigoLike',
 }: CompraSearchProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -37,5 +37,3 @@ export const CompraSearch = ({
     />
   );
 };
-
-

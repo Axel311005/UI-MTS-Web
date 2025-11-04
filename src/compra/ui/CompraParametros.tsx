@@ -7,6 +7,10 @@ import {
 } from '@/shared/components/ui/select';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { cn } from '@/shared/lib/utils';
+import { useMoneda } from '@/moneda/hook/useMoneda';
+import { useTipoPago } from '@/tiposPago/hook/useTipoPago';
+import { useImpuesto } from '@/impuesto/hook/useImpuesto';
+import { useBodega } from '@/bodega/hook/useBodega';
 
 interface CompraParametrosProps {
   monedaId: number | '';
@@ -27,28 +31,6 @@ interface CompraParametrosProps {
   };
 }
 
-// Mock data
-const mockMonedas = [
-  { idMoneda: 1, descripcion: 'CORDOBAS', simbolo: 'C$' },
-  { idMoneda: 2, descripcion: 'DÓLARES', simbolo: '$' },
-];
-
-const mockTipoPagos = [
-  { idTipoPago: 1, descripcion: 'Efectivo' },
-  { idTipoPago: 2, descripcion: 'Transferencia' },
-  { idTipoPago: 3, descripcion: 'Cheque' },
-];
-
-const mockImpuestos = [
-  { idImpuesto: 1, descripcion: 'IVA 15%', porcentaje: 15 },
-  { idImpuesto: 2, descripcion: 'Sin Impuesto', porcentaje: 0 },
-];
-
-const mockBodegas = [
-  { idBodega: 1, descripcion: 'Bodega Principal' },
-  { idBodega: 2, descripcion: 'Bodega Secundaria' },
-];
-
 export function CompraParametros({
   monedaId,
   onMonedaChange,
@@ -62,6 +44,11 @@ export function CompraParametros({
   onComentarioChange,
   errors = {},
 }: CompraParametrosProps) {
+  const { monedas } = useMoneda();
+  const { tipoPagos } = useTipoPago();
+  const { impuestos } = useImpuesto();
+  const { bodegas } = useBodega();
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* Moneda */}
@@ -80,12 +67,12 @@ export function CompraParametros({
             <SelectValue placeholder="Seleccionar moneda..." />
           </SelectTrigger>
           <SelectContent>
-            {mockMonedas.map((moneda) => (
+            {(monedas ?? []).map((moneda) => (
               <SelectItem
                 key={moneda.idMoneda}
                 value={moneda.idMoneda.toString()}
               >
-                {moneda.descripcion} ({moneda.simbolo})
+                {moneda.descripcion}
               </SelectItem>
             ))}
           </SelectContent>
@@ -111,7 +98,7 @@ export function CompraParametros({
             <SelectValue placeholder="Seleccionar tipo de pago..." />
           </SelectTrigger>
           <SelectContent>
-            {mockTipoPagos.map((tipo) => (
+            {(tipoPagos ?? []).map((tipo) => (
               <SelectItem
                 key={tipo.idTipoPago}
                 value={tipo.idTipoPago.toString()}
@@ -142,7 +129,7 @@ export function CompraParametros({
             <SelectValue placeholder="Seleccionar impuesto..." />
           </SelectTrigger>
           <SelectContent>
-            {mockImpuestos.map((impuesto) => (
+            {(impuestos ?? []).map((impuesto) => (
               <SelectItem
                 key={impuesto.idImpuesto}
                 value={impuesto.idImpuesto.toString()}
@@ -173,7 +160,7 @@ export function CompraParametros({
             <SelectValue placeholder="Seleccionar bodega..." />
           </SelectTrigger>
           <SelectContent>
-            {mockBodegas.map((bodega) => (
+            {(bodegas ?? []).map((bodega) => (
               <SelectItem
                 key={bodega.idBodega}
                 value={bodega.idBodega.toString()}

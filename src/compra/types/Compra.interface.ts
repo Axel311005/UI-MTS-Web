@@ -21,9 +21,9 @@ export interface Compra {
 
 export interface CompraLinea {
   idCompraLinea: number;
-  cantidad: number | string;
-  precioUnitario: number | string;
-  totalLinea: number | string;
+  cantidad: number;
+  precioUnitario: number;
+  totalLinea: number;
 }
 
 export interface Moneda {
@@ -56,5 +56,3 @@ export interface Bodega {
   activo: boolean;
   fechaCreacion: string;
 }
-
-

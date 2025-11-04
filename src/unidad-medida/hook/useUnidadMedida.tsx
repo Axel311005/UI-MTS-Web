@@ -9,6 +9,6 @@ export const useUnidadMedida = () => {
     staleTime: 1000 * 60 * 10,
   });
   return {
-    unidadMedidas: query.data,
+    unidadMedidas: query.data ?? [],
   };
 };

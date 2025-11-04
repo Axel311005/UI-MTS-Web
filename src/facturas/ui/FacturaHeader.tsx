@@ -16,7 +16,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/shared/components/ui/command';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/auth/store/auth.store';
 import { useConsecutivo } from '@/consecutivo/hooks/useConsecutivo';
 import type { Consecutivo } from '@/consecutivo/types/consecutivo.response';
@@ -54,7 +54,9 @@ export function FacturaHeader({
   );
   const { consecutivos } = useConsecutivo();
   const options: Consecutivo[] = Array.isArray(consecutivos)
-    ? consecutivos
+    ? consecutivos.filter(
+        (c) => (c.documento || '').toUpperCase() === 'FACTURA'
+      )
     : [];
   const selectedConsecutivo = options.find(
     (c) => c.idConsecutivo === consecutivoId
@@ -75,6 +77,16 @@ export function FacturaHeader({
   const estadoActualLabel = estadoLabels[estado] ?? 'Seleccionar...';
   const estadoEsAnulada = estado === 'ANULADA';
   const estadoPopoverOpen = estadoEsAnulada ? false : openEstado;
+
+  // Auto-seleccionar si solo hay un consecutivo válido para FACTURA
+  useEffect(() => {
+    if (
+      (!consecutivoId || Number(consecutivoId) === 0) &&
+      options.length === 1
+    ) {
+      onConsecutivoChange(options[0].idConsecutivo);
+    }
+  }, [options, consecutivoId, onConsecutivoChange]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

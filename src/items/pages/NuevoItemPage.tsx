@@ -92,7 +92,20 @@ export default function NuevoItemPage() {
     const dismiss = toast.loading('Creando producto...');
     try {
       const payload = buildPayload();
-      await postItem(payload);
+      const response = await postItem(payload);
+      
+      // Extraer idItem de la respuesta
+      const newItemId = Number(
+        (response as any)?.idItem ??
+          (response as any)?.id_item ??
+          (response as any)?.id ??
+          (response as any)?.Id
+      );
+
+      if (!Number.isFinite(newItemId)) {
+        throw new Error('No se recibió un ID de item válido');
+      }
+
       toast.success(`Producto ${payload.codigoItem} creado correctamente`);
       await queryClient.invalidateQueries({
         queryKey: ['items'],

@@ -26,10 +26,14 @@ import {
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { useMemo, useState } from 'react';
 import { useItem } from '@/items/hooks/useItem';
+import { useExistenciaBodega } from '@/existencia-bodega/hook/useExistenciaBodega';
+import { toast } from 'sonner';
+import { useMoneda } from '@/moneda/hook/useMoneda';
 
 import type { ItemResponse } from '@/items/types/item.response';
 
 interface InvoiceLine {
+  id?: number;
   itemId: number | '';
   cantidad: number | '';
   precioUnitario: number | '';
@@ -40,6 +44,8 @@ interface InvoiceLinesTableProps {
   lines: InvoiceLine[];
   onLinesChange: (lines: InvoiceLine[]) => void;
   monedaId?: number | '';
+  bodegaId?: number | '';
+  currencyNameHint?: string; // opcional: nombre de moneda ya resuelto (evita fallback a local)
   errors?: Array<{
     cantidad?: string;
     precioUnitario?: string;
@@ -53,8 +59,26 @@ export function FacturaLineaTabla({
   lines,
   onLinesChange,
   monedaId,
+  bodegaId,
+  currencyNameHint,
   errors = [],
 }: InvoiceLinesTableProps) {
+  const { monedas } = useMoneda();
+  const monedaNombre = useMemo(() => {
+    const id = typeof monedaId === 'number' ? monedaId : Number(monedaId);
+    // Si recibimos hint, úsalo prioritariamente para evitar fallback incorrecto cuando aun no carga "monedas"
+    if (currencyNameHint && currencyNameHint.trim().length > 0)
+      return currencyNameHint;
+    const found = (monedas ?? []).find((m) => m.idMoneda === id);
+    return found?.descripcion ?? '';
+  }, [monedas, monedaId, currencyNameHint]);
+
+  const normalize = (s: string) =>
+    (s || '')
+      .toUpperCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
   const addLine = () => {
     onLinesChange([
       ...lines,
@@ -117,12 +141,39 @@ export function FacturaLineaTabla({
                         value={line.itemId}
                         onChange={(value) => updateLine(index, 'itemId', value)}
                         onItemPick={(item) => {
-                          // Auto set price from item when selected
-                          // Infer USD by idMoneda === 1 (sample data shows id 1 is Dólar)
-                          const isUSD = Number(monedaId) === 1;
-                          const priceStr = isUSD
+                          // Si el item ya existe en otra línea, en vez de crear/duplicar,
+                          // incrementamos la cantidad de esa línea y eliminamos la actual.
+                          const existingIdx = lines.findIndex(
+                            (l, i) =>
+                              i !== index && Number(l.itemId) === item.idItem
+                          );
+                          if (existingIdx >= 0) {
+                            const newLines = [...lines];
+                            const current = newLines[index];
+                            const existing = newLines[existingIdx];
+                            const addQty = Number(current.cantidad) || 1;
+                            const exQty = Number(existing.cantidad) || 0;
+                            newLines[existingIdx] = {
+                              ...existing,
+                              cantidad: exQty + (addQty > 0 ? addQty : 1),
+                            };
+                            // Eliminar la fila actual (que intentaba duplicar el item)
+                            newLines.splice(index, 1);
+                            onLinesChange(newLines);
+                            toast.info(
+                              'Item ya estaba en la factura, se aumentó la cantidad'
+                            );
+                            return;
+                          }
+                          // Precio sugerido según nombre de moneda
+                          const mName = normalize(monedaNombre);
+                          const isCordobas = mName.includes('CORDOBA');
+                          const isDolares = mName.includes('DOLAR');
+                          const priceStr = isCordobas
+                            ? item.precioBaseLocal
+                            : isDolares
                             ? item.precioBaseDolar
-                            : item.precioBaseLocal;
+                            : item.precioBaseLocal; // fallback seguro
                           const autoPrice = Number(priceStr) || 0;
                           const newLines = [...lines];
                           const current = newLines[index];
@@ -138,6 +189,7 @@ export function FacturaLineaTabla({
                           onLinesChange(newLines);
                         }}
                         error={errors[index]?.item}
+                        bodegaId={bodegaId}
                       />
                     </TableCell>
                     <TableCell>
@@ -230,16 +282,38 @@ function ItemCombobox({
   onChange,
   error,
   onItemPick,
+  bodegaId,
 }: {
   value: number | '';
   onChange: (value: number | '') => void;
   error?: string;
   onItemPick?: (item: ItemResponse) => void;
+  bodegaId?: number | '';
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const { items } = useItem();
+  // Existencias por bodega para validar stock
+  const { existencias } = useExistenciaBodega();
   const list: ItemResponse[] = Array.isArray(items) ? items : [];
+  const stockMap = useMemo(() => {
+    const map = new Map<string, number>();
+    const exList = Array.isArray(existencias) ? existencias : [];
+    for (const ex of exList) {
+      const bId = (ex as any)?.bodega?.idBodega;
+      const iId = (ex as any)?.item?.idItem;
+      const key = `${bId}-${iId}`;
+      const cantidad = Number((ex as any)?.cantDisponible ?? 0) || 0;
+      map.set(key, cantidad);
+    }
+    return map;
+  }, [existencias]);
+  const getStock = (itemId?: number) => {
+    const bId = typeof bodegaId === 'number' ? bodegaId : undefined;
+    if (!itemId || bId === undefined) return undefined;
+    const key = `${bId}-${itemId}`;
+    return stockMap.get(key) ?? 0;
+  };
   const selectedItem = useMemo(
     () => list.find((i) => i.idItem === value),
     [list, value]
@@ -290,36 +364,58 @@ function ItemCombobox({
             <CommandList>
               <CommandEmpty>No se encontraron items.</CommandEmpty>
               <CommandGroup>
-                {filtered.map((item) => (
-                  <CommandItem
-                    key={item.idItem}
-                    value={`${item.codigoItem} ${item.descripcion}`}
-                    onSelect={() => {
-                      onChange(item.idItem);
-                      onItemPick?.(item);
-                      // If the line still lacks qty or price, keep it open for quick edits
-                      const needsMore = !value;
-                      if (needsMore) {
-                        setOpen(true);
-                      } else {
-                        setTimeout(() => setOpen(false), 0);
-                      }
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        'mr-2 h-4 w-4',
-                        value === item.idItem ? 'opacity-100' : 'opacity-0'
+                {filtered.map((item) => {
+                  const stock = getStock(item.idItem);
+                  const zeroStock = typeof stock === 'number' && stock <= 0;
+                  return (
+                    <CommandItem
+                      key={item.idItem}
+                      value={`${item.codigoItem} ${item.descripcion}`}
+                      onSelect={() => {
+                        if (zeroStock) {
+                          toast.warning(
+                            'Sin stock disponible para este item en la bodega seleccionada'
+                          );
+                          return;
+                        }
+                        onChange(item.idItem);
+                        onItemPick?.(item);
+                        const needsMore = !value;
+                        if (needsMore) {
+                          setOpen(true);
+                        } else {
+                          setTimeout(() => setOpen(false), 0);
+                        }
+                      }}
+                      className={cn(zeroStock && 'opacity-60')}
+                    >
+                      <Check
+                        className={cn(
+                          'mr-2 h-4 w-4',
+                          value === item.idItem ? 'opacity-100' : 'opacity-0'
+                        )}
+                      />
+                      <div className="flex flex-col flex-1">
+                        <span className="font-medium">{item.codigoItem}</span>
+                        <span className="text-sm text-muted-foreground">
+                          {item.descripcion}
+                        </span>
+                      </div>
+                      {typeof stock === 'number' && (
+                        <span
+                          className={cn(
+                            'text-xs px-2 py-0.5 rounded-full',
+                            stock > 0
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : 'bg-red-100 text-red-700'
+                          )}
+                        >
+                          {stock > 0 ? `Stock: ${stock}` : 'Sin stock'}
+                        </span>
                       )}
-                    />
-                    <div className="flex flex-col">
-                      <span className="font-medium">{item.codigoItem}</span>
-                      <span className="text-sm text-muted-foreground">
-                        {item.descripcion}
-                      </span>
-                    </div>
-                  </CommandItem>
-                ))}
+                    </CommandItem>
+                  );
+                })}
               </CommandGroup>
             </CommandList>
           </Command>

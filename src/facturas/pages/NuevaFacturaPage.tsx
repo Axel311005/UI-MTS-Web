@@ -16,6 +16,7 @@ import { useAuthStore } from '@/auth/store/auth.store';
 import { postFactura } from '../actions/post-factura';
 import { postFacturaLinea } from '../actions/post-facturalinea';
 import { useMoneda } from '@/moneda/hook/useMoneda';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface InvoiceFormValues {
   consecutivoId: number | '';
@@ -25,6 +26,7 @@ interface InvoiceFormValues {
   estado: 'PENDIENTE' | 'PAGADO';
   clienteId: number | '';
   monedaId: number | '';
+  monedaNombre?: string;
   tipoPagoId: number | '';
   impuestoId: number | '';
   bodegaId: number | '';
@@ -45,6 +47,7 @@ interface InvoiceFormValues {
 }
 
 export default function NuevaFacturaPage() {
+  const queryClient = useQueryClient();
   const empleado = useAuthStore((s) => s.user?.empleado);
   const empleadoForForm = useMemo(
     () => ({ id: empleado?.id ?? 0, nombre: empleado?.nombreCompleto ?? '' }),
@@ -55,6 +58,7 @@ export default function NuevaFacturaPage() {
   // Form state (UI only, no real logic)
   const [formValues, setFormValues] = useState<InvoiceFormValues>({
     consecutivoId: '',
+    monedaNombre: '',
     codigoPreview: '',
     fecha: new Date().toISOString().split('T')[0],
     empleado: empleadoForForm,
@@ -216,6 +220,15 @@ export default function NuevaFacturaPage() {
       await Promise.all(linesPayload.map((p) => postFacturaLinea(p)));
       toast.success('Líneas de factura guardadas correctamente');
 
+      // Refrescar listados de facturas inmediatamente
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['facturas'], exact: false }),
+        queryClient.invalidateQueries({
+          queryKey: ['facturas.search'],
+          exact: false,
+        }),
+      ]);
+
       // Reset form for a new invoice
       setFormValues({
         consecutivoId: '',
@@ -308,9 +321,16 @@ export default function NuevaFacturaPage() {
             <CardContent>
               <FacturaParametros
                 monedaId={formValues.monedaId}
-                onMonedaChange={(value) =>
-                  setFormValues((prev) => ({ ...prev, monedaId: value }))
-                }
+                onMonedaChange={(value) => {
+                  const found = (monedas ?? []).find(
+                    (m) => m.idMoneda === Number(value)
+                  );
+                  setFormValues((prev) => ({
+                    ...prev,
+                    monedaId: value,
+                    monedaNombre: found?.descripcion ?? prev.monedaNombre ?? '',
+                  }));
+                }}
                 tipoPagoId={formValues.tipoPagoId}
                 onTipoPagoChange={(value) =>
                   setFormValues((prev) => ({ ...prev, tipoPagoId: value }))
@@ -336,6 +356,8 @@ export default function NuevaFacturaPage() {
               <FacturaLineaTabla
                 lines={formValues.lineas}
                 monedaId={formValues.monedaId}
+                currencyNameHint={formValues.monedaNombre}
+                bodegaId={formValues.bodegaId}
                 onLinesChange={(lines) =>
                   setFormValues((prev) => ({ ...prev, lineas: lines }))
                 }

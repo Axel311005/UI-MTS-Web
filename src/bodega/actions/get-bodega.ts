@@ -3,6 +3,6 @@ import type { Bodega } from '../types/bodega.interface';
 
 export const getBodegasAction = async () => {
   const { data: bodegas } = await bodegaApi.get<Bodega[]>('/');
-
-  return bodegas;
+  // Mostrar solo bodegas activas (activo === 'ACTIVO')
+  return (bodegas || []).filter((b) => b.activo === 'ACTIVO');
 };

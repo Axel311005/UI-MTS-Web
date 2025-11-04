@@ -45,6 +45,7 @@ export default function EditarItemPage() {
       const dismiss = toast.loading('Cargando producto...');
       try {
         const item = await getItemById(itemId);
+        
         setFormValues({
           clasificacionId: item.clasificacion?.idClasificacion ?? '',
           unidadMedidaId: item.unidadMedida?.idUnidadMedida ?? '',
@@ -161,7 +162,6 @@ export default function EditarItemPage() {
         queryKey: ['items'],
         exact: false,
       });
-      navigate('/productos');
     } catch (error: any) {
       const raw = error?.response?.data;
       const message =
@@ -173,6 +173,63 @@ export default function EditarItemPage() {
     } finally {
       toast.dismiss(dismiss);
       setSaving(false);
+    }
+  };
+
+  const validateExistenciaForm = () => {
+    const newErrors: ItemFormErrors = {};
+    if (!formValues.existenciaMaxima || Number(formValues.existenciaMaxima) < 0) {
+      newErrors.existenciaMaxima = 'Existencia máxima requerida';
+    }
+    if (!formValues.existenciaMinima || Number(formValues.existenciaMinima) < 0) {
+      newErrors.existenciaMinima = 'Existencia mínima requerida';
+    }
+    if (!formValues.puntoDeReorden || Number(formValues.puntoDeReorden) < 0) {
+      newErrors.puntoDeReorden = 'Punto de reorden requerido';
+    }
+    setErrors((prev) => ({ ...prev, ...newErrors }));
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSaveExistencia = async () => {
+    if (savingExistencia || !existenciaId) {
+      if (!existenciaId) {
+        toast.error('No se encontró existencia de bodega para este item');
+      }
+      return;
+    }
+
+    const isValid = validateExistenciaForm();
+    if (!isValid) {
+      toast.error('Por favor, completa todos los campos de existencia');
+      return;
+    }
+
+    setSavingExistencia(true);
+    const dismiss = toast.loading('Actualizando existencia en bodega...');
+    try {
+      await patchExistenciaBodega(existenciaId, {
+        existenciaMaxima: Number(formValues.existenciaMaxima),
+        existenciaMinima: Number(formValues.existenciaMinima),
+        puntoDeReorden: Number(formValues.puntoDeReorden),
+      });
+      toast.success('Existencia en bodega actualizada correctamente');
+      await queryClient.invalidateQueries({
+        queryKey: ['existencia-bodega'],
+        exact: false,
+      });
+      navigate('/productos');
+    } catch (error: any) {
+      const raw = error?.response?.data;
+      const message =
+        raw?.message ||
+        (typeof raw === 'string' ? raw : undefined) ||
+        (error instanceof Error ? error.message : undefined) ||
+        'No se pudo actualizar la existencia en bodega';
+      toast.error(message);
+    } finally {
+      toast.dismiss(dismiss);
+      setSavingExistencia(false);
     }
   };
 

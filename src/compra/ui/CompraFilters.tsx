@@ -1,5 +1,5 @@
-// import { useBodega } from '@/bodega/hook/useBodega';
-// import { useMoneda } from '@/moneda/hook/useMoneda';
+import { useBodega } from '@/bodega/hook/useBodega';
+import { useMoneda } from '@/moneda/hook/useMoneda';
 import { Button } from '@/shared/components/ui/button';
 import {
   Card,
@@ -16,15 +16,18 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select';
 import { Calendar, DollarSign, Filter, X } from '@/shared/icons';
-// import { useTipoPago } from '@/tiposPago/hook/useTipoPago';
+import { useTipoPago } from '@/tiposPago/hook/useTipoPago';
 import { useSearchParams } from 'react-router';
+import { toast } from 'sonner';
 
 type Props = {
   onClose?: () => void;
 };
 
 export const CompraFilters = ({ onClose }: Props) => {
-  // referencias removidas porque ya no se filtra por estas entidades
+  const { bodegas } = useBodega();
+  const { monedas } = useMoneda();
+  const { tipoPagos } = useTipoPago();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const commitParam = (key: string, value?: string | number | null) => {
@@ -44,12 +47,22 @@ export const CompraFilters = ({ onClose }: Props) => {
   const clearFilters = () => {
     const sp = new URLSearchParams(searchParams);
     const keys = [
+      'codigoLike',
+      'codigo_compra',
       'estado',
       'anulado',
       'dateFrom',
       'dateTo',
       'minTotal',
       'maxTotal',
+      'bodegaNombre',
+      'empleadoNombre',
+      'tipo_pago',
+      'moneda',
+      'id_bodega',
+      'id_empleado',
+      'id_tipo_pago',
+      'id_moneda',
       'page',
       'limit',
       'sortBy',
@@ -62,11 +75,41 @@ export const CompraFilters = ({ onClose }: Props) => {
   // nuevos filtros del backend
 
   const filterKeys: Array<{ key: string; label: string; value: string }> = [
+    {
+      key: 'codigoLike',
+      label: 'Código',
+      value: searchParams.get('codigoLike') ?? '',
+    },
+    {
+      key: 'codigoExacto',
+      label: 'Código exacto',
+      value: searchParams.get('codigo_compra') ?? '',
+    },
     { key: 'estado', label: 'Estado', value: searchParams.get('estado') ?? '' },
     {
       key: 'anulado',
       label: 'Anulado',
       value: searchParams.get('anulado') ?? '',
+    },
+    {
+      key: 'bodegaNombre',
+      label: 'Bodega',
+      value: searchParams.get('bodegaNombre') ?? '',
+    },
+    {
+      key: 'empleadoNombre',
+      label: 'Empleado',
+      value: searchParams.get('empleadoNombre') ?? '',
+    },
+    {
+      key: 'moneda',
+      label: 'Moneda',
+      value: searchParams.get('moneda') ?? '',
+    },
+    {
+      key: 'tipo_pago',
+      label: 'Tipo de Pago',
+      value: searchParams.get('tipo_pago') ?? '',
     },
     {
       key: 'dateFrom',
@@ -101,7 +144,16 @@ export const CompraFilters = ({ onClose }: Props) => {
 
   const removeFilter = (key: string) => {
     const sp = new URLSearchParams(searchParams);
-    sp.delete(key);
+    if (key === 'codigoExacto') {
+      sp.delete('codigo_compra');
+    } else {
+      sp.delete(key);
+    }
+    // Borrar ids asociados cuando se quita por nombre
+    if (key === 'bodegaNombre') sp.delete('id_bodega');
+    if (key === 'moneda') sp.delete('id_moneda');
+    if (key === 'tipo_pago') sp.delete('id_tipo_pago');
+    if (key === 'empleadoNombre') sp.delete('id_empleado');
     sp.delete('page');
     setSearchParams(sp, { replace: true });
   };
@@ -150,6 +202,46 @@ export const CompraFilters = ({ onClose }: Props) => {
       </CardHeader>
       <CardContent className="pt-0">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {/* Código compra (exacto) */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+              Código Compra (exacto)
+            </label>
+            <Input
+              key={`codigo_compra:${searchParams.get('codigo_compra') ?? ''}`}
+              placeholder="COM-001"
+              className="h-9"
+              defaultValue={searchParams.get('codigo_compra') ?? ''}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === 'NumpadEnter') {
+                  const v = (e.target as HTMLInputElement).value;
+                  const sp = new URLSearchParams(searchParams);
+                  if (v.trim()) sp.set('codigo_compra', v.trim());
+                  else sp.delete('codigo_compra');
+                  sp.delete('page');
+                  setSearchParams(sp, { replace: true });
+                }
+              }}
+            />
+          </div>
+          {/* Código compra (parcial) */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+              Código (contiene)
+            </label>
+            <Input
+              key={`codigoLike:${searchParams.get('codigoLike') ?? ''}`}
+              placeholder="COM-"
+              className="h-9"
+              defaultValue={searchParams.get('codigoLike') ?? ''}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === 'NumpadEnter') {
+                  const v = (e.target as HTMLInputElement).value;
+                  commitParam('codigoLike', v);
+                }
+              }}
+            />
+          </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
               Estado
@@ -184,6 +276,138 @@ export const CompraFilters = ({ onClose }: Props) => {
               <SelectContent>
                 <SelectItem value="true">Sí</SelectItem>
                 <SelectItem value="false">No</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {/* Bodega por nombre -> enviar id y nombre */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+              Bodega
+            </label>
+            <Select
+              key={`bodega:${searchParams.get('id_bodega') ?? ''}`}
+              defaultValue={searchParams.get('id_bodega') ?? undefined}
+              onValueChange={(v) => {
+                const id = v;
+                const found = (bodegas ?? []).find(
+                  (b) =>
+                    String((b as any).idBodega ?? (b as any).id_bodega) ===
+                    String(id)
+                );
+                commitParam('id_bodega', id);
+                commitParam('bodegaNombre', (found as any)?.descripcion ?? '');
+              }}
+            >
+              <SelectTrigger className="h-9">
+                <SelectValue
+                  placeholder={searchParams.get('bodegaNombre') ?? 'Todas'}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {(bodegas ?? []).map((b) => {
+                  const id = String(
+                    (b as any).idBodega ?? (b as any).id_bodega
+                  );
+                  return (
+                    <SelectItem key={id} value={id}>
+                      {(b as any).descripcion}
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
+          {/* Empleado (búsqueda por nombre simple) */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+              Empleado
+            </label>
+            <Input
+              key={`empleadoNombre:${searchParams.get('empleadoNombre') ?? ''}`}
+              placeholder="Nombre del empleado"
+              className="h-9"
+              defaultValue={searchParams.get('empleadoNombre') ?? ''}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === 'NumpadEnter') {
+                  const v = (e.target as HTMLInputElement).value;
+                  commitParam('empleadoNombre', v);
+                }
+              }}
+            />
+          </div>
+          {/* Moneda */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+              Moneda
+            </label>
+            <Select
+              key={`moneda:${searchParams.get('id_moneda') ?? ''}`}
+              defaultValue={searchParams.get('id_moneda') ?? undefined}
+              onValueChange={(v) => {
+                const id = v;
+                const found = (monedas ?? []).find(
+                  (m) =>
+                    String((m as any).idMoneda ?? (m as any).id_moneda) ===
+                    String(id)
+                );
+                commitParam('id_moneda', id);
+                commitParam('moneda', (found as any)?.descripcion ?? '');
+              }}
+            >
+              <SelectTrigger className="h-9">
+                <SelectValue
+                  placeholder={searchParams.get('moneda') ?? 'Todas'}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {(monedas ?? []).map((m) => {
+                  const id = String(
+                    (m as any).idMoneda ?? (m as any).id_moneda
+                  );
+                  return (
+                    <SelectItem key={id} value={id}>
+                      {(m as any).descripcion}
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
+          {/* Tipo de Pago */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+              Tipo de pago
+            </label>
+            <Select
+              key={`tipo_pago:${searchParams.get('id_tipo_pago') ?? ''}`}
+              defaultValue={searchParams.get('id_tipo_pago') ?? undefined}
+              onValueChange={(v) => {
+                const id = v;
+                const found = (tipoPagos ?? []).find(
+                  (t) =>
+                    String((t as any).idTipoPago ?? (t as any).id_tipo_pago) ===
+                    String(id)
+                );
+                commitParam('id_tipo_pago', id);
+                commitParam('tipo_pago', (found as any)?.descripcion ?? '');
+              }}
+            >
+              <SelectTrigger className="h-9">
+                <SelectValue
+                  placeholder={searchParams.get('tipo_pago') ?? 'Todos'}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {(tipoPagos ?? []).map((t) => {
+                  const id = String(
+                    (t as any).idTipoPago ?? (t as any).id_tipo_pago
+                  );
+                  return (
+                    <SelectItem key={id} value={id}>
+                      {(t as any).descripcion}
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>
@@ -238,14 +462,29 @@ export const CompraFilters = ({ onClose }: Props) => {
             <Select
               key={`sortBy:${searchParams.get('sortBy') ?? ''}`}
               defaultValue={searchParams.get('sortBy') ?? undefined}
-              onValueChange={(v) => commitParam('sortBy', v)}
+              onValueChange={(v) => {
+                const hasFrom = (searchParams.get('dateFrom') ?? '').trim();
+                const hasTo = (searchParams.get('dateTo') ?? '').trim();
+                if (!hasFrom || !hasTo) {
+                  toast.info(
+                    'Para ordenar, primero seleccione un rango de fechas (Desde y Hasta).'
+                  );
+                  return;
+                }
+                commitParam('sortBy', v);
+              }}
             >
               <SelectTrigger className="h-9">
-                <SelectValue placeholder="FECHA" />
+                <SelectValue placeholder="fecha" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="FECHA">Fecha</SelectItem>
-                <SelectItem value="TOTAL">Total</SelectItem>
+                <SelectItem value="fecha">Fecha</SelectItem>
+                <SelectItem value="total">Total</SelectItem>
+                <SelectItem value="codigo_compra">Código</SelectItem>
+                <SelectItem value="bodega">Bodega</SelectItem>
+                <SelectItem value="empleado">Empleado</SelectItem>
+                <SelectItem value="tipo_pago">Tipo de Pago</SelectItem>
+                <SelectItem value="moneda">Moneda</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -256,7 +495,17 @@ export const CompraFilters = ({ onClose }: Props) => {
             <Select
               key={`sortDir:${searchParams.get('sortDir') ?? ''}`}
               defaultValue={searchParams.get('sortDir') ?? undefined}
-              onValueChange={(v) => commitParam('sortDir', v)}
+              onValueChange={(v) => {
+                const hasFrom = (searchParams.get('dateFrom') ?? '').trim();
+                const hasTo = (searchParams.get('dateTo') ?? '').trim();
+                if (!hasFrom || !hasTo) {
+                  toast.info(
+                    'Para ordenar, primero seleccione un rango de fechas (Desde y Hasta).'
+                  );
+                  return;
+                }
+                commitParam('sortDir', v);
+              }}
             >
               <SelectTrigger className="h-9">
                 <SelectValue placeholder="DESC" />

@@ -10,6 +10,9 @@ export const useBodega = () => {
     staleTime: 1000 * 60 * 5,
   });
   return {
-    bodegas: query.data,
+    bodegas: query.data || [],
+    isLoading: query.isLoading,
+    isFetching: query.isFetching,
+    refetch: query.refetch,
   };
 };

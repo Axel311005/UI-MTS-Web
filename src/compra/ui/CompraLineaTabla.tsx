@@ -25,8 +25,13 @@ import {
 } from '@/shared/components/ui/table';
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { useMemo, useState } from 'react';
+import { useItem } from '@/items/hooks/useItem';
+import type { ItemResponse } from '@/items/types/item.response';
+import { useMoneda } from '@/moneda/hook/useMoneda';
+import { useExistenciaBodega } from '@/existencia-bodega/hook/useExistenciaBodega';
 
 interface CompraLine {
+  id?: number;
   itemId: number | '';
   cantidad: number | '';
   precioUnitario: number | '';
@@ -37,6 +42,8 @@ interface CompraLineaTablaProps {
   lines: CompraLine[];
   onLinesChange: (lines: CompraLine[]) => void;
   monedaId?: number | '';
+  bodegaId?: number | '';
+  currencyNameHint?: string;
   errors?: Array<{
     cantidad?: string;
     precioUnitario?: string;
@@ -44,37 +51,30 @@ interface CompraLineaTablaProps {
   }>;
 }
 
-// Mock items data
-const mockItems = [
-  {
-    idItem: 1,
-    codigoItem: 'ITEM-001',
-    descripcion: 'Producto A',
-    precioBaseDolar: '10.00',
-    precioBaseLocal: '365.00',
-  },
-  {
-    idItem: 2,
-    codigoItem: 'ITEM-002',
-    descripcion: 'Producto B',
-    precioBaseDolar: '25.50',
-    precioBaseLocal: '930.75',
-  },
-  {
-    idItem: 3,
-    codigoItem: 'ITEM-003',
-    descripcion: 'Producto C',
-    precioBaseDolar: '100.00',
-    precioBaseLocal: '3650.00',
-  },
-];
-
 export function CompraLineaTabla({
   lines,
   onLinesChange,
   monedaId,
+  bodegaId,
+  currencyNameHint,
   errors = [],
 }: CompraLineaTablaProps) {
+  const { monedas } = useMoneda();
+  const monedaNombre = useMemo(() => {
+    const id = typeof monedaId === 'number' ? monedaId : Number(monedaId);
+    if (currencyNameHint && currencyNameHint.trim().length > 0)
+      return currencyNameHint;
+    const found = (monedas ?? []).find((m) => m.idMoneda === id);
+    return found?.descripcion ?? '';
+  }, [monedas, monedaId, currencyNameHint]);
+
+  const normalize = (s: string) =>
+    (s || '')
+      .toUpperCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
+
   const addLine = () => {
     onLinesChange([
       ...lines,
@@ -137,10 +137,33 @@ export function CompraLineaTabla({
                         value={line.itemId}
                         onChange={(value) => updateLine(index, 'itemId', value)}
                         onItemPick={(item) => {
-                          const isCordobas = Number(monedaId) === 1;
+                          // Merge: si el item ya está en otra línea, aumentar cantidad y eliminar esta fila
+                          const existingIdx = lines.findIndex(
+                            (l, i) =>
+                              i !== index && Number(l.itemId) === item.idItem
+                          );
+                          if (existingIdx >= 0) {
+                            const newLines = [...lines];
+                            const current = newLines[index];
+                            const existing = newLines[existingIdx];
+                            const addQty = Number(current.cantidad) || 1;
+                            const exQty = Number(existing.cantidad) || 0;
+                            newLines[existingIdx] = {
+                              ...existing,
+                              cantidad: exQty + (addQty > 0 ? addQty : 1),
+                            } as CompraLine;
+                            newLines.splice(index, 1);
+                            onLinesChange(newLines);
+                            return;
+                          }
+                          const mName = normalize(monedaNombre);
+                          const isCordobas = mName.includes('CORDOBA');
+                          const isDolares = mName.includes('DOLAR');
                           const priceStr = isCordobas
                             ? item.precioBaseLocal
-                            : item.precioBaseDolar;
+                            : isDolares
+                            ? item.precioBaseDolar
+                            : item.precioBaseLocal;
                           const autoPrice = Number(priceStr) || 0;
                           const newLines = [...lines];
                           const current = newLines[index];
@@ -154,6 +177,7 @@ export function CompraLineaTabla({
                           onLinesChange(newLines);
                         }}
                         error={errors[index]?.item}
+                        bodegaId={bodegaId}
                       />
                     </TableCell>
                     <TableCell>
@@ -246,32 +270,57 @@ function ItemCombobox({
   onChange,
   error,
   onItemPick,
+  bodegaId,
 }: {
   value: number | '';
   onChange: (value: number | '') => void;
   error?: string;
-  onItemPick?: (item: (typeof mockItems)[0]) => void;
+  onItemPick?: (item: ItemResponse) => void;
+  bodegaId?: number | '';
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const { items } = useItem({ onlyActive: true });
+  const { existencias } = useExistenciaBodega();
+  const list: ItemResponse[] = Array.isArray(items) ? items : [];
+
+  const stockMap = useMemo(() => {
+    const map = new Map<string, number>();
+    const exList = Array.isArray(existencias) ? existencias : [];
+    for (const ex of exList) {
+      const bId = (ex as any)?.bodega?.idBodega;
+      const iId = (ex as any)?.item?.idItem;
+      const key = `${bId}-${iId}`;
+      const cantidad = Number((ex as any)?.cantDisponible ?? 0) || 0;
+      map.set(key, cantidad);
+    }
+    return map;
+  }, [existencias]);
+
+  const getStock = (itemId?: number) => {
+    const bId = typeof bodegaId === 'number' ? bodegaId : undefined;
+    if (!itemId || bId === undefined) return undefined;
+    const key = `${bId}-${itemId}`;
+    return stockMap.get(key) ?? 0;
+  };
 
   const selectedItem = useMemo(
-    () => mockItems.find((i) => i.idItem === value),
-    [value]
+    () => list.find((i) => i.idItem === value),
+    [list, value]
   );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return mockItems;
-    return mockItems.filter((i) =>
+    if (!q) return list;
+    return list.filter((i) =>
       `${i.codigoItem} ${i.descripcion}`.toLowerCase().includes(q)
     );
-  }, [query]);
+  }, [list, query]);
 
   return (
     <div className="w-full">
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
+        <PopoverTrigger asChild disabled={list.length === 0}>
           <Button
             variant="outline"
             role="combobox"
@@ -286,6 +335,8 @@ function ItemCombobox({
               <span className="truncate">
                 {selectedItem.codigoItem} - {selectedItem.descripcion}
               </span>
+            ) : list.length === 0 ? (
+              'Cargando items...'
             ) : (
               'Seleccionar item...'
             )}
@@ -303,30 +354,52 @@ function ItemCombobox({
             <CommandList>
               <CommandEmpty>No se encontraron items.</CommandEmpty>
               <CommandGroup>
-                {filtered.map((item) => (
-                  <CommandItem
-                    key={item.idItem}
-                    value={`${item.codigoItem} ${item.descripcion}`}
-                    onSelect={() => {
-                      onChange(item.idItem);
-                      onItemPick?.(item);
-                      setTimeout(() => setOpen(false), 0);
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        'mr-2 h-4 w-4',
-                        value === item.idItem ? 'opacity-100' : 'opacity-0'
+                {filtered.map((item) => {
+                  const stock = getStock(item.idItem);
+                  const zeroStock = typeof stock === 'number' && stock <= 0;
+                  return (
+                    <CommandItem
+                      key={item.idItem}
+                      value={`${item.codigoItem} ${item.descripcion}`}
+                      onSelect={() => {
+                        onChange(item.idItem);
+                        onItemPick?.(item);
+                        const needsMore = !value;
+                        if (needsMore) {
+                          setOpen(true);
+                        } else {
+                          setTimeout(() => setOpen(false), 0);
+                        }
+                      }}
+                      className={cn(zeroStock && 'opacity-60')}
+                    >
+                      <Check
+                        className={cn(
+                          'mr-2 h-4 w-4',
+                          value === item.idItem ? 'opacity-100' : 'opacity-0'
+                        )}
+                      />
+                      <div className="flex flex-col flex-1">
+                        <span className="font-medium">{item.codigoItem}</span>
+                        <span className="text-sm text-muted-foreground">
+                          {item.descripcion}
+                        </span>
+                      </div>
+                      {typeof stock === 'number' && (
+                        <span
+                          className={cn(
+                            'text-xs px-2 py-0.5 rounded-full',
+                            stock > 0
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : 'bg-red-100 text-red-700'
+                          )}
+                        >
+                          {stock > 0 ? `Stock: ${stock}` : 'Sin stock'}
+                        </span>
                       )}
-                    />
-                    <div className="flex flex-col">
-                      <span className="font-medium">{item.codigoItem}</span>
-                      <span className="text-sm text-muted-foreground">
-                        {item.descripcion}
-                      </span>
-                    </div>
-                  </CommandItem>
-                ))}
+                    </CommandItem>
+                  );
+                })}
               </CommandGroup>
             </CommandList>
           </Command>
