@@ -1,8 +1,9 @@
 import { clasificacionItemApi } from '../api/clasificacionItem.api';
+import { EstadoActivo } from '@/shared/types/status';
 
 export interface UpdateClasificacionItemPayload {
   descripcion?: string;
-  activo?: boolean;
+  activo?: EstadoActivo;
 }
 
 type RawPatchClasificacionItemResponse = Record<string, any> | null | undefined;
@@ -24,7 +25,7 @@ export const patchClasificacionItem = async (
     }
   }
 
-  if (typeof payload.activo === 'boolean') {
+  if (payload.activo) {
     body.activo = payload.activo;
   }
 

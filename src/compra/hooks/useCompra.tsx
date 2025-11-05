@@ -16,9 +16,10 @@ export const useCompra = (options?: UseCompraOptions) => {
     : undefined;
 
   const query = useQuery<PaginatedResponse<Compra> | Compra[]>({
-    queryKey: ['compras', paginationParams],
+    queryKey: ['compras', paginationParams?.limit, paginationParams?.offset],
     queryFn: () => getComprasAction(paginationParams),
-    staleTime: 1000 * 60 * 5,
+    staleTime: paginationParams ? 0 : 1000 * 60 * 5, // No cachear cuando hay paginación
+    keepPreviousData: false,
   });
 
   const compras = useMemo(() => {

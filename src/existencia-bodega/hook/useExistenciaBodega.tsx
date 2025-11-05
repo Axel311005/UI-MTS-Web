@@ -17,9 +17,10 @@ export const useExistenciaBodega = (options?: UseExistenciaBodegaOptions) => {
     : undefined;
 
   const query = useQuery<PaginatedResponse<ExistenciaBodega> | ExistenciaBodega[]>({
-    queryKey: ['existencia-bodega', paginationParams],
+    queryKey: ['existencia-bodega', paginationParams?.limit, paginationParams?.offset],
     queryFn: () => getExistenciaBodegasAction(paginationParams),
-    staleTime: 1000 * 60 * 5,
+    staleTime: paginationParams ? 0 : 1000 * 60 * 5, // No cachear cuando hay paginación
+    keepPreviousData: false,
   });
 
   const existencias = useMemo(() => {

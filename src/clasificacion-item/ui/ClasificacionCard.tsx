@@ -9,6 +9,7 @@ import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 import type { ClasificacionItem } from '../types/clasificacionItem.interface';
 import { formatDate } from '@/shared/utils/formatters';
+import { EstadoActivo } from '@/shared/types/status';
 
 interface ClasificacionCardProps {
   clasificacion: ClasificacionItem;
@@ -34,8 +35,16 @@ export function ClasificacionCard({
               {clasificacion.descripcion}
             </CardTitle>
           </div>
-          <Badge variant={clasificacion.activo ? 'default' : 'secondary'}>
-            {clasificacion.activo ? 'Activo' : 'Inactivo'}
+          <Badge
+            variant={
+              clasificacion.activo === EstadoActivo.ACTIVO
+                ? 'default'
+                : 'secondary'
+            }
+          >
+            {clasificacion.activo === EstadoActivo.ACTIVO
+              ? 'Activo'
+              : 'Inactivo'}
           </Badge>
         </div>
       </CardHeader>

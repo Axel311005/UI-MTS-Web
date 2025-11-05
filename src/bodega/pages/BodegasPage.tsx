@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -48,7 +48,11 @@ export function BodegasPage() {
   const limit = pageSize;
   const offset = (page - 1) * pageSize;
   const [searchTerm, setSearchTerm] = useState('');
-  const { bodegas, totalItems = 0, isLoading } = useBodega({
+  const {
+    bodegas,
+    totalItems = 0,
+    isLoading,
+  } = useBodega({
     usePagination: true,
     limit,
     offset,
@@ -60,6 +64,18 @@ export function BodegasPage() {
       b.descripcion.toLowerCase().includes(term)
     );
   }, [bodegas, searchTerm]);
+
+  useEffect(() => {
+    if (isLoading) return;
+    const computedTotalPages = Math.max(
+      Math.ceil((totalItems || 0) / pageSize),
+      1
+    );
+
+    if (page > computedTotalPages) {
+      setPage(computedTotalPages);
+    }
+  }, [isLoading, page, totalItems, pageSize]);
 
   const handleDelete = async (bodega: Bodega) => {
     const dismiss = toast.loading('Eliminando bodega...');
@@ -209,7 +225,7 @@ export function BodegasPage() {
         {totalItems > 0 && (
           <Pagination
             currentPage={page}
-            totalPages={Math.ceil(totalItems / pageSize)}
+            totalPages={Math.max(Math.ceil(totalItems / pageSize), 1)}
             pageSize={pageSize}
             totalItems={totalItems}
             onPageChange={(newPage) => {

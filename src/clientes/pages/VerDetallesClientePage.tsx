@@ -13,6 +13,7 @@ import { Badge } from '@/shared/components/ui/badge';
 import { Separator } from '@/shared/components/ui/separator';
 import { Skeleton } from '@/shared/components/ui/skeleton';
 import { getClienteById } from '../actions/get-cliente-by-id';
+import { EstadoActivo } from '@/shared/types/status';
 
 type ClienteDetalle = Awaited<ReturnType<typeof getClienteById>>;
 
@@ -138,8 +139,14 @@ export default function VerDetallesClientePage() {
               <h1 className="text-3xl font-bold tracking-tight">
                 {cliente.nombre}
               </h1>
-              <Badge variant={cliente.activo ? 'default' : 'secondary'}>
-                {cliente.activo ? 'Activo' : 'Inactivo'}
+              <Badge
+                variant={
+                  cliente.activo === EstadoActivo.ACTIVO
+                    ? 'default'
+                    : 'secondary'
+                }
+              >
+                {cliente.activo === EstadoActivo.ACTIVO ? 'Activo' : 'Inactivo'}
               </Badge>
               {cliente.esExonerado && (
                 <Badge variant="outline">Exonerado</Badge>
@@ -208,8 +215,16 @@ export default function VerDetallesClientePage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Estado</p>
-                  <Badge variant={cliente.activo ? 'default' : 'secondary'}>
-                    {cliente.activo ? 'Activo' : 'Inactivo'}
+                  <Badge
+                    variant={
+                      cliente.activo === EstadoActivo.ACTIVO
+                        ? 'default'
+                        : 'secondary'
+                    }
+                  >
+                    {cliente.activo === EstadoActivo.ACTIVO
+                      ? 'Activo'
+                      : 'Inactivo'}
                   </Badge>
                 </div>
                 <div>

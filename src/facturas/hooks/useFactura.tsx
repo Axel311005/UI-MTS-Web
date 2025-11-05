@@ -16,9 +16,9 @@ export const useFactura = (options?: UseFacturaOptions) => {
     : undefined;
 
   const query = useQuery<PaginatedResponse<Factura> | Factura[]>({
-    queryKey: ['facturas', paginationParams],
+    queryKey: ['facturas', paginationParams?.limit, paginationParams?.offset],
     queryFn: () => getFacturasAction(paginationParams),
-    staleTime: 1000 * 60 * 5,
+    staleTime: paginationParams ? 0 : 1000 * 60 * 5, // No cachear cuando hay paginación
   });
 
   const facturas = useMemo(() => {

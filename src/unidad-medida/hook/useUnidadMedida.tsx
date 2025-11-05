@@ -16,9 +16,10 @@ export const useUnidadMedida = (options?: UseUnidadMedidaOptions) => {
     : undefined;
 
   const query = useQuery<PaginatedResponse<UnidadMedida> | UnidadMedida[]>({
-    queryKey: ['unidadMedidas', paginationParams],
+    queryKey: ['unidadMedidas', paginationParams?.limit, paginationParams?.offset],
     queryFn: () => getUnidadMedidasAction(paginationParams),
-    staleTime: 1000 * 60 * 10,
+    staleTime: paginationParams ? 0 : 1000 * 60 * 10, // No cachear cuando hay paginación
+    keepPreviousData: false,
   });
 
   const unidadMedidas = useMemo(() => {

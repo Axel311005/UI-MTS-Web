@@ -16,6 +16,7 @@ import type {
 } from '../ui/cliente-form.types';
 import { getClienteById } from '../actions/get-cliente-by-id';
 import { patchCliente } from '../actions/patch-cliente';
+import { EstadoActivo } from '@/shared/types/status';
 
 export default function EditarClientePage() {
   const navigate = useNavigate();
@@ -69,7 +70,10 @@ export default function EditarClientePage() {
           telefono: cliente.telefono ?? '',
           esExonerado: Boolean(cliente.esExonerado),
           porcentajeExonerado: porcentajeValue,
-          activo: true,
+          activo:
+            cliente.activo === EstadoActivo.ACTIVO
+              ? EstadoActivo.ACTIVO
+              : EstadoActivo.INACTIVO,
           notas: cliente.notas ?? '',
         });
       } catch (error: any) {
@@ -124,7 +128,7 @@ export default function EditarClientePage() {
       : 0,
     direccion: formValues.direccion.trim(),
     telefono: formValues.telefono.trim(),
-    activo: true,
+    activo: formValues.activo,
     notas: formValues.notas.trim(),
   });
 

@@ -25,16 +25,27 @@ export const getExistenciaBodegasAction = async (params?: PaginationParams) => {
     } as PaginatedResponse<ExistenciaBodega>;
   }
 
-  const items = Array.isArray(data) ? data : [];
+  // Si viene como array simple, filtrar activos y aplicar paginación
+  const allItems = Array.isArray(data) ? data : [];
   // Filtrar existencias donde item y bodega estén activos
-  const filtered = items.filter((existencia) => {
+  const filtered = allItems.filter((existencia) => {
     const itemActivo = existencia.item?.activo !== false;
     const bodegaActiva = existencia.bodega?.activo === true || existencia.bodega?.activo === 'ACTIVO';
     return itemActivo && bodegaActiva;
   });
+  const total = filtered.length;
+  
+  // Aplicar paginación si se especificó
+  let paginatedData = filtered;
+  if (params?.limit !== undefined || params?.offset !== undefined) {
+    const start = params?.offset ?? 0;
+    const end = params?.limit !== undefined ? start + params.limit : undefined;
+    paginatedData = filtered.slice(start, end);
+  }
+  
   return {
-    data: filtered,
-    total: filtered.length,
+    data: paginatedData,
+    total: total,
     limit: params?.limit,
     offset: params?.offset,
   } as PaginatedResponse<ExistenciaBodega>;

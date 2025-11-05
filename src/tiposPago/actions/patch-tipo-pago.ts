@@ -1,8 +1,9 @@
 import { tipoPagoApi } from '../api/tipoPago.api';
+import { EstadoActivo } from '@/shared/types/status';
 
 export interface UpdateTipoPagoPayload {
   descripcion?: string;
-  activo?: boolean;
+  activo?: EstadoActivo;
 }
 
 type RawPatchTipoPagoResponse = Record<string, any> | null | undefined;
@@ -24,7 +25,7 @@ export const patchTipoPago = async (
     }
   }
 
-  if (typeof payload.activo === 'boolean') {
+  if (payload.activo) {
     body.activo = payload.activo;
   }
 
@@ -34,8 +35,10 @@ export const patchTipoPago = async (
     );
   }
 
-  const { data } =
-    await tipoPagoApi.patch<RawPatchTipoPagoResponse>(`/${id}`, body);
+  const { data } = await tipoPagoApi.patch<RawPatchTipoPagoResponse>(
+    `/${id}`,
+    body
+  );
 
   const tipoPagoId = Number(
     (data as any)?.idTipoPago ??
@@ -52,4 +55,3 @@ export const patchTipoPago = async (
 
   return { tipoPagoId, raw: data };
 };
-

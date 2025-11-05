@@ -10,6 +10,7 @@ import {
 import { useNavigate } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { EstadoActivo } from '@/shared/types/status';
 import type { Cliente } from '../types/cliente.interface';
 import { patchCliente } from '../actions/patch-cliente';
 import { toNumberOrZero } from './cliente-form.types';
@@ -51,7 +52,7 @@ export function ClienteRowActions({ cliente }: ClienteRowActionsProps) {
           : 0,
         direccion: cliente.direccion ?? '',
         telefono: cliente.telefono ?? '',
-        activo: false,
+        activo: EstadoActivo.INACTIVO,
         notas: cliente.notas ?? '',
       };
 

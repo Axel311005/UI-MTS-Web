@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -11,6 +11,7 @@ import { ClasificacionCard } from '../ui/ClasificacionCard';
 import { useClasificacionItem } from '../hook/useClasificacionItem';
 import type { ClasificacionItem } from '../types/clasificacionItem.interface';
 import { patchClasificacionItem } from '../actions/patch-clasificacion-item';
+import { EstadoActivo } from '@/shared/types/status';
 
 export function ClasificacionesPage() {
   const navigate = useNavigate();
@@ -39,6 +40,17 @@ export function ClasificacionesPage() {
     });
   }, [clasificacionItems, searchTerm]);
 
+  useEffect(() => {
+    const computedTotalPages = Math.max(
+      Math.ceil((totalItems || 0) / pageSize),
+      1
+    );
+
+    if (page > computedTotalPages) {
+      setPage(computedTotalPages);
+    }
+  }, [page, totalItems, pageSize]);
+
   const handleDelete = async (id: number) => {
     if (deletingId !== null) return;
     const confirmed = window.confirm(
@@ -49,7 +61,7 @@ export function ClasificacionesPage() {
     setDeletingId(id);
     const dismiss = toast.loading('Actualizando clasificación...');
     try {
-      await patchClasificacionItem(id, { activo: false });
+      await patchClasificacionItem(id, { activo: EstadoActivo.INACTIVO });
       toast.success('Clasificación desactivada');
       await queryClient.invalidateQueries({
         queryKey: ['clasificacionItems'],
@@ -122,7 +134,7 @@ export function ClasificacionesPage() {
         <div className="mt-6">
           <Pagination
             currentPage={page}
-            totalPages={Math.ceil(totalItems / pageSize)}
+            totalPages={Math.max(Math.ceil(totalItems / pageSize), 1)}
             pageSize={pageSize}
             totalItems={totalItems}
             onPageChange={(newPage) => {

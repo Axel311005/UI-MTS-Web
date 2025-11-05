@@ -16,21 +16,21 @@ export const useCliente = (options?: UseClienteOptions) => {
     : undefined;
 
   const query = useQuery<PaginatedResponse<Cliente> | Cliente[]>({
-    queryKey: ['clientes', paginationParams],
+    queryKey: ['clientes', paginationParams?.limit, paginationParams?.offset],
     queryFn: () => getClientesAction(paginationParams),
-    staleTime: 1000 * 60 * 5,
+    staleTime: paginationParams ? 0 : 1000 * 60 * 5, // No cachear para que siempre recargue cuando cambian los parámetros
   });
 
   const clientes = useMemo(() => {
     if (!query.data) return [];
     if (Array.isArray(query.data)) return query.data;
-    return (query.data as PaginatedResponse<Cliente>).data || [];
+    return (query.data as unknown as PaginatedResponse<Cliente>).data || [];
   }, [query.data]);
 
   const totalItems = useMemo(() => {
     if (!query.data) return 0;
     if (Array.isArray(query.data)) return query.data.length;
-    return (query.data as PaginatedResponse<Cliente>).total ?? 0;
+    return (query.data as unknown as PaginatedResponse<Cliente>).total ?? 0;
   }, [query.data]);
 
   return {

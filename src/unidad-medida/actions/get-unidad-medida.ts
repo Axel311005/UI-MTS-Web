@@ -21,11 +21,22 @@ export const getUnidadMedidasAction = async (params?: PaginationParams) => {
     } as PaginatedResponse<UnidadMedida>;
   }
 
-  const items = Array.isArray(data) ? data : [];
-  const filtered = items.filter((item) => item?.activo !== false);
+  // Si viene como array simple, filtrar activos y aplicar paginación
+  const allItems = Array.isArray(data) ? data : [];
+  const filtered = allItems.filter((item) => item?.activo !== false);
+  const total = filtered.length;
+  
+  // Aplicar paginación si se especificó
+  let paginatedData = filtered;
+  if (params?.limit !== undefined || params?.offset !== undefined) {
+    const start = params?.offset ?? 0;
+    const end = params?.limit !== undefined ? start + params.limit : undefined;
+    paginatedData = filtered.slice(start, end);
+  }
+  
   return {
-    data: filtered,
-    total: filtered.length,
+    data: paginatedData,
+    total: total,
     limit: params?.limit,
     offset: params?.offset,
   } as PaginatedResponse<UnidadMedida>;

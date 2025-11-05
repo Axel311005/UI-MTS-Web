@@ -25,17 +25,27 @@ export const getComprasAction = async (params?: PaginationParams) => {
     } as PaginatedResponse<Compra>;
   }
 
-  const items = Array.isArray(data) ? data : [];
+  // Si viene como array simple, filtrar anuladas y aplicar paginación
+  const allItems = Array.isArray(data) ? data : [];
   // Filtrar compras anuladas (por campo anulado o estado ANULADA)
-  const filtered = items.filter((compra) => {
+  const filtered = allItems.filter((compra) => {
     const isAnulado = compra.anulado === true;
     const isEstadoAnulado = typeof compra.estado === 'string' && compra.estado.toUpperCase() === 'ANULADA';
     return !isAnulado && !isEstadoAnulado;
   });
+  const total = filtered.length;
+  
+  // Aplicar paginación si se especificó
+  let paginatedData = filtered;
+  if (params?.limit !== undefined || params?.offset !== undefined) {
+    const start = params?.offset ?? 0;
+    const end = params?.limit !== undefined ? start + params.limit : undefined;
+    paginatedData = filtered.slice(start, end);
+  }
   
   return {
-    data: filtered,
-    total: filtered.length,
+    data: paginatedData,
+    total: total,
     limit: params?.limit,
     offset: params?.offset,
   } as PaginatedResponse<Compra>;

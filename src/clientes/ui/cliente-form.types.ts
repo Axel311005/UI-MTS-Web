@@ -1,3 +1,5 @@
+import { EstadoActivo } from '@/shared/types/status';
+
 export interface ClienteFormValues {
   nombre: string;
   ruc: string;
@@ -5,7 +7,7 @@ export interface ClienteFormValues {
   telefono: string;
   esExonerado: boolean;
   porcentajeExonerado: string;
-  activo: boolean;
+  activo: EstadoActivo;
   notas: string;
 }
 
@@ -20,7 +22,7 @@ export const INITIAL_CLIENTE_FORM_VALUES: ClienteFormValues = {
   telefono: '',
   esExonerado: false,
   porcentajeExonerado: '0',
-  activo: true,
+  activo: EstadoActivo.ACTIVO,
   notas: '',
 };
 

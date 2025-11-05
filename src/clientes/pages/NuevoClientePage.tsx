@@ -11,6 +11,7 @@ import {
   INITIAL_CLIENTE_FORM_VALUES,
   toNumberOrZero,
 } from '../ui/cliente-form.types';
+import { EstadoActivo } from '@/shared/types/status';
 import type {
   ClienteFormErrors,
   ClienteFormValues,
@@ -59,7 +60,7 @@ export default function NuevoClientePage() {
       : 0,
     direccion: formValues.direccion.trim(),
     telefono: formValues.telefono.trim(),
-    activo: formValues.activo,
+    activo: EstadoActivo.ACTIVO,
     notas: formValues.notas.trim(),
   });
 

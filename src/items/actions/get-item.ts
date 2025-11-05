@@ -16,10 +16,21 @@ export const getItemAction = async (params?: PaginationParams) => {
     return data as PaginatedResponse<ItemResponse>;
   }
 
-  // Si devuelve directamente un array, lo envuelvemos
+  // Si devuelve directamente un array, aplicar paginación si se especificó
+  const allItems = Array.isArray(data) ? data : [];
+  const total = allItems.length;
+  
+  // Aplicar paginación si se especificó
+  let paginatedData = allItems;
+  if (params?.limit !== undefined || params?.offset !== undefined) {
+    const start = params?.offset ?? 0;
+    const end = params?.limit !== undefined ? start + params.limit : undefined;
+    paginatedData = allItems.slice(start, end);
+  }
+  
   return {
-    data: Array.isArray(data) ? data : [],
-    total: Array.isArray(data) ? data.length : 0,
+    data: paginatedData,
+    total: total,
     limit: params?.limit,
     offset: params?.offset,
   } as PaginatedResponse<ItemResponse>;

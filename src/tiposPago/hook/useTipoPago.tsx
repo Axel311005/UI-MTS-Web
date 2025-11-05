@@ -16,9 +16,9 @@ export const useTipoPago = (options?: UseTipoPagoOptions) => {
     : undefined;
 
   const query = useQuery<PaginatedResponse<TipoPago> | TipoPago[]>({
-    queryKey: ['tipoPagos', paginationParams],
+    queryKey: ['tipoPagos', paginationParams?.limit, paginationParams?.offset],
     queryFn: () => getTipoPagosAction(paginationParams),
-    staleTime: 1000 * 60 * 10,
+    staleTime: paginationParams ? 0 : 1000 * 60 * 10, // No cachear cuando hay paginación
   });
 
   const tipoPagos = useMemo(() => {

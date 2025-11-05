@@ -10,6 +10,7 @@ import {
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { X } from '@/shared/icons';
 import { useCliente } from '@/clientes/hook/useCliente';
+import { EstadoActivo } from '@/shared/types/status';
 
 type Props = {
   // Prefer id-based selection
@@ -39,7 +40,8 @@ export const ClienteSelect: React.FC<Props> = ({
     [clientes]
   );
   const activeClientes = useMemo(
-    () => allClientes.filter((cliente) => cliente.activo),
+    () =>
+      allClientes.filter((cliente) => cliente.activo === EstadoActivo.ACTIVO),
     [allClientes]
   );
 

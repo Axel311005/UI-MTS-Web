@@ -20,9 +20,10 @@ export const useItem = (options?: UseItemOptions) => {
     : undefined;
 
   const query = useQuery<PaginatedResponse<ItemResponse> | ItemResponse[]>({
-    queryKey: ['items', paginationParams],
+    queryKey: ['items', paginationParams?.limit, paginationParams?.offset],
     queryFn: () => getItemAction(paginationParams),
-    staleTime: 1000 * 60 * 5,
+    staleTime: paginationParams ? 0 : 1000 * 60 * 5, // No cachear cuando hay paginación
+    keepPreviousData: false,
   });
 
   const { existencias } = useExistenciaBodega();

@@ -1,3 +1,5 @@
+import { EstadoActivo } from '@/shared/types/status';
+
 export interface Cliente {
   idCliente: number;
   nombre: string;
@@ -6,7 +8,7 @@ export interface Cliente {
   porcentajeExonerado: string;
   direccion: string;
   telefono: string;
-  activo: boolean;
+  activo: EstadoActivo;
   notas: string;
   fechaUltModif: null;
   fechaCreacion: Date;

@@ -93,7 +93,7 @@ export default function NuevoItemPage() {
     try {
       const payload = buildPayload();
       const response = await postItem(payload);
-      
+
       // Extraer idItem de la respuesta
       const newItemId = Number(
         (response as any)?.idItem ??

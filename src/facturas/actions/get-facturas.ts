@@ -25,17 +25,27 @@ export const getFacturasAction = async (params?: PaginationParams) => {
     } as PaginatedResponse<Factura>;
   }
 
-  const items = Array.isArray(data) ? data : [];
+  // Si viene como array simple, filtrar anuladas y aplicar paginación
+  const allItems = Array.isArray(data) ? data : [];
   // Filtrar facturas anuladas (por campo anulada o estado ANULADA)
-  const filtered = items.filter((factura) => {
+  const filtered = allItems.filter((factura) => {
     const isAnulada = factura.anulada === true;
     const isEstadoAnulado = typeof factura.estado === 'string' && factura.estado.toUpperCase() === 'ANULADA';
     return !isAnulada && !isEstadoAnulado;
   });
+  const total = filtered.length;
+  
+  // Aplicar paginación si se especificó
+  let paginatedData = filtered;
+  if (params?.limit !== undefined || params?.offset !== undefined) {
+    const start = params?.offset ?? 0;
+    const end = params?.limit !== undefined ? start + params.limit : undefined;
+    paginatedData = filtered.slice(start, end);
+  }
   
   return {
-    data: filtered,
-    total: filtered.length,
+    data: paginatedData,
+    total: total,
     limit: params?.limit,
     offset: params?.offset,
   } as PaginatedResponse<Factura>;

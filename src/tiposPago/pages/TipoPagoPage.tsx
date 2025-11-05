@@ -1,7 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Eye, Edit, Trash2, CreditCard } from '@/shared/icons';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 import {
@@ -23,6 +28,7 @@ import { TipoPagoHeader } from '../ui/TipoPagoHeader';
 import { TipoPagoSearchBar } from '../ui/TipoPagoSearchBar';
 import { useTipoPago } from '../hook/useTipoPago';
 import { patchTipoPago } from '../actions/patch-tipo-pago';
+import { EstadoActivo } from '@/shared/types/status';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { formatDate } from '@/shared/utils/formatters';
@@ -54,9 +60,20 @@ export function TiposPagoPage() {
     });
   }, [tipoPagos, searchTerm]);
 
+  useEffect(() => {
+    const computedTotalPages = Math.max(
+      Math.ceil((totalItems || 0) / pageSize),
+      1
+    );
+
+    if (page > computedTotalPages) {
+      setPage(computedTotalPages);
+    }
+  }, [page, totalItems, pageSize]);
+
   const handleDelete = async (id: number) => {
     try {
-      await patchTipoPago(id, { activo: false });
+      await patchTipoPago(id, { activo: EstadoActivo.INACTIVO });
       toast.success('Tipo de pago eliminado');
       await queryClient.invalidateQueries({ queryKey: ['tipoPagos'] });
     } catch (error: any) {
@@ -108,8 +125,16 @@ export function TiposPagoPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={tipo.activo ? 'default' : 'secondary'}>
-                      {tipo.activo ? 'Activo' : 'Inactivo'}
+                    <Badge
+                      variant={
+                        tipo.activo === EstadoActivo.ACTIVO
+                          ? 'default'
+                          : 'secondary'
+                      }
+                    >
+                      {tipo.activo === EstadoActivo.ACTIVO
+                        ? 'Activo'
+                        : 'Inactivo'}
                     </Badge>
                   </TableCell>
                   <TableCell>{formatDate(tipo.fechaCreacion)}</TableCell>
@@ -123,7 +148,9 @@ export function TiposPagoPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem
-                          onClick={() => navigate(`/tipos-pago/${tipo.idTipoPago}/editar`)}
+                          onClick={() =>
+                            navigate(`/tipos-pago/${tipo.idTipoPago}/editar`)
+                          }
                         >
                           <Edit className="mr-2 h-4 w-4" />
                           Editar
@@ -146,7 +173,7 @@ export function TiposPagoPage() {
         {totalItems > 0 && (
           <Pagination
             currentPage={page}
-            totalPages={Math.ceil(totalItems / pageSize)}
+            totalPages={Math.max(Math.ceil(totalItems / pageSize), 1)}
             pageSize={pageSize}
             totalItems={totalItems}
             onPageChange={(newPage) => {

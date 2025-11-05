@@ -16,9 +16,9 @@ export const useBodega = (options?: UseBodegaOptions) => {
     : undefined;
 
   const query = useQuery<PaginatedResponse<Bodega> | Bodega[]>({
-    queryKey: ['bodegas', paginationParams],
+    queryKey: ['bodegas', paginationParams?.limit, paginationParams?.offset],
     queryFn: () => getBodegasAction(paginationParams),
-    staleTime: 1000 * 60 * 5,
+    staleTime: paginationParams ? 0 : 1000 * 60 * 5, // No cachear cuando hay paginación
   });
 
   const bodegas = useMemo(() => {

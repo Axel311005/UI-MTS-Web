@@ -1,4 +1,5 @@
 import { tallerApi } from '@/shared/api/tallerApi';
+import { EstadoActivo } from '@/shared/types/status';
 
 export interface CreateClientePayload {
   nombre: string;
@@ -7,7 +8,7 @@ export interface CreateClientePayload {
   porcentajeExonerado: number;
   direccion: string;
   telefono: string;
-  activo: boolean;
+  activo: EstadoActivo;
   notas: string;
 }
 
