@@ -16,12 +16,18 @@ export const ItemPage = () => {
   const limit = pageSize;
   const offset = (page - 1) * pageSize;
 
-  const { items, totalItems = 0, isLoading, isError, refetch } = useItem({
+  const {
+    items,
+    totalItems = 0,
+    isLoading,
+    isError,
+    refetch,
+  } = useItem({
     usePagination: true,
     limit,
     offset,
   });
-  
+
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [clasificacionFilter, setClasificacionFilter] = useState<string>('all');
@@ -54,7 +60,7 @@ export const ItemPage = () => {
       })
       .filter((item) => {
         if (statusFilter === 'ALL') return true;
-        const estado = item.estado || (item.activo ? 'ACTIVO' : 'INACTIVO');
+        const estado = item.estado || item.activo;
         return estado === statusFilter;
       });
   }, [items, searchTerm, clasificacionFilter, statusFilter]);

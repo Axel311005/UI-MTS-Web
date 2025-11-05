@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select';
 import type { ItemFormValues, ItemFormErrors } from './item-form.types';
+import { EstadoActivo } from '@/shared/types/status';
 import { useClasificacionItem } from '@/clasificacion-item/hook/useClasificacionItem';
 import { useUnidadMedida } from '@/unidad-medida/hook/useUnidadMedida';
 
@@ -303,8 +304,13 @@ export function ItemForm({
               </div>
               <Switch
                 id="activo"
-                checked={values.activo}
-                onCheckedChange={(checked) => handleChange('activo', checked)}
+                checked={values.activo === EstadoActivo.ACTIVO}
+                onCheckedChange={(checked) =>
+                  handleChange(
+                    'activo',
+                    checked ? EstadoActivo.ACTIVO : EstadoActivo.INACTIVO
+                  )
+                }
               />
             </div>
           )}

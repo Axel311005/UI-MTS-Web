@@ -1,8 +1,9 @@
 import { UnidadMedidaApi } from '../api/unidadMedida.api';
+import { EstadoActivo } from '@/shared/types/status';
 
 export interface UpdateUnidadMedidaPayload {
   descripcion?: string;
-  activo?: boolean;
+  activo?: EstadoActivo;
 }
 
 type RawPatchUnidadMedidaResponse = Record<string, any> | null | undefined;
@@ -24,7 +25,7 @@ export const patchUnidadMedida = async (
     }
   }
 
-  if (typeof payload.activo === 'boolean') {
+  if (payload.activo) {
     body.activo = payload.activo;
   }
 
@@ -34,11 +35,10 @@ export const patchUnidadMedida = async (
     );
   }
 
-  const { data } =
-    await UnidadMedidaApi.patch<RawPatchUnidadMedidaResponse>(
-      `/${id}`,
-      body
-    );
+  const { data } = await UnidadMedidaApi.patch<RawPatchUnidadMedidaResponse>(
+    `/${id}`,
+    body
+  );
 
   const unidadMedidaId = Number(
     (data as any)?.idUnidadMedida ??
@@ -55,4 +55,3 @@ export const patchUnidadMedida = async (
 
   return { unidadMedidaId, raw: data };
 };
-

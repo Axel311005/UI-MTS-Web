@@ -39,6 +39,7 @@ import { Pagination } from '@/shared/components/ui/pagination';
 import type { Bodega } from '../types/bodega.interface';
 import { useBodega } from '../hook/useBodega';
 import { patchBodegaAction } from '../actions/patch-bodega';
+import { EstadoActivo } from '@/shared/types/status';
 
 export function BodegasPage() {
   const navigate = useNavigate();
@@ -78,9 +79,12 @@ export function BodegasPage() {
   }, [isLoading, page, totalItems, pageSize]);
 
   const handleDelete = async (bodega: Bodega) => {
-    const dismiss = toast.loading('Eliminando bodega...');
+    let dismiss: string | number | undefined;
     try {
-      await patchBodegaAction(bodega.idBodega, { activo: 'INACTIVO' });
+      dismiss = toast.loading('Eliminando bodega...');
+      await patchBodegaAction(bodega.idBodega, {
+        activo: EstadoActivo.INACTIVO,
+      });
       toast.success('Bodega eliminada');
       await queryClient.invalidateQueries({
         queryKey: ['bodegas'],
@@ -95,7 +99,9 @@ export function BodegasPage() {
         'No se pudo eliminar la bodega';
       toast.error(message);
     } finally {
-      toast.dismiss(dismiss);
+      if (dismiss !== undefined) {
+        toast.dismiss(dismiss);
+      }
     }
   };
 

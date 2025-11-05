@@ -16,13 +16,14 @@ import {
 } from '@/shared/components/ui/table';
 import { ItemRowActions } from './ItemRowActions';
 import type { ItemResponse } from '../types/item.response';
+import { EstadoActivo } from '@/shared/types/status';
 
 interface ItemTableProps {
   items: ItemResponse[];
 }
 
 export function ItemTable({ items }: ItemTableProps) {
-  const activos = items.filter((item) => item.activo !== false);
+  const activos = items.filter((item) => item.activo === EstadoActivo.ACTIVO);
   const total = activos.length;
 
   return (
@@ -60,8 +61,7 @@ export function ItemTable({ items }: ItemTableProps) {
               const precioDolar = Number.isFinite(precioDolarValue)
                 ? precioDolarValue
                 : 0;
-              const estado =
-                item.estado || (item.activo ? 'ACTIVO' : 'INACTIVO');
+              const estado = item.estado || item.activo;
               const stockDisponible = Array.isArray(item.existencias)
                 ? item.existencias.reduce((total, existencia) => {
                     const cantidad = Number.parseFloat(

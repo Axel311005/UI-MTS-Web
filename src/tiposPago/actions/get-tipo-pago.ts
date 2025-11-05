@@ -6,6 +6,21 @@ import type {
 } from '@/shared/types/pagination';
 import { EstadoActivo } from '@/shared/types/status';
 
+const coerceActivo = (raw: any): EstadoActivo => {
+  if (raw === true) return EstadoActivo.ACTIVO;
+  if (raw === false) return EstadoActivo.INACTIVO;
+  if (String(raw).toUpperCase() === EstadoActivo.ACTIVO)
+    return EstadoActivo.ACTIVO;
+  if (String(raw).toUpperCase() === EstadoActivo.INACTIVO)
+    return EstadoActivo.INACTIVO;
+  return EstadoActivo.ACTIVO;
+};
+
+const normalize = (t: any): TipoPago => ({
+  ...(t as TipoPago),
+  activo: coerceActivo((t as any)?.activo ?? (t as any)?.estado),
+});
+
 export const getTipoPagosAction = async (params?: PaginationParams) => {
   const queryParams: Record<string, number> = {};
   if (params?.limit !== undefined) queryParams.limit = params.limit;
@@ -24,7 +39,8 @@ export const getTipoPagosAction = async (params?: PaginationParams) => {
     Array.isArray((data as any).data)
   ) {
     const paged = data as PaginatedResponse<TipoPago>;
-    const filteredPage = (paged.data || []).filter(
+    const normalizedPage = (paged.data || []).map(normalize);
+    const filteredPage = normalizedPage.filter(
       (item) => item?.activo === EstadoActivo.ACTIVO
     );
 
@@ -52,7 +68,7 @@ export const getTipoPagosAction = async (params?: PaginationParams) => {
   }
 
   // Si viene como array simple, filtrar activos y aplicar paginación
-  const allItems = Array.isArray(data) ? data : [];
+  const allItems = Array.isArray(data) ? data.map(normalize) : [];
   const filtered = allItems.filter(
     (item) => item?.activo === EstadoActivo.ACTIVO
   );

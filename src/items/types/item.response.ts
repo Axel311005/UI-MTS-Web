@@ -1,6 +1,7 @@
 import type { FacturaLinea } from '@/facturas/types/Factura.interface';
+import { EstadoActivo } from '@/shared/types/status';
 
-export type ItemEstado = 'ACTIVO' | 'INACTIVO';
+export type ItemTipo = 'PRODUCTO' | 'SERVICIO';
 
 export interface ItemResponse {
   idItem: number;
@@ -8,7 +9,7 @@ export interface ItemResponse {
   unidadMedida: Clasificacion;
   codigoItem: string;
   descripcion: string;
-  tipo: string;
+  tipo: ItemTipo;
   precioBaseLocal: string;
   precioBaseDolar: string;
   precioAdquisicionLocal: string;
@@ -20,8 +21,8 @@ export interface ItemResponse {
   fechaUltModif: Date;
   perecedero: boolean;
   fechaCreacion: Date;
-  estado: ItemEstado;
-  activo?: boolean;
+  activo: EstadoActivo;
+  estado?: EstadoActivo;
   facturaLineas: FacturaLinea[];
   compraLineas: CompraLinea[];
   existencias: Existencia[];

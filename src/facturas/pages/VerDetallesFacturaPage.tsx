@@ -487,9 +487,15 @@ export default function VerDetallesFacturaPage() {
               <div>
                 <p className="text-sm text-muted-foreground">Estado</p>
                 <Badge
-                  variant={factura.impuesto.activo ? 'default' : 'secondary'}
+                  variant={
+                    (factura.impuesto as any).activo === 'ACTIVO'
+                      ? 'default'
+                      : 'secondary'
+                  }
                 >
-                  {factura.impuesto.activo ? 'Activo' : 'Inactivo'}
+                  {(factura.impuesto as any).activo === 'ACTIVO'
+                    ? 'Activo'
+                    : 'Inactivo'}
                 </Badge>
               </div>
             </CardContent>

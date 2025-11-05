@@ -274,9 +274,7 @@ export default function VerDetallesCompraPage() {
                   <p className="text-sm text-muted-foreground">
                     Tipo de cambio
                   </p>
-                  <p className="font-medium">
-                    {compra.tipoCambioUsado ?? '—'}
-                  </p>
+                  <p className="font-medium">{compra.tipoCambioUsado ?? '—'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Tipo de pago</p>
@@ -506,9 +504,15 @@ export default function VerDetallesCompraPage() {
                 <div>
                   <p className="text-sm text-muted-foreground">Estado</p>
                   <Badge
-                    variant={compra.impuesto.activo ? 'default' : 'secondary'}
+                    variant={
+                      (compra.impuesto as any).activo === 'ACTIVO'
+                        ? 'default'
+                        : 'secondary'
+                    }
                   >
-                    {compra.impuesto.activo ? 'Activo' : 'Inactivo'}
+                    {(compra.impuesto as any).activo === 'ACTIVO'
+                      ? 'Activo'
+                      : 'Inactivo'}
                   </Badge>
                 </div>
               </CardContent>

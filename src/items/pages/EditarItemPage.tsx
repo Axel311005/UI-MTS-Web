@@ -13,6 +13,7 @@ import {
 import type { ItemFormErrors, ItemFormValues } from '../ui/item-form.types';
 import { getItemById } from '../actions/get-item-by-id';
 import { patchItem } from '../actions/patch-item';
+import { EstadoActivo } from '@/shared/types/status';
 
 export default function EditarItemPage() {
   const navigate = useNavigate();
@@ -68,7 +69,10 @@ export default function EditarItemPage() {
             ? new Date(item.fechaUltModif).toISOString()
             : '',
           perecedero: Boolean(item.perecedero),
-          activo: true,
+          activo:
+            (item as any).activo === 'INACTIVO'
+              ? EstadoActivo.INACTIVO
+              : EstadoActivo.ACTIVO,
         });
       } catch (error: any) {
         const raw = error?.response?.data;
@@ -141,7 +145,7 @@ export default function EditarItemPage() {
     usuarioUltModif: formValues.usuarioUltModif,
     fechaUltModif: new Date().toISOString(),
     perecedero: formValues.perecedero,
-    activo: true,
+    activo: formValues.activo,
   });
 
   const handleSave = async () => {

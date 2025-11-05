@@ -1,6 +1,5 @@
 import { bodegaApi } from '../api/bodega.api';
-
-type EstadoActivo = 'ACTIVO' | 'INACTIVO';
+import { EstadoActivo } from '@/shared/types/status';
 
 export const patchBodegaAction = async (
   idBodega: number,

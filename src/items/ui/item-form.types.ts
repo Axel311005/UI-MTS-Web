@@ -1,9 +1,13 @@
+import { EstadoActivo } from '@/shared/types/status';
+
+export type ItemTipo = 'PRODUCTO' | 'SERVICIO';
+
 export interface ItemFormValues {
   clasificacionId: number | '';
   unidadMedidaId: number | '';
   codigoItem: string;
   descripcion: string;
-  tipo: string;
+  tipo: ItemTipo;
   precioBaseLocal: string;
   precioBaseDolar: string;
   precioAdquisicionLocal: string;
@@ -14,7 +18,7 @@ export interface ItemFormValues {
   usuarioUltModif: string;
   fechaUltModif: string;
   perecedero: boolean;
-  activo: boolean;
+  activo: EstadoActivo;
 }
 
 export interface ItemFormErrors {
@@ -37,7 +41,7 @@ export const INITIAL_ITEM_FORM_VALUES: ItemFormValues = {
   usuarioUltModif: '',
   fechaUltModif: '',
   perecedero: false,
-  activo: true,
+  activo: EstadoActivo.ACTIVO,
 };
 
 export function toNumberOrZero(val: string | number | undefined): number {

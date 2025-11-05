@@ -4,6 +4,7 @@ import { getItemAction } from '../actions/get-item';
 import type { ItemResponse } from '../types/item.response';
 import type { PaginatedResponse } from '@/shared/types/pagination';
 import { useExistenciaBodega } from '@/existencia-bodega/hook/useExistenciaBodega';
+import { EstadoActivo } from '@/shared/types/status';
 
 interface UseItemOptions {
   bodegaId?: number | '';
@@ -23,7 +24,6 @@ export const useItem = (options?: UseItemOptions) => {
     queryKey: ['items', paginationParams?.limit, paginationParams?.offset],
     queryFn: () => getItemAction(paginationParams),
     staleTime: paginationParams ? 0 : 1000 * 60 * 5, // No cachear cuando hay paginación
-    keepPreviousData: false,
   });
 
   const { existencias } = useExistenciaBodega();
@@ -55,8 +55,12 @@ export const useItem = (options?: UseItemOptions) => {
 
   const items = useMemo(() => {
     const base0 = rawData;
-    const isActive = (i: ItemResponse) =>
-      (i as any)?.activo !== false && (i as any)?.estado !== 'INACTIVO';
+    const isActive = (i: ItemResponse) => {
+      const activoVal = (i as any)?.activo ?? (i as any)?.estado;
+      if (activoVal === true) return true;
+      if (activoVal === false) return false;
+      return String(activoVal).toUpperCase() === EstadoActivo.ACTIVO;
+    };
     const base = options?.onlyActive === false ? base0 : base0.filter(isActive);
     const bId =
       typeof options?.bodegaId === 'number' ? options?.bodegaId : undefined;

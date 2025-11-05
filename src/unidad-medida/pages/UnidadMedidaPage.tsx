@@ -1,7 +1,12 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Plus, Search, Filter, Eye, Edit, Trash2, Ruler } from '@/shared/icons';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Badge } from '@/shared/components/ui/badge';
@@ -26,6 +31,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { formatDate } from '@/shared/utils/formatters';
 import type { UnidadMedida } from '../types/unidadMedida.interface';
+import { EstadoActivo } from '@/shared/types/status';
 
 export function UnidadesMedidaPage() {
   const navigate = useNavigate();
@@ -54,7 +60,7 @@ export function UnidadesMedidaPage() {
 
   const handleDelete = async (id: number) => {
     try {
-      await patchUnidadMedida(id, { activo: false });
+      await patchUnidadMedida(id, { activo: EstadoActivo.INACTIVO });
       toast.success('Unidad de medida eliminada');
       await queryClient.invalidateQueries({ queryKey: ['unidadMedidas'] });
     } catch (error: any) {
@@ -66,12 +72,17 @@ export function UnidadesMedidaPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Unidades de Medida</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Unidades de Medida
+          </h1>
           <p className="text-muted-foreground">
             Gestiona las unidades de medida para tus productos
           </p>
         </div>
-        <Button className="button-hover" onClick={() => navigate('/unidades-medida/nueva')}>
+        <Button
+          className="button-hover"
+          onClick={() => navigate('/unidades-medida/nueva')}
+        >
           <Plus className="h-4 w-4 mr-2" />
           Nueva Unidad
         </Button>
@@ -112,7 +123,10 @@ export function UnidadesMedidaPage() {
             </TableHeader>
             <TableBody>
               {filteredUnidades.map((unidad) => (
-                <TableRow key={unidad.idUnidadMedida} className="table-row-hover">
+                <TableRow
+                  key={unidad.idUnidadMedida}
+                  className="table-row-hover"
+                >
                   <TableCell className="font-medium">
                     <div className="flex items-center space-x-2">
                       <Ruler className="h-4 w-4 text-muted-foreground" />
@@ -120,8 +134,16 @@ export function UnidadesMedidaPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={unidad.activo ? 'default' : 'secondary'}>
-                      {unidad.activo ? 'Activo' : 'Inactivo'}
+                    <Badge
+                      variant={
+                        unidad.activo === EstadoActivo.ACTIVO
+                          ? 'default'
+                          : 'secondary'
+                      }
+                    >
+                      {unidad.activo === EstadoActivo.ACTIVO
+                        ? 'Activo'
+                        : 'Inactivo'}
                     </Badge>
                   </TableCell>
                   <TableCell>{formatDate(unidad.fechaCreacion)}</TableCell>
@@ -135,7 +157,11 @@ export function UnidadesMedidaPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem
-                          onClick={() => navigate(`/unidades-medida/${unidad.idUnidadMedida}/editar`)}
+                          onClick={() =>
+                            navigate(
+                              `/unidades-medida/${unidad.idUnidadMedida}/editar`
+                            )
+                          }
                         >
                           <Edit className="mr-2 h-4 w-4" />
                           Editar

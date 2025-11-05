@@ -1,7 +1,9 @@
+import { EstadoActivo } from '@/shared/types/status';
+
 export interface Moneda {
   idMoneda: number;
   descripcion: string;
   tipoCambio: string;
-  activo: boolean;
+  activo: EstadoActivo;
   fechaCreacion: Date;
 }

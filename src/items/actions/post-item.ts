@@ -1,11 +1,14 @@
 import { itemApi } from '../api/item.api';
+import { EstadoActivo } from '@/shared/types/status';
+
+export type ItemTipo = 'PRODUCTO' | 'SERVICIO';
 
 export interface CreateItemPayload {
   clasificacionId: number;
   unidadMedidaId: number;
   codigoItem: string;
   descripcion: string;
-  tipo: string;
+  tipo: ItemTipo;
   precioBaseLocal: number;
   precioBaseDolar: number;
   precioAdquisicionLocal: number;
@@ -16,7 +19,7 @@ export interface CreateItemPayload {
   usuarioUltModif: string;
   fechaUltModif: string | null;
   perecedero: boolean;
-  activo: boolean;
+  activo: EstadoActivo;
 }
 
 export const postItem = async (payload: CreateItemPayload) => {

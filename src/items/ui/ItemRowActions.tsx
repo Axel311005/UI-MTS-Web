@@ -11,6 +11,7 @@ import {
 import type { ItemResponse } from '../types/item.response';
 
 import { patchItem } from '../actions/patch-item';
+import { EstadoActivo } from '@/shared/types/status';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface ItemRowActionsProps {
@@ -58,7 +59,7 @@ export function ItemRowActions({ item }: ItemRowActionsProps) {
           ? new Date(item.fechaUltModif).toISOString()
           : null,
         perecedero: item.perecedero,
-        activo: false,
+        activo: EstadoActivo.INACTIVO,
       });
       toast.success('Producto eliminado correctamente');
       await queryClient.invalidateQueries({

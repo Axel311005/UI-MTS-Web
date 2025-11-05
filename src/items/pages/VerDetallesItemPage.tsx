@@ -14,6 +14,7 @@ import { Separator } from '@/shared/components/ui/separator';
 import { Skeleton } from '@/shared/components/ui/skeleton';
 import { getItemById } from '../actions/get-item-by-id';
 import type { ItemResponse } from '../types/item.response';
+import { EstadoActivo } from '@/shared/types/status';
 
 type ItemDetalle = ItemResponse | null;
 
@@ -138,8 +139,12 @@ function VerDetallesItemPage() {
               <h1 className="text-3xl font-bold tracking-tight">
                 {item.descripcion}
               </h1>
-              <Badge variant={item.activo ? 'default' : 'secondary'}>
-                {item.activo ? 'Activo' : 'Inactivo'}
+              <Badge
+                variant={
+                  item.activo === EstadoActivo.ACTIVO ? 'default' : 'secondary'
+                }
+              >
+                {item.activo === EstadoActivo.ACTIVO ? 'Activo' : 'Inactivo'}
               </Badge>
               <Badge variant="outline">{item.tipo}</Badge>
               {item.esCotizable && <Badge variant="outline">Cotizable</Badge>}
@@ -267,8 +272,14 @@ function VerDetallesItemPage() {
             <CardContent className="space-y-4">
               <div>
                 <p className="text-sm text-muted-foreground">Estado</p>
-                <Badge variant={item.activo ? 'default' : 'secondary'}>
-                  {item.activo ? 'Activo' : 'Inactivo'}
+                <Badge
+                  variant={
+                    item.activo === EstadoActivo.ACTIVO
+                      ? 'default'
+                      : 'secondary'
+                  }
+                >
+                  {item.activo === EstadoActivo.ACTIVO ? 'Activo' : 'Inactivo'}
                 </Badge>
               </div>
 
