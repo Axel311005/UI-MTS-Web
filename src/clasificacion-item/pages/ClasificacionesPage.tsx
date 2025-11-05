@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Tag } from '@/shared/icons';
 import { Card, CardContent } from '@/shared/components/ui/card';
+import { Pagination } from '@/shared/components/ui/pagination';
 import { ClasificacionHeader } from '../ui/ClasificacionHeader';
 import { ClasificacionSearchBar } from '../ui/ClasificacionSearchBar';
 import { ClasificacionCard } from '../ui/ClasificacionCard';
@@ -12,11 +13,19 @@ import type { ClasificacionItem } from '../types/clasificacionItem.interface';
 import { patchClasificacionItem } from '../actions/patch-clasificacion-item';
 
 export function ClasificacionesPage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
-  const { clasificacionItems } = useClasificacionItem();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const limit = pageSize;
+  const offset = (page - 1) * pageSize;
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const { clasificacionItems, totalItems = 0 } = useClasificacionItem({
+    usePagination: true,
+    limit,
+    offset,
+  });
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const filteredClasificaciones = useMemo<ClasificacionItem[]>(() => {
@@ -68,7 +77,10 @@ export function ClasificacionesPage() {
 
       <ClasificacionSearchBar
         value={searchTerm}
-        onValueChange={setSearchTerm}
+        onValueChange={(value) => {
+          setSearchTerm(value);
+          setPage(1);
+        }}
         showFilters={showFilters}
         onToggleFilters={() => setShowFilters((prev) => !prev)}
       />
@@ -104,6 +116,25 @@ export function ClasificacionesPage() {
             </p>
           </CardContent>
         </Card>
+      )}
+
+      {totalItems > 0 && (
+        <div className="mt-6">
+          <Pagination
+            currentPage={page}
+            totalPages={Math.ceil(totalItems / pageSize)}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            onPageChange={(newPage) => {
+              setPage(newPage);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setPage(1);
+            }}
+          />
+        </div>
       )}
     </div>
   );

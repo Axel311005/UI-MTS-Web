@@ -34,6 +34,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
+import { Pagination } from '@/shared/components/ui/pagination';
 
 import type { Bodega } from '../types/bodega.interface';
 import { useBodega } from '../hook/useBodega';
@@ -42,8 +43,16 @@ import { patchBodegaAction } from '../actions/patch-bodega';
 export function BodegasPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const limit = pageSize;
+  const offset = (page - 1) * pageSize;
   const [searchTerm, setSearchTerm] = useState('');
-  const { bodegas, isLoading } = useBodega();
+  const { bodegas, totalItems = 0, isLoading } = useBodega({
+    usePagination: true,
+    limit,
+    offset,
+  });
 
   const filteredBodegas = useMemo(() => {
     const term = searchTerm.toLowerCase();
@@ -100,7 +109,10 @@ export function BodegasPage() {
           <Input
             placeholder="Buscar bodegas..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setPage(1);
+            }}
             className="pl-10"
           />
         </div>
@@ -118,7 +130,6 @@ export function BodegasPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>ID</TableHead>
                 <TableHead>Descripción</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead>Fecha Creación</TableHead>
@@ -128,12 +139,12 @@ export function BodegasPage() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={5}>Cargando...</TableCell>
+                  <TableCell colSpan={4}>Cargando...</TableCell>
                 </TableRow>
               ) : filteredBodegas.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={5}
+                    colSpan={4}
                     className="text-center text-muted-foreground py-8"
                   >
                     {searchTerm
@@ -144,9 +155,6 @@ export function BodegasPage() {
               ) : (
                 filteredBodegas.map((bodega) => (
                   <TableRow key={bodega.idBodega} className="table-row-hover">
-                    <TableCell className="font-medium">
-                      {bodega.idBodega}
-                    </TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
                         <Warehouse className="h-4 w-4 text-muted-foreground" />
@@ -198,6 +206,22 @@ export function BodegasPage() {
             </TableBody>
           </Table>
         </CardContent>
+        {totalItems > 0 && (
+          <Pagination
+            currentPage={page}
+            totalPages={Math.ceil(totalItems / pageSize)}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            onPageChange={(newPage) => {
+              setPage(newPage);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setPage(1);
+            }}
+          />
+        )}
       </Card>
     </div>
   );

@@ -1,5 +1,6 @@
 import { compraApi } from '../api/compra.api';
 import type { Compra } from '../types/Compra.interface';
+import type { PaginatedResponse } from '@/shared/types/pagination';
 
 // Opciones ricas similares a las de facturas, con compat de nombres y soporte de ids
 interface SearchCompraOptions {
@@ -34,6 +35,7 @@ interface SearchCompraOptions {
   // Paginación y ordenamiento (usar valores que backend espera)
   page?: number | string;
   limit?: number | string;
+  offset?: number | string;
   // Backend espera valores string del enum: 'fecha' | 'total' | 'codigo_compra' | 'bodega' | 'empleado' | 'tipo_pago' | 'moneda'
   sortBy?:
     | 'fecha'
@@ -48,7 +50,7 @@ interface SearchCompraOptions {
 
 export const SearchComprasAction = async (
   options: SearchCompraOptions
-): Promise<Compra[]> => {
+): Promise<PaginatedResponse<Compra>> => {
   const {
     codigo_compra,
     codigoLike,
@@ -70,6 +72,7 @@ export const SearchComprasAction = async (
     maxTotal,
     page,
     limit,
+    offset,
     sortBy,
     sortDir,
   } = options ?? {};
@@ -96,10 +99,11 @@ export const SearchComprasAction = async (
     maxTotal,
     page,
     limit,
+    offset,
     sortBy,
     sortDir,
   ].some((v) => v !== undefined && v !== null && String(v).trim?.() !== '');
-  if (!hasAny) return [];
+  if (!hasAny) return { data: [], total: 0 } as PaginatedResponse<Compra>;
 
   const params: Record<string, unknown> = {};
   if (codigo_compra) params.codigo_compra = codigo_compra;
@@ -136,15 +140,38 @@ export const SearchComprasAction = async (
 
   if (page !== undefined && page !== '') params.page = page;
   if (limit !== undefined && limit !== '') params.limit = limit;
+  if (offset !== undefined && offset !== '') params.offset = offset;
   if (sortBy) params.sortBy = sortBy; // enviar valor en minúscula según DTO
   if (sortDir) params.sortDir = sortDir;
 
   const response = await compraApi.get('/search', { params });
   const raw = response.data as unknown;
-  if (Array.isArray(raw)) return raw as Compra[];
-  if (raw && Array.isArray((raw as any).data))
-    return (raw as any).data as Compra[];
-  if (raw && Array.isArray((raw as any).results))
-    return (raw as any).results as Compra[];
-  return [];
+  
+  // Helper para filtrar compras anuladas
+  const filterAnuladas = (compras: Compra[]): Compra[] => {
+    return compras.filter((compra) => {
+      const isAnulado = compra.anulado === true;
+      const isEstadoAnulado = typeof compra.estado === 'string' && compra.estado.toUpperCase() === 'ANULADA';
+      return !isAnulado && !isEstadoAnulado;
+    });
+  };
+  
+  // Si viene con estructura paginada
+  if (raw && typeof raw === 'object' && 'data' in raw && Array.isArray((raw as any).data)) {
+    const filtered = filterAnuladas((raw as any).data);
+    return {
+      ...raw,
+      data: filtered,
+      total: filtered.length,
+    } as PaginatedResponse<Compra>;
+  }
+  if (Array.isArray(raw)) {
+    const filtered = filterAnuladas(raw);
+    return { data: filtered, total: filtered.length } as PaginatedResponse<Compra>;
+  }
+  if (raw && Array.isArray((raw as any).results)) {
+    const filtered = filterAnuladas((raw as any).results);
+    return { data: filtered, total: filtered.length } as PaginatedResponse<Compra>;
+  }
+  return { data: [], total: 0 } as PaginatedResponse<Compra>;
 };

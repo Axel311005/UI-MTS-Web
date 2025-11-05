@@ -1,14 +1,43 @@
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { ClasificacionItem } from '../types/clasificacionItem.interface';
 import { getClasificacionItemsAction } from '../actions/get-clasificacion-item';
+import type { PaginatedResponse } from '@/shared/types/pagination';
 
-export const useClasificacionItem = () => {
-  const query = useQuery<ClasificacionItem[]>({
-    queryKey: ['clasificacionItems'],
-    queryFn: getClasificacionItemsAction,
+interface UseClasificacionItemOptions {
+  limit?: number;
+  offset?: number;
+  usePagination?: boolean;
+}
+
+export const useClasificacionItem = (options?: UseClasificacionItemOptions) => {
+  const paginationParams = options?.usePagination
+    ? { limit: options.limit ?? 10, offset: options.offset ?? 0 }
+    : undefined;
+
+  const query = useQuery<PaginatedResponse<ClasificacionItem> | ClasificacionItem[]>({
+    queryKey: ['clasificacionItems', paginationParams],
+    queryFn: () => getClasificacionItemsAction(paginationParams),
     staleTime: 1000 * 60 * 5,
   });
+
+  const clasificacionItems = useMemo(() => {
+    if (!query.data) return [];
+    if (Array.isArray(query.data)) return query.data;
+    return (query.data as PaginatedResponse<ClasificacionItem>).data || [];
+  }, [query.data]);
+
+  const totalItems = useMemo(() => {
+    if (!query.data) return 0;
+    if (Array.isArray(query.data)) return query.data.length;
+    return (query.data as PaginatedResponse<ClasificacionItem>).total ?? 0;
+  }, [query.data]);
+
   return {
-    clasificacionItems: query.data ?? [],
+    clasificacionItems,
+    totalItems,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    refetch: query.refetch,
   };
 };

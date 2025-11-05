@@ -32,12 +32,21 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
+import { Pagination } from '@/shared/components/ui/pagination';
 import { useExistenciaBodega } from '../hook/useExistenciaBodega';
 
 export function ExistenciaBodegaPage() {
   const navigate = useNavigate();
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const limit = pageSize;
+  const offset = (page - 1) * pageSize;
   const [searchTerm, setSearchTerm] = useState('');
-  const { existencias, isLoading } = useExistenciaBodega();
+  const { existencias, totalItems = 0, isLoading } = useExistenciaBodega({
+    usePagination: true,
+    limit,
+    offset,
+  });
 
   const filteredExistencias = useMemo(() => {
     if (!existencias) return [];
@@ -97,7 +106,10 @@ export function ExistenciaBodegaPage() {
           <Input
             placeholder="Buscar por item, código o bodega..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setPage(1);
+            }}
             className="pl-10"
           />
         </div>
@@ -219,6 +231,22 @@ export function ExistenciaBodegaPage() {
             </Table>
           )}
         </CardContent>
+        {totalItems > 0 && (
+          <Pagination
+            currentPage={page}
+            totalPages={Math.ceil(totalItems / pageSize)}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            onPageChange={(newPage) => {
+              setPage(newPage);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setPage(1);
+            }}
+          />
+        )}
       </Card>
     </div>
   );

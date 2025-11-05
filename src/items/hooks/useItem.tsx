@@ -2,18 +2,26 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getItemAction } from '../actions/get-item';
 import type { ItemResponse } from '../types/item.response';
+import type { PaginatedResponse } from '@/shared/types/pagination';
 import { useExistenciaBodega } from '@/existencia-bodega/hook/useExistenciaBodega';
 
 interface UseItemOptions {
   bodegaId?: number | '';
   onlyWithStock?: boolean; // si true, filtra por stock > 0 en la bodega
   onlyActive?: boolean; // por defecto true: ocultar ítems inactivos
+  limit?: number;
+  offset?: number;
+  usePagination?: boolean;
 }
 
 export const useItem = (options?: UseItemOptions) => {
-  const query = useQuery<ItemResponse[]>({
-    queryKey: ['items'],
-    queryFn: getItemAction,
+  const paginationParams = options?.usePagination
+    ? { limit: options.limit ?? 10, offset: options.offset ?? 0 }
+    : undefined;
+
+  const query = useQuery<PaginatedResponse<ItemResponse> | ItemResponse[]>({
+    queryKey: ['items', paginationParams],
+    queryFn: () => getItemAction(paginationParams),
     staleTime: 1000 * 60 * 5,
   });
 
@@ -31,8 +39,21 @@ export const useItem = (options?: UseItemOptions) => {
     return map;
   }, [existencias]);
 
+  // Extraer datos de la respuesta paginada o directa
+  const rawData = useMemo(() => {
+    if (!query.data) return [];
+    if (Array.isArray(query.data)) return query.data;
+    return (query.data as PaginatedResponse<ItemResponse>).data || [];
+  }, [query.data]);
+
+  const totalItems = useMemo(() => {
+    if (!query.data) return 0;
+    if (Array.isArray(query.data)) return query.data.length;
+    return (query.data as PaginatedResponse<ItemResponse>).total ?? 0;
+  }, [query.data]);
+
   const items = useMemo(() => {
-    const base0 = query.data ?? [];
+    const base0 = rawData;
     const isActive = (i: ItemResponse) =>
       (i as any)?.activo !== false && (i as any)?.estado !== 'INACTIVO';
     const base = options?.onlyActive === false ? base0 : base0.filter(isActive);
@@ -41,7 +62,7 @@ export const useItem = (options?: UseItemOptions) => {
     if (!options?.onlyWithStock || bId === undefined) return base;
     return base.filter((i) => (stockMap.get(`${bId}-${i.idItem}`) ?? 0) > 0);
   }, [
-    query.data,
+    rawData,
     stockMap,
     options?.onlyWithStock,
     options?.bodegaId,
@@ -50,7 +71,8 @@ export const useItem = (options?: UseItemOptions) => {
 
   return {
     items,
-    allItems: query.data ?? [],
+    allItems: rawData,
+    totalItems,
     isLoading: query.isLoading,
     isError: query.isError,
     refetch: query.refetch,

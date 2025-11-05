@@ -18,6 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
+import { Pagination } from '@/shared/components/ui/pagination';
 import { TipoPagoHeader } from '../ui/TipoPagoHeader';
 import { TipoPagoSearchBar } from '../ui/TipoPagoSearchBar';
 import { useTipoPago } from '../hook/useTipoPago';
@@ -29,10 +30,18 @@ import type { TipoPago } from '../types/tipoPago.interface';
 
 export function TiposPagoPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const limit = pageSize;
+  const offset = (page - 1) * pageSize;
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  const { tipoPagos } = useTipoPago();
-  const queryClient = useQueryClient();
+  const { tipoPagos, totalItems = 0 } = useTipoPago({
+    usePagination: true,
+    limit,
+    offset,
+  });
 
   const filteredTiposPago = useMemo<TipoPago[]>(() => {
     const items = tipoPagos ?? [];
@@ -61,7 +70,10 @@ export function TiposPagoPage() {
 
       <TipoPagoSearchBar
         value={searchTerm}
-        onValueChange={setSearchTerm}
+        onValueChange={(value) => {
+          setSearchTerm(value);
+          setPage(1);
+        }}
         showFilters={showFilters}
         onToggleFilters={() => setShowFilters((prev) => !prev)}
       />
@@ -131,6 +143,22 @@ export function TiposPagoPage() {
             </TableBody>
           </Table>
         </CardContent>
+        {totalItems > 0 && (
+          <Pagination
+            currentPage={page}
+            totalPages={Math.ceil(totalItems / pageSize)}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            onPageChange={(newPage) => {
+              setPage(newPage);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setPage(1);
+            }}
+          />
+        )}
       </Card>
     </div>
   );

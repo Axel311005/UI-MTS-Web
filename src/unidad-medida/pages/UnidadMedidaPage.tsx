@@ -19,6 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
+import { Pagination } from '@/shared/components/ui/pagination';
 import { useUnidadMedida } from '../hook/useUnidadMedida';
 import { patchUnidadMedida } from '../actions/patch-unidad-medida';
 import { useQueryClient } from '@tanstack/react-query';
@@ -27,10 +28,18 @@ import { formatDate } from '@/shared/utils/formatters';
 import type { UnidadMedida } from '../types/unidadMedida.interface';
 
 export function UnidadesMedidaPage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const { unidadMedidas } = useUnidadMedida();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const limit = pageSize;
+  const offset = (page - 1) * pageSize;
+  const [searchTerm, setSearchTerm] = useState('');
+  const { unidadMedidas, totalItems = 0 } = useUnidadMedida({
+    usePagination: true,
+    limit,
+    offset,
+  });
 
   const filteredUnidades = useMemo<UnidadMedida[]>(() => {
     const items = unidadMedidas ?? [];
@@ -74,7 +83,10 @@ export function UnidadesMedidaPage() {
           <Input
             placeholder="Buscar unidades de medida..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setPage(1);
+            }}
             className="pl-10"
           />
         </div>
@@ -143,6 +155,22 @@ export function UnidadesMedidaPage() {
             </TableBody>
           </Table>
         </CardContent>
+        {totalItems > 0 && (
+          <Pagination
+            currentPage={page}
+            totalPages={Math.ceil(totalItems / pageSize)}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            onPageChange={(newPage) => {
+              setPage(newPage);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setPage(1);
+            }}
+          />
+        )}
       </Card>
     </div>
   );

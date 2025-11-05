@@ -25,6 +25,7 @@ export {
   Menu,
   LayoutDashboard,
   Package,
+  Loader2,
   ShoppingCart,
   Users,
   Settings,

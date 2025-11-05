@@ -18,18 +18,22 @@ import {
   TableRow,
 } from '@/shared/components/ui/table';
 import { CompraSearch } from '../ui/CompraSearch';
-
+import { Pagination } from '@/shared/components/ui/pagination';
 import { CompraFilters } from '../ui/CompraFilters';
 import { useCompra } from '../hooks/useCompra';
 import { formatDate, formatMoney } from '@/shared/utils/formatters';
 import { useQuery } from '@tanstack/react-query';
 import { SearchComprasAction } from '../actions/search-compras-action';
+import type { PaginatedResponse } from '@/shared/types/pagination';
 
 const CompraRowActions = lazy(() => import('../ui/CompraRowActions'));
 
 export function ComprasPage() {
   const [showFilters, setShowFilters] = useState(false);
-  const { compras } = useCompra();
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const limit = pageSize;
+  const offset = (page - 1) * pageSize;
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -50,8 +54,6 @@ export function ComprasPage() {
   const dateTo = searchParams.get('dateTo') || '';
   const minTotal = searchParams.get('minTotal') || '';
   const maxTotal = searchParams.get('maxTotal') || '';
-  const page = searchParams.get('page') || '1';
-  const limit = searchParams.get('limit') || '10';
   const sortBy = (searchParams.get('sortBy') || 'fecha') as
     | 'fecha'
     | 'total'
@@ -102,7 +104,13 @@ export function ComprasPage() {
     ]
   );
 
-  const { data: comprasFiltradasApi = [] } = useQuery({
+  const { compras, totalItems: totalCompras = 0 } = useCompra({
+    usePagination: !hasAnyFilter,
+    limit: !hasAnyFilter ? limit : undefined,
+    offset: !hasAnyFilter ? offset : undefined,
+  });
+
+  const { data: comprasFiltradasResponse } = useQuery<PaginatedResponse<Compra>>({
     queryKey: [
       'compras.search',
       codigoLike,
@@ -121,8 +129,8 @@ export function ComprasPage() {
       dateTo,
       minTotal,
       maxTotal,
-      page,
       limit,
+      offset,
       sortBy,
       sortDir,
     ],
@@ -144,8 +152,8 @@ export function ComprasPage() {
         dateTo: dateTo || undefined,
         minTotal: minTotal || undefined,
         maxTotal: maxTotal || undefined,
-        page,
         limit,
+        offset,
         sortBy,
         sortDir,
       }),
@@ -153,7 +161,21 @@ export function ComprasPage() {
     staleTime: 1000 * 60 * 5,
   });
 
-  const rows = hasAnyFilter ? comprasFiltradasApi : compras;
+  const comprasFiltradas = useMemo(() => {
+    if (!comprasFiltradasResponse) return [];
+    if (Array.isArray(comprasFiltradasResponse)) return comprasFiltradasResponse;
+    return comprasFiltradasResponse.data || [];
+  }, [comprasFiltradasResponse]);
+
+  const totalFiltradas = useMemo(() => {
+    if (!comprasFiltradasResponse) return 0;
+    if (Array.isArray(comprasFiltradasResponse)) return comprasFiltradasResponse.length;
+    return comprasFiltradasResponse.total ?? 0;
+  }, [comprasFiltradasResponse]);
+
+  const rows = hasAnyFilter ? comprasFiltradas : compras;
+  const totalRows = hasAnyFilter ? totalFiltradas : totalCompras;
+  const totalPages = Math.ceil(totalRows / pageSize);
 
   return (
     <div className="space-y-6">
@@ -251,11 +273,27 @@ export function ComprasPage() {
                     </TableCell>
                   </TableRow>
                 ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+            </TableBody>
+          </Table>
+        </div>
+      </CardContent>
+      {totalRows > 0 && (
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          pageSize={pageSize}
+          totalItems={totalRows}
+          onPageChange={(newPage) => {
+            setPage(newPage);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          onPageSizeChange={(newSize) => {
+            setPageSize(newSize);
+            setPage(1);
+          }}
+        />
+      )}
+    </Card>
     </div>
   );
 }

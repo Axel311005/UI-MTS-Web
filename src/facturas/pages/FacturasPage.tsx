@@ -1,6 +1,6 @@
-import { lazy, Suspense, useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
-import { Plus } from '@/shared/icons';
+import { Plus, Loader2 } from '@/shared/icons';
 import {
   Card,
   CardContent,
@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
-
+import { Pagination } from '@/shared/components/ui/pagination';
 import { Filter } from '@/shared/icons';
 
 import {
@@ -27,13 +27,24 @@ import { useFactura } from '../hooks/useFactura';
 import { useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { SearchFacturaAction } from '../actions/search-facturas-action';
+import type { Factura } from '../types/Factura.interface';
+import type { PaginatedResponse } from '@/shared/types/pagination';
 
 const FacturaRowActions = lazy(() => import('../ui/FacturaRowActions'));
 
 export const FacturasPage = () => {
-  const { facturas } = useFactura();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [useInfiniteScroll, setUseInfiniteScroll] = useState(false);
+  const [loadedPages, setLoadedPages] = useState(1);
+  const loadingRef = useRef(false);
+  const observerTarget = useRef<HTMLDivElement>(null);
+
+  const limit = pageSize;
+  const offset = useInfiniteScroll ? 0 : (page - 1) * pageSize;
+  const currentLimit = useInfiniteScroll ? loadedPages * pageSize : pageSize;
 
   // Leer parámetros de búsqueda/filtros desde la URL
   const codigoLike = searchParams.get('codigoLike')?.trim() || '';
@@ -75,7 +86,13 @@ export const FacturasPage = () => {
     ]
   );
 
-  const { data: facturasFiltradas = [] } = useQuery({
+  const { facturas, totalItems: totalFacturas = 0 } = useFactura({
+    usePagination: !hasAnyFilter && !useInfiniteScroll,
+    limit: useInfiniteScroll ? undefined : limit,
+    offset: useInfiniteScroll ? undefined : offset,
+  });
+
+  const { data: facturasFiltradasResponse, isLoading: isLoadingSearch } = useQuery<PaginatedResponse<Factura>>({
     queryKey: [
       'facturas.search',
       codigoLike,
@@ -88,6 +105,8 @@ export const FacturasPage = () => {
       fechaFin,
       minTotal,
       maxTotal,
+      useInfiniteScroll ? currentLimit : limit,
+      offset,
     ],
     queryFn: () =>
       SearchFacturaAction({
@@ -101,10 +120,82 @@ export const FacturasPage = () => {
         dateTo: fechaFin,
         minTotal,
         maxTotal,
+        limit: useInfiniteScroll ? currentLimit : limit,
+        offset,
       }),
     enabled: hasAnyFilter,
     staleTime: 1000 * 60 * 5,
   });
+
+  const facturasFiltradas = useMemo(() => {
+    if (!facturasFiltradasResponse) return [];
+    if (Array.isArray(facturasFiltradasResponse)) return facturasFiltradasResponse;
+    return facturasFiltradasResponse.data || [];
+  }, [facturasFiltradasResponse]);
+
+  const totalFiltradas = useMemo(() => {
+    if (!facturasFiltradasResponse) return 0;
+    if (Array.isArray(facturasFiltradasResponse)) return facturasFiltradasResponse.length;
+    return facturasFiltradasResponse.total ?? 0;
+  }, [facturasFiltradasResponse]);
+
+  // Scroll infinito: cuando se alcanza el final, cargar más
+  useEffect(() => {
+    if (!useInfiniteScroll || !hasAnyFilter) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loadingRef.current) {
+          const currentTotal = facturasFiltradas.length;
+          const totalAvailable = totalFiltradas;
+          
+          if (currentTotal < totalAvailable && currentTotal >= loadedPages * pageSize) {
+            loadingRef.current = true;
+            setLoadedPages((prev) => prev + 1);
+          }
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const target = observerTarget.current;
+    if (target) observer.observe(target);
+
+    return () => {
+      if (target) observer.unobserve(target);
+    };
+  }, [useInfiniteScroll, hasAnyFilter, facturasFiltradas.length, totalFiltradas, loadedPages, pageSize]);
+
+  useEffect(() => {
+    loadingRef.current = false;
+  }, [facturasFiltradas.length]);
+
+  // Para scroll infinito sin filtros
+  useEffect(() => {
+    if (!useInfiniteScroll || hasAnyFilter) return;
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loadingRef.current) {
+          const currentTotal = facturas.length;
+          const totalAvailable = totalFacturas;
+          
+          if (currentTotal < totalAvailable && currentTotal >= loadedPages * pageSize) {
+            loadingRef.current = true;
+            setLoadedPages((prev) => prev + 1);
+          }
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const target = observerTarget.current;
+    if (target) observer.observe(target);
+
+    return () => {
+      if (target) observer.unobserve(target);
+    };
+  }, [useInfiniteScroll, hasAnyFilter, facturas.length, totalFacturas, loadedPages, pageSize]);
 
   const [showFilters, setShowFilters] = useState(false);
 
@@ -135,11 +226,22 @@ export const FacturasPage = () => {
   const rows = useMemo(() => {
     const data = hasAnyFilter ? facturasFiltradas : facturas;
     if (!Array.isArray(data)) return [];
-    return data.filter(
+    const filtered = data.filter(
       (factura) =>
         !isAnulada(factura.anulada) && !isEstadoAnulado(factura.estado)
     );
-  }, [hasAnyFilter, facturasFiltradas, facturas]);
+    
+    // Para scroll infinito, limitar a lo cargado
+    if (useInfiniteScroll) {
+      return filtered.slice(0, loadedPages * pageSize);
+    }
+    
+    return filtered;
+  }, [hasAnyFilter, facturasFiltradas, facturas, useInfiniteScroll, loadedPages, pageSize]);
+
+  const totalRows = hasAnyFilter ? totalFiltradas : totalFacturas;
+  const totalPages = Math.ceil(totalRows / pageSize);
+  const hasMore = useInfiniteScroll ? rows.length < totalRows : false;
 
   return (
     <div className="space-y-6">
@@ -170,6 +272,18 @@ export const FacturasPage = () => {
         >
           <Filter className="h-4 w-4 mr-2" />
           {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
+        </Button>
+        <Button
+          variant={useInfiniteScroll ? 'default' : 'outline'}
+          onClick={() => {
+            setUseInfiniteScroll(!useInfiniteScroll);
+            setLoadedPages(1);
+            setPage(1);
+          }}
+          className="whitespace-nowrap"
+          size="sm"
+        >
+          {useInfiniteScroll ? 'Modo: Scroll Infinito' : 'Modo: Paginación'}
         </Button>
       </div>
       {/* Los chips de filtros activos ahora se muestran dentro del panel de filtros */}
@@ -254,6 +368,32 @@ export const FacturasPage = () => {
               </TableBody>
             </Table>
           </div>
+          {!useInfiniteScroll && totalRows > 0 && (
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              totalItems={totalRows}
+              onPageChange={(newPage) => {
+                setPage(newPage);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onPageSizeChange={(newSize) => {
+                setPageSize(newSize);
+                setPage(1);
+              }}
+            />
+          )}
+          {useInfiniteScroll && hasMore && (
+            <div ref={observerTarget} className="flex justify-center py-4">
+              {isLoadingSearch && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Cargando más facturas...
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -1,7 +1,9 @@
 import { facturaApi } from '../api/factura.api';
 import type { Factura } from '../types/Factura.interface';
 
-interface SearchFacturaOptions {
+import type { PaginationParams, PaginatedResponse } from '@/shared/types/pagination';
+
+interface SearchFacturaOptions extends PaginationParams {
   codigoFactura?: string; // exacto (compat)
   codigo_factura?: string; // exacto (backend expects snake_case)
   codigoLike?: string; // parcial
@@ -18,7 +20,7 @@ interface SearchFacturaOptions {
   maxTotal?: string | number;
 }
 
-export const SearchFacturaAction = async (options: SearchFacturaOptions) => {
+export const SearchFacturaAction = async (options: SearchFacturaOptions): Promise<PaginatedResponse<Factura>> => {
   // Normalizar valores (el objeto filters viene de URLSearchParams => strings)
   const {
     codigoFactura,
@@ -75,11 +77,39 @@ export const SearchFacturaAction = async (options: SearchFacturaOptions) => {
   if (minTotal !== undefined && minTotal !== '') params.minTotal = minTotal;
   if (maxTotal !== undefined && maxTotal !== '') params.maxTotal = maxTotal;
 
+  // Agregar paginación
+  if (options.limit !== undefined) params.limit = options.limit;
+  if (options.offset !== undefined) params.offset = options.offset;
+
   const response = await facturaApi.get('/search', { params });
   
   const raw = response.data;
-  if (Array.isArray(raw)) return raw as Factura[];
-  if (raw && Array.isArray(raw.data)) return raw.data as Factura[];
-  if (raw && Array.isArray(raw.results)) return raw.results as Factura[];
-  return [];
+  
+  // Helper para filtrar facturas anuladas
+  const filterAnuladas = (facturas: Factura[]): Factura[] => {
+    return facturas.filter((factura) => {
+      const isAnulada = factura.anulada === true;
+      const isEstadoAnulado = typeof factura.estado === 'string' && factura.estado.toUpperCase() === 'ANULADA';
+      return !isAnulada && !isEstadoAnulado;
+    });
+  };
+  
+  // Si viene con estructura paginada
+  if (raw && typeof raw === 'object' && 'data' in raw && Array.isArray((raw as any).data)) {
+    const filtered = filterAnuladas((raw as any).data);
+    return {
+      ...raw,
+      data: filtered,
+      total: filtered.length,
+    } as PaginatedResponse<Factura>;
+  }
+  if (Array.isArray(raw)) {
+    const filtered = filterAnuladas(raw);
+    return { data: filtered, total: filtered.length } as PaginatedResponse<Factura>;
+  }
+  if (raw && Array.isArray((raw as any).results)) {
+    const filtered = filterAnuladas((raw as any).results);
+    return { data: filtered, total: filtered.length } as PaginatedResponse<Factura>;
+  }
+  return { data: [], total: 0 } as PaginatedResponse<Factura>;
 };

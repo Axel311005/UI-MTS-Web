@@ -16,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/shared/components/ui/table';
+import { Pagination } from '@/shared/components/ui/pagination';
 import { ClienteHeader } from '../ui/ClienteHeader';
 import { ClienteSearchBar } from '../ui/ClienteSearchBar';
 import { ClienteFilters } from '../ui/ClienteFilters';
@@ -24,10 +25,20 @@ import { useCliente } from '../hook/useCliente';
 import type { Cliente } from '../types/cliente.interface';
 
 export const ClientesPage = () => {
+  const navigate = useNavigate();
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const limit = pageSize;
+  const offset = (page - 1) * pageSize;
+
+  const { clientes, totalItems = 0, isLoading } = useCliente({
+    usePagination: true,
+    limit,
+    offset,
+  });
+
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  const { clientes } = useCliente();
-  const navigate = useNavigate();
 
   const filteredClientes = useMemo<Cliente[]>(() => {
     const items = clientes ?? [];
@@ -56,7 +67,10 @@ export const ClientesPage = () => {
 
       <ClienteSearchBar
         value={searchTerm}
-        onValueChange={setSearchTerm}
+        onValueChange={(value) => {
+          setSearchTerm(value);
+          setPage(1);
+        }}
         showFilters={showFilters}
         onToggleFilters={() => setShowFilters((prev) => !prev)}
       />
@@ -134,6 +148,22 @@ export const ClientesPage = () => {
             </TableBody>
           </Table>
         </CardContent>
+        {totalItems > 0 && (
+          <Pagination
+            currentPage={page}
+            totalPages={Math.ceil(totalItems / pageSize)}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            onPageChange={(newPage) => {
+              setPage(newPage);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setPage(1);
+            }}
+          />
+        )}
       </Card>
     </div>
   );

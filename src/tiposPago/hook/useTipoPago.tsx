@@ -1,15 +1,43 @@
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getTipoPagosAction } from '../actions/get-tipo-pago';
-
 import type { TipoPago } from '../types/tipoPago.interface';
+import type { PaginatedResponse } from '@/shared/types/pagination';
 
-export const useTipoPago = () => {
-  const query = useQuery<TipoPago[]>({
-    queryKey: ['tipoPagos'],
-    queryFn: getTipoPagosAction,
+interface UseTipoPagoOptions {
+  limit?: number;
+  offset?: number;
+  usePagination?: boolean;
+}
+
+export const useTipoPago = (options?: UseTipoPagoOptions) => {
+  const paginationParams = options?.usePagination
+    ? { limit: options.limit ?? 10, offset: options.offset ?? 0 }
+    : undefined;
+
+  const query = useQuery<PaginatedResponse<TipoPago> | TipoPago[]>({
+    queryKey: ['tipoPagos', paginationParams],
+    queryFn: () => getTipoPagosAction(paginationParams),
     staleTime: 1000 * 60 * 10,
   });
+
+  const tipoPagos = useMemo(() => {
+    if (!query.data) return [];
+    if (Array.isArray(query.data)) return query.data;
+    return (query.data as PaginatedResponse<TipoPago>).data || [];
+  }, [query.data]);
+
+  const totalItems = useMemo(() => {
+    if (!query.data) return 0;
+    if (Array.isArray(query.data)) return query.data.length;
+    return (query.data as PaginatedResponse<TipoPago>).total ?? 0;
+  }, [query.data]);
+
   return {
-    tipoPagos: query.data ?? [],
+    tipoPagos,
+    totalItems,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    refetch: query.refetch,
   };
 };

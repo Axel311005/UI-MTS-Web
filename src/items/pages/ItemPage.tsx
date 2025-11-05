@@ -5,12 +5,23 @@ import { ItemSearchBar } from '../ui/ItemSearchBar';
 import { ItemFilters } from '../ui/ItemFilters';
 import { ItemTable } from '../ui/ItemTable';
 import { useItem } from '../hooks/useItem';
+import { Pagination } from '@/shared/components/ui/pagination';
 import type { ItemStatusFilter } from '../ui/ItemFilters';
 import type { ItemResponse } from '../types/item.response';
 
 export const ItemPage = () => {
   const navigate = useNavigate();
-  const { items, isLoading, isError, refetch } = useItem();
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const limit = pageSize;
+  const offset = (page - 1) * pageSize;
+
+  const { items, totalItems = 0, isLoading, isError, refetch } = useItem({
+    usePagination: true,
+    limit,
+    offset,
+  });
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [clasificacionFilter, setClasificacionFilter] = useState<string>('all');
@@ -51,6 +62,20 @@ export const ItemPage = () => {
   const handleClearFilters = () => {
     setClasificacionFilter('all');
     setStatusFilter('ALL');
+    setPage(1); // Resetear a primera página al limpiar filtros
+  };
+
+  const totalPages = Math.ceil(totalItems / pageSize);
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    // Scroll al inicio de la tabla
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize);
+    setPage(1); // Resetear a primera página al cambiar tamaño
   };
 
   return (
@@ -59,7 +84,10 @@ export const ItemPage = () => {
 
       <ItemSearchBar
         value={searchTerm}
-        onValueChange={setSearchTerm}
+        onValueChange={(value) => {
+          setSearchTerm(value);
+          setPage(1); // Resetear a primera página al buscar
+        }}
         showFilters={showFilters}
         onToggleFilters={() => setShowFilters((prev) => !prev)}
       />
@@ -70,8 +98,14 @@ export const ItemPage = () => {
             clasificacion={clasificacionFilter}
             clasificacionOptions={clasificacionOptions}
             status={statusFilter}
-            onClasificacionChange={setClasificacionFilter}
-            onStatusChange={setStatusFilter}
+            onClasificacionChange={(value) => {
+              setClasificacionFilter(value);
+              setPage(1);
+            }}
+            onStatusChange={(value) => {
+              setStatusFilter(value);
+              setPage(1);
+            }}
             onClear={handleClearFilters}
             onApply={() => setShowFilters(false)}
             onClose={() => setShowFilters(false)}
@@ -93,7 +127,19 @@ export const ItemPage = () => {
           Cargando productos...
         </div>
       ) : (
-        <ItemTable items={filteredItems} />
+        <>
+          <ItemTable items={filteredItems} />
+          {totalItems > 0 && (
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              totalItems={totalItems}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+            />
+          )}
+        </>
       )}
     </div>
   );
