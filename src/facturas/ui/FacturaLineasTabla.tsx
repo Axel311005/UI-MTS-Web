@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { useMoneda } from '@/moneda/hook/useMoneda';
 import { ItemSelect } from '@/shared/components/selects/ItemSelect';
 import type { ItemResponse } from '@/items/types/item.response';
+import { cn } from '@/shared/lib/utils';
 
 interface InvoiceLine {
   id?: number;
