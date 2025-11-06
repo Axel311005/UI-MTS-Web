@@ -16,12 +16,16 @@ export const useRecepcion = (options?: UseRecepcionOptions) => {
     : undefined;
 
   const query = useQuery<PaginatedResponse<Recepcion> | Recepcion[]>({
-    queryKey: ['recepcion', paginationParams?.limit, paginationParams?.offset],
+    queryKey: [
+      'recepciones',
+      paginationParams?.limit,
+      paginationParams?.offset,
+    ],
     queryFn: () => getRecepcionAction(paginationParams),
     staleTime: paginationParams ? 0 : 1000 * 60 * 5,
   });
 
-  const recepcion = useMemo(() => {
+  const recepciones = useMemo(() => {
     if (!query.data) return [] as Recepcion[];
     if (Array.isArray(query.data)) return query.data;
     return (query.data as PaginatedResponse<Recepcion>).data || [];
@@ -34,7 +38,7 @@ export const useRecepcion = (options?: UseRecepcionOptions) => {
   }, [query.data]);
 
   return {
-    recepcion,
+    recepciones,
     totalItems,
     isLoading: query.isLoading,
     isError: query.isError,

@@ -2,6 +2,7 @@ import { ProformaApi } from '../api/proforma.api';
 
 export interface UpdateProformaPayload {
   idTramiteSeguro?: number;
+  idConsecutivo?: number;
   idMoneda?: number;
   idImpuesto?: number | null;
   fecha?: string | Date;

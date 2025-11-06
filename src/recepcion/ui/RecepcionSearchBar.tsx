@@ -1,0 +1,51 @@
+import { useSearchParams } from 'react-router';
+import { Search } from 'lucide-react';
+import { CustomSearchControl } from '@/shared/components/custom/CustomSearchControl';
+
+interface RecepcionSearchBarProps {
+  placeholder?: string;
+  className?: string;
+  containerClassName?: string;
+  paramName?: string;
+}
+
+export const RecepcionSearchBar = ({
+  placeholder = 'Buscar por código, vehículo, empleado o estado',
+  className,
+  containerClassName,
+  paramName = 'q',
+}: RecepcionSearchBarProps) => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const current = searchParams.get(paramName) || '';
+
+  const commit = (raw: string) => {
+    const value = raw.trim();
+    setSearchParams((prev) => {
+      if (value) prev.set(paramName, value);
+      else prev.delete(paramName);
+      prev.delete('page');
+      return prev;
+    });
+  };
+
+  const inputClassName = className ? `pl-9 ${className}` : 'pl-9';
+  const wrapperClassName = containerClassName
+    ? `relative ${containerClassName}`
+    : 'relative';
+
+  return (
+    <div className={wrapperClassName}>
+      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
+      <CustomSearchControl
+        value={current}
+        onKeyDown={commit}
+        placeholder={placeholder}
+        className={inputClassName}
+        ariaLabel="Buscar recepciones"
+        clearable
+      />
+    </div>
+  );
+};
+
+export default RecepcionSearchBar;

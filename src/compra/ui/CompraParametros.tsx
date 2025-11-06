@@ -10,7 +10,7 @@ import { cn } from '@/shared/lib/utils';
 import { useMoneda } from '@/moneda/hook/useMoneda';
 import { useTipoPago } from '@/tiposPago/hook/useTipoPago';
 import { useImpuesto } from '@/impuesto/hook/useImpuesto';
-import { useBodega } from '@/bodega/hook/useBodega';
+import { BodegaSelect } from '@/shared/components/selects/BodegaSelect';
 
 interface CompraParametrosProps {
   monedaId: number | '';
@@ -47,7 +47,6 @@ export function CompraParametros({
   const { monedas } = useMoneda();
   const { tipoPagos } = useTipoPago();
   const { impuestos } = useImpuesto();
-  const { bodegas } = useBodega();
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -149,30 +148,12 @@ export function CompraParametros({
         <label className="text-sm font-medium">
           Bodega <span className="text-destructive">*</span>
         </label>
-        <Select
-          value={bodegaId?.toString() || ''}
-          onValueChange={(value) => onBodegaChange(Number(value))}
-        >
-          <SelectTrigger
-            className={cn(errors.bodega && 'border-destructive')}
-            aria-label="Seleccionar bodega"
-          >
-            <SelectValue placeholder="Seleccionar bodega..." />
-          </SelectTrigger>
-          <SelectContent>
-            {(bodegas ?? []).map((bodega) => (
-              <SelectItem
-                key={bodega.idBodega}
-                value={bodega.idBodega.toString()}
-              >
-                {bodega.descripcion}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {errors.bodega && (
-          <p className="text-sm text-destructive">{errors.bodega}</p>
-        )}
+        <BodegaSelect
+          selectedId={bodegaId || ''}
+          onSelectId={(id) => onBodegaChange(id)}
+          onClear={() => onBodegaChange('')}
+          error={errors.bodega}
+        />
       </div>
 
       {/* Comentario */}

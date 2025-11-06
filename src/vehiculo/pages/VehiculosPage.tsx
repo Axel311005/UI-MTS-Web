@@ -167,6 +167,7 @@ export const VehiculosPage = () => {
                 <TableHead>Año</TableHead>
                 <TableHead>Color</TableHead>
                 <TableHead>Cliente</TableHead>
+                <TableHead>Estado</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -179,6 +180,17 @@ export const VehiculosPage = () => {
                   <TableCell>{v.anio ?? '—'}</TableCell>
                   <TableCell>{v.color || '—'}</TableCell>
                   <TableCell>{v.cliente?.nombre || '—'}</TableCell>
+                  <TableCell>
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                        v.activo === EstadoActivo.ACTIVO
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                          : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                      }`}
+                    >
+                      {v.activo === EstadoActivo.ACTIVO ? 'Activo' : 'Inactivo'}
+                    </span>
+                  </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button
@@ -206,7 +218,7 @@ export const VehiculosPage = () => {
               {showEmptyState && (
                 <TableRow>
                   <TableCell
-                    colSpan={7}
+                    colSpan={8}
                     className="h-24 text-center text-sm text-muted-foreground"
                   >
                     No se encontraron vehículos.

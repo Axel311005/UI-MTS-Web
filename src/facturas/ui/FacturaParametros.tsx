@@ -9,8 +9,8 @@ import { Textarea } from '@/shared/components/ui/textarea';
 import { cn } from '@/shared/lib/utils';
 import { useMoneda } from '@/moneda/hook/useMoneda';
 import { useTipoPago } from '@/tiposPago/hook/useTipoPago';
-import { useBodega } from '@/bodega/hook/useBodega';
 import { useImpuesto } from '@/impuesto/hook/useImpuesto';
+import { BodegaSelect } from '@/shared/components/selects/BodegaSelect';
 
 interface InvoiceParamsProps {
   monedaId: number | '';
@@ -46,7 +46,6 @@ export function FacturaParametros({
 }: InvoiceParamsProps) {
   const { monedas } = useMoneda();
   const { tipoPagos } = useTipoPago();
-  const { bodegas } = useBodega();
   const { impuestos } = useImpuesto();
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -148,30 +147,12 @@ export function FacturaParametros({
         <label className="text-sm font-medium">
           Bodega <span className="text-destructive">*</span>
         </label>
-        <Select
-          value={bodegaId?.toString() || ''}
-          onValueChange={(value) => onBodegaChange(Number(value))}
-        >
-          <SelectTrigger
-            className={cn(errors.bodega && 'border-destructive')}
-            aria-label="Seleccionar bodega"
-          >
-            <SelectValue placeholder="Seleccionar bodega..." />
-          </SelectTrigger>
-          <SelectContent>
-            {(bodegas ?? []).map((bodega) => (
-              <SelectItem
-                key={bodega.idBodega}
-                value={bodega.idBodega.toString()}
-              >
-                {bodega.descripcion}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {errors.bodega && (
-          <p className="text-sm text-destructive">{errors.bodega}</p>
-        )}
+        <BodegaSelect
+          selectedId={bodegaId || ''}
+          onSelectId={(id) => onBodegaChange(id)}
+          onClear={() => onBodegaChange('')}
+          error={errors.bodega}
+        />
       </div>
 
       {/* Comentario */}

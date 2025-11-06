@@ -5,6 +5,7 @@ export interface UpdateProformaLineaPayload {
   idItem?: number;
   cantidad?: number;
   precioUnitario?: number;
+  totalLinea?: number;
 }
 
 export const patchProformaLineaAction = async (

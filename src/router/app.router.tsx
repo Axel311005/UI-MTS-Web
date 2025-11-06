@@ -35,6 +35,43 @@ const EditarTramiteSeguroPage = lazy(() =>
     default: m.default,
   }))
 );
+// Proformas
+const ProformasPage = lazy(() =>
+  import('@/proforma/pages/ProformaPage').then((m) => ({
+    default: m.default,
+  }))
+);
+const NuevaProformaPage = lazy(() =>
+  import('@/proforma/pages/NuevaProformaPage').then((m) => ({
+    default: m.default,
+  }))
+);
+const EditarProformaPage = lazy(() =>
+  import('@/proforma/pages/EditarProformaPage').then((m) => ({
+    default: m.default,
+  }))
+);
+const NuevaFacturaFromProformaPage = lazy(() =>
+  import('@/facturas/pages/NuevaFacturaFormProformaPage').then((m) => ({
+    default: m.default,
+  }))
+);
+// Recepciones
+const RecepcionesPage = lazy(() =>
+  import('@/recepcion/page/RecepcionPage').then((m) => ({
+    default: m.default,
+  }))
+);
+const NuevaRecepcionPage = lazy(() =>
+  import('@/recepcion/page/NuevaRecepcionPage').then((m) => ({
+    default: m.default,
+  }))
+);
+const EditarRecepcionPage = lazy(() =>
+  import('@/recepcion/page/EditarRecepcionPage').then((m) => ({
+    default: m.default,
+  }))
+);
 // Vehículos
 const VehiculosPage = lazy(() =>
   import('@/vehiculo/pages/VehiculosPage').then((m) => ({
@@ -292,6 +329,21 @@ export const appRouter = createBrowserRouter([
             handle: { crumb: 'Vehículos' },
           },
           {
+            path: 'recepciones',
+            element: <RecepcionesPage />,
+            handle: { crumb: 'Recepciones' },
+          },
+          {
+            path: 'recepciones/nueva',
+            element: <NuevaRecepcionPage />,
+            handle: { crumb: 'Nueva recepción' },
+          },
+          {
+            path: 'recepciones/editar/:id',
+            element: <EditarRecepcionPage />,
+            handle: { crumb: 'Editar recepción' },
+          },
+          {
             path: 'aseguradoras',
             element: <AseguradorasPage />,
             handle: { crumb: 'Aseguradoras' },
@@ -370,6 +422,26 @@ export const appRouter = createBrowserRouter([
             path: 'productos/:id/editar',
             element: <EditarItemPage />,
             handle: { crumb: 'Editar producto' },
+          },
+          {
+            path: 'proformas',
+            element: <ProformasPage />,
+            handle: { crumb: 'Proformas' },
+          },
+          {
+            path: 'proformas/nueva',
+            element: <NuevaProformaPage />,
+            handle: { crumb: 'Nueva proforma' },
+          },
+          {
+            path: 'proformas/editar/:id',
+            element: <EditarProformaPage />,
+            handle: { crumb: 'Editar proforma' },
+          },
+          {
+            path: 'facturas/from-proforma',
+            element: <NuevaFacturaFromProformaPage />,
+            handle: { crumb: 'Factura desde proforma' },
           },
           {
             path: 'clasificaciones',

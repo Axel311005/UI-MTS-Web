@@ -12,14 +12,12 @@ import {
   Command,
   CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
   CommandList,
 } from '@/shared/components/ui/command';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useAuthStore } from '@/auth/store/auth.store';
-import { useConsecutivo } from '@/consecutivo/hooks/useConsecutivo';
-import type { Consecutivo } from '@/consecutivo/types/consecutivo.response';
+import { ConsecutivoSelect } from '@/shared/components/selects/ConsecutivoSelect';
 
 interface InvoiceHeaderProps {
   consecutivoId: number | '';
@@ -47,19 +45,9 @@ export function FacturaHeader({
   onEstadoChange,
   errors = {},
 }: InvoiceHeaderProps) {
-  const [open, setOpen] = useState(false);
   const [openEstado, setOpenEstado] = useState(false);
   const empleadoAuth = useAuthStore(
     (state) => state.user?.empleado.nombreCompleto
-  );
-  const { consecutivos } = useConsecutivo();
-  const options: Consecutivo[] = Array.isArray(consecutivos)
-    ? consecutivos.filter(
-        (c) => (c.documento || '').toUpperCase() === 'FACTURA'
-      )
-    : [];
-  const selectedConsecutivo = options.find(
-    (c) => c.idConsecutivo === consecutivoId
   );
   const opcionesEstado: Array<{
     value: 'PENDIENTE' | 'PAGADO';
@@ -78,15 +66,6 @@ export function FacturaHeader({
   const estadoEsAnulada = estado === 'ANULADA';
   const estadoPopoverOpen = estadoEsAnulada ? false : openEstado;
 
-  // Auto-seleccionar si solo hay un consecutivo válido para FACTURA
-  useEffect(() => {
-    if (
-      (!consecutivoId || Number(consecutivoId) === 0) &&
-      options.length === 1
-    ) {
-      onConsecutivoChange(options[0].idConsecutivo);
-    }
-  }, [options, consecutivoId, onConsecutivoChange]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -95,66 +74,13 @@ export function FacturaHeader({
         <label className="text-sm font-medium">
           Consecutivo <span className="text-destructive">*</span>
         </label>
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={open}
-              aria-label="Seleccionar consecutivo"
-              className={cn(
-                'w-full justify-between',
-                !consecutivoId && 'text-muted-foreground',
-                errors.consecutivo && 'border-destructive'
-              )}
-            >
-              {selectedConsecutivo
-                ? selectedConsecutivo.mascara
-                : 'Seleccionar...'}
-              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-[300px] p-0" align="start">
-            <Command>
-              <CommandInput placeholder="Buscar consecutivo..." />
-              <CommandList>
-                <CommandEmpty>No se encontraron consecutivos.</CommandEmpty>
-                <CommandGroup>
-                  {options.map((consecutivo) => (
-                    <CommandItem
-                      key={consecutivo.idConsecutivo}
-                      value={consecutivo.descripcion}
-                      onSelect={() => {
-                        onConsecutivoChange(consecutivo.idConsecutivo);
-                        setOpen(false);
-                      }}
-                    >
-                      <Check
-                        className={cn(
-                          'mr-2 h-4 w-4',
-                          consecutivoId === consecutivo.idConsecutivo
-                            ? 'opacity-100'
-                            : 'opacity-0'
-                        )}
-                      />
-                      <div className="flex flex-col">
-                        <span className="font-medium">
-                          {consecutivo.mascara}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {consecutivo.descripcion}
-                        </span>
-                      </div>
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-        {errors.consecutivo && (
-          <p className="text-sm text-destructive">{errors.consecutivo}</p>
-        )}
+        <ConsecutivoSelect
+          tipo="FACTURA"
+          selectedId={consecutivoId || ''}
+          onSelectId={(id) => onConsecutivoChange(id)}
+          onClear={() => onConsecutivoChange('')}
+          error={errors.consecutivo}
+        />
       </div>
 
       {/* Fecha */}

@@ -16,12 +16,12 @@ export const useProforma = (options?: UseProformaOptions) => {
     : undefined;
 
   const query = useQuery<PaginatedResponse<Proforma> | Proforma[]>({
-    queryKey: ['proforma', paginationParams?.limit, paginationParams?.offset],
+    queryKey: ['proformas', paginationParams?.limit, paginationParams?.offset],
     queryFn: () => getProformaAction(paginationParams),
     staleTime: paginationParams ? 0 : 1000 * 60 * 5,
   });
 
-  const proforma = useMemo(() => {
+  const proformas = useMemo(() => {
     if (!query.data) return [] as Proforma[];
     if (Array.isArray(query.data)) return query.data;
     return (query.data as PaginatedResponse<Proforma>).data || [];
@@ -34,7 +34,7 @@ export const useProforma = (options?: UseProformaOptions) => {
   }, [query.data]);
 
   return {
-    proforma,
+    proformas,
     totalItems,
     isLoading: query.isLoading,
     isError: query.isError,

@@ -1,19 +1,6 @@
-import { Check, ChevronsUpDown, Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/components/ui/button';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/shared/components/ui/command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/shared/components/ui/popover';
 import { Input } from '@/shared/components/ui/input';
 import {
   Table,
@@ -133,9 +120,12 @@ export function CompraLineaTabla({
                 lines.map((line, index) => (
                   <TableRow key={index} className="hover:bg-muted/50">
                     <TableCell>
-                      <ItemCombobox
-                        value={line.itemId}
-                        onChange={(value) => updateLine(index, 'itemId', value)}
+                      <ItemSelect
+                        value={line.itemId || ''}
+                        onChange={(value) => {
+                          const numValue = value === '' ? '' : Number(value);
+                          updateLine(index, 'itemId', numValue);
+                        }}
                         onItemPick={(item) => {
                           // Merge: si el item ya está en otra línea, aumentar cantidad y eliminar esta fila
                           const existingIdx = lines.findIndex(
@@ -178,6 +168,7 @@ export function CompraLineaTabla({
                         }}
                         error={errors[index]?.item}
                         bodegaId={bodegaId}
+                        showStock={true}
                       />
                     </TableCell>
                     <TableCell>
@@ -265,147 +256,3 @@ export function CompraLineaTabla({
   );
 }
 
-function ItemCombobox({
-  value,
-  onChange,
-  error,
-  onItemPick,
-  bodegaId,
-}: {
-  value: number | '';
-  onChange: (value: number | '') => void;
-  error?: string;
-  onItemPick?: (item: ItemResponse) => void;
-  bodegaId?: number | '';
-}) {
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState('');
-  const { items } = useItem({ onlyActive: true });
-  const { existencias } = useExistenciaBodega();
-  const list: ItemResponse[] = Array.isArray(items) ? items : [];
-
-  const stockMap = useMemo(() => {
-    const map = new Map<string, number>();
-    const exList = Array.isArray(existencias) ? existencias : [];
-    for (const ex of exList) {
-      const bId = (ex as any)?.bodega?.idBodega;
-      const iId = (ex as any)?.item?.idItem;
-      const key = `${bId}-${iId}`;
-      const cantidad = Number((ex as any)?.cantDisponible ?? 0) || 0;
-      map.set(key, cantidad);
-    }
-    return map;
-  }, [existencias]);
-
-  const getStock = (itemId?: number) => {
-    const bId = typeof bodegaId === 'number' ? bodegaId : undefined;
-    if (!itemId || bId === undefined) return undefined;
-    const key = `${bId}-${itemId}`;
-    return stockMap.get(key) ?? 0;
-  };
-
-  const selectedItem = useMemo(
-    () => list.find((i) => i.idItem === value),
-    [list, value]
-  );
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return list;
-    return list.filter((i) =>
-      `${i.codigoItem} ${i.descripcion}`.toLowerCase().includes(q)
-    );
-  }, [list, query]);
-
-  return (
-    <div className="w-full">
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild disabled={list.length === 0}>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className={cn(
-              'w-full justify-between',
-              !value && 'text-muted-foreground',
-              error && 'border-destructive'
-            )}
-          >
-            {selectedItem ? (
-              <span className="truncate">
-                {selectedItem.codigoItem} - {selectedItem.descripcion}
-              </span>
-            ) : list.length === 0 ? (
-              'Cargando items...'
-            ) : (
-              'Seleccionar item...'
-            )}
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[400px] p-0" align="start">
-          <Command>
-            <CommandInput
-              placeholder="Buscar item..."
-              value={query}
-              onValueChange={setQuery}
-              autoFocus
-            />
-            <CommandList>
-              <CommandEmpty>No se encontraron items.</CommandEmpty>
-              <CommandGroup>
-                {filtered.map((item) => {
-                  const stock = getStock(item.idItem);
-                  const zeroStock = typeof stock === 'number' && stock <= 0;
-                  return (
-                    <CommandItem
-                      key={item.idItem}
-                      value={`${item.codigoItem} ${item.descripcion}`}
-                      onSelect={() => {
-                        onChange(item.idItem);
-                        onItemPick?.(item);
-                        const needsMore = !value;
-                        if (needsMore) {
-                          setOpen(true);
-                        } else {
-                          setTimeout(() => setOpen(false), 0);
-                        }
-                      }}
-                      className={cn(zeroStock && 'opacity-60')}
-                    >
-                      <Check
-                        className={cn(
-                          'mr-2 h-4 w-4',
-                          value === item.idItem ? 'opacity-100' : 'opacity-0'
-                        )}
-                      />
-                      <div className="flex flex-col flex-1">
-                        <span className="font-medium">{item.codigoItem}</span>
-                        <span className="text-sm text-muted-foreground">
-                          {item.descripcion}
-                        </span>
-                      </div>
-                      {typeof stock === 'number' && (
-                        <span
-                          className={cn(
-                            'text-xs px-2 py-0.5 rounded-full',
-                            stock > 0
-                              ? 'bg-emerald-100 text-emerald-700'
-                              : 'bg-red-100 text-red-700'
-                          )}
-                        >
-                          {stock > 0 ? `Stock: ${stock}` : 'Sin stock'}
-                        </span>
-                      )}
-                    </CommandItem>
-                  );
-                })}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-      {error && <p className="text-xs text-destructive mt-1">{error}</p>}
-    </div>
-  );
-}

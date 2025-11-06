@@ -1,0 +1,242 @@
+import { useMemo, useState } from 'react';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
+import { Textarea } from '@/shared/components/ui/textarea';
+import { Label } from '@/shared/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/components/ui/select';
+import { useVehiculo } from '@/vehiculo/hook/useVehiculo';
+import { EstadoActivo, RecepcionEstado } from '@/shared/types/status';
+import { useAuthStore } from '@/auth/store/auth.store';
+
+export type RecepcionFormValues = {
+  idVehiculo: number;
+  codigoRecepcion: string;
+  estado: RecepcionEstado;
+  fechaRecepcion: string; // yyyy-MM-dd
+  fechaEntregaEstimada: string; // yyyy-MM-dd
+  fechaEntregaReal?: string; // yyyy-MM-dd | ''
+  observaciones?: string;
+};
+
+interface RecepcionFormProps {
+  defaultValues?: Partial<RecepcionFormValues>;
+  onSubmit: (data: RecepcionFormValues) => void;
+  onCancel: () => void;
+}
+
+const today = () => new Date().toISOString().split('T')[0];
+
+export function RecepcionForm({
+  defaultValues,
+  onSubmit,
+  onCancel,
+}: RecepcionFormProps) {
+  const { vehiculos } = useVehiculo();
+  const user = useAuthStore((s) => s.user);
+
+  const activeVehiculos = useMemo(
+    () => (vehiculos ?? []).filter((v) => v.activo === EstadoActivo.ACTIVO),
+    [vehiculos]
+  );
+
+  const [values, setValues] = useState<RecepcionFormValues>({
+    idVehiculo:
+      defaultValues?.idVehiculo ?? activeVehiculos[0]?.idVehiculo ?? 0,
+    codigoRecepcion: defaultValues?.codigoRecepcion ?? '',
+    estado: defaultValues?.estado ?? RecepcionEstado.PENDIENTE,
+    fechaRecepcion: defaultValues?.fechaRecepcion ?? today(),
+    fechaEntregaEstimada: defaultValues?.fechaEntregaEstimada ?? today(),
+    fechaEntregaReal: defaultValues?.fechaEntregaReal ?? '',
+    observaciones: defaultValues?.observaciones ?? '',
+  });
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const empleadoNombre = user?.empleado?.nombreCompleto ?? '—';
+
+  const update = (patch: Partial<RecepcionFormValues>) =>
+    setValues((prev) => ({ ...prev, ...patch }));
+
+  const validate = (): boolean => {
+    const e: Record<string, string> = {};
+    if (!values.idVehiculo || values.idVehiculo <= 0)
+      e.idVehiculo = 'Seleccione un vehículo';
+    if (!values.codigoRecepcion?.trim())
+      e.codigoRecepcion = 'El código es requerido';
+    if (!values.fechaRecepcion)
+      e.fechaRecepcion = 'La fecha de recepción es requerida';
+    if (!values.fechaEntregaEstimada)
+      e.fechaEntregaEstimada = 'La fecha estimada es requerida';
+
+    const start = values.fechaRecepcion
+      ? new Date(values.fechaRecepcion)
+      : null;
+    const eta = values.fechaEntregaEstimada
+      ? new Date(values.fechaEntregaEstimada)
+      : null;
+    const real = values.fechaEntregaReal
+      ? new Date(values.fechaEntregaReal)
+      : null;
+    if (start && eta && eta < start)
+      e.fechaEntregaEstimada = 'No puede ser anterior a la recepción';
+    if (start && real && real < start)
+      e.fechaEntregaReal = 'No puede ser anterior a la recepción';
+
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const handleSubmit = (ev: React.FormEvent) => {
+    ev.preventDefault();
+    if (!validate()) return;
+    onSubmit({
+      idVehiculo: Number(values.idVehiculo),
+      codigoRecepcion: values.codigoRecepcion.trim(),
+      estado: values.estado,
+      fechaRecepcion: values.fechaRecepcion,
+      fechaEntregaEstimada: values.fechaEntregaEstimada,
+      fechaEntregaReal: values.fechaEntregaReal || undefined,
+      observaciones: values.observaciones?.trim() || undefined,
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="space-y-2">
+          <Label>Vehículo</Label>
+          <Select
+            value={values.idVehiculo ? String(values.idVehiculo) : ''}
+            onValueChange={(v) => update({ idVehiculo: Number(v) })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccione un vehículo" />
+            </SelectTrigger>
+            <SelectContent>
+              {activeVehiculos.map((v) => (
+                <SelectItem key={v.idVehiculo} value={String(v.idVehiculo)}>
+                  {v.placa} — {v.marca} {v.modelo}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.idVehiculo && (
+            <p className="text-sm text-destructive">{errors.idVehiculo}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label>Empleado</Label>
+          <Input
+            value={empleadoNombre}
+            readOnly
+            disabled
+            className="bg-muted/50"
+          />
+          <p className="text-xs text-muted-foreground">
+            Se toma del usuario autenticado.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Código de Recepción</Label>
+          <Input
+            placeholder="REC-2024-001"
+            value={values.codigoRecepcion}
+            onChange={(e) => update({ codigoRecepcion: e.target.value })}
+          />
+          {errors.codigoRecepcion && (
+            <p className="text-sm text-destructive">{errors.codigoRecepcion}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label>Estado</Label>
+          <Select
+            value={values.estado}
+            onValueChange={(v) => update({ estado: v as RecepcionEstado })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccione un estado" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={RecepcionEstado.PENDIENTE}>
+                Pendiente
+              </SelectItem>
+              <SelectItem value={'EN PROCESO' as RecepcionEstado}>
+                En Proceso
+              </SelectItem>
+              <SelectItem value={RecepcionEstado.FINALIZADO}>
+                Finalizado
+              </SelectItem>
+              <SelectItem value={RecepcionEstado.ENTREGADO}>
+                Entregado
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Fecha de Recepción</Label>
+          <Input
+            type="date"
+            value={values.fechaRecepcion}
+            onChange={(e) => update({ fechaRecepcion: e.target.value })}
+          />
+          {errors.fechaRecepcion && (
+            <p className="text-sm text-destructive">{errors.fechaRecepcion}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label>Fecha de Entrega Estimada</Label>
+          <Input
+            type="date"
+            value={values.fechaEntregaEstimada}
+            onChange={(e) => update({ fechaEntregaEstimada: e.target.value })}
+          />
+          {errors.fechaEntregaEstimada && (
+            <p className="text-sm text-destructive">
+              {errors.fechaEntregaEstimada}
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label>Fecha de Entrega Real</Label>
+          <Input
+            type="date"
+            value={values.fechaEntregaReal ?? ''}
+            onChange={(e) => update({ fechaEntregaReal: e.target.value })}
+          />
+          {errors.fechaEntregaReal && (
+            <p className="text-sm text-destructive">
+              {errors.fechaEntregaReal}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Observaciones</Label>
+        <Textarea
+          placeholder="Vehículo con daños menores..."
+          value={values.observaciones ?? ''}
+          onChange={(e) => update({ observaciones: e.target.value })}
+        />
+      </div>
+
+      <div className="flex justify-end gap-4">
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Cancelar
+        </Button>
+        <Button type="submit">Guardar</Button>
+      </div>
+    </form>
+  );
+}
