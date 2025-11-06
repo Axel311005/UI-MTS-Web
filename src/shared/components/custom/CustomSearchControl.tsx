@@ -6,6 +6,7 @@ import { Input } from '@/shared/components/ui/input';
 interface CustomSearchControlProps {
   value?: string;
   onKeyDown?: (v: string) => void;
+  onChange?: (v: string) => void;
   placeholder?: string;
   className?: string;
   ariaLabel?: string;
@@ -15,6 +16,7 @@ interface CustomSearchControlProps {
 export const CustomSearchControl: React.FC<CustomSearchControlProps> = ({
   value,
   onKeyDown,
+  onChange,
   placeholder,
   className,
   ariaLabel,
@@ -27,7 +29,9 @@ export const CustomSearchControl: React.FC<CustomSearchControlProps> = ({
   }, [value]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInternalValue(e.target.value);
+    const nextValue = e.target.value;
+    setInternalValue(nextValue);
+    onChange?.(nextValue);
   };
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -38,6 +42,7 @@ export const CustomSearchControl: React.FC<CustomSearchControlProps> = ({
 
   const handleClear = () => {
     setInternalValue('');
+    onChange?.('');
     if (onKeyDown) onKeyDown('');
   };
 

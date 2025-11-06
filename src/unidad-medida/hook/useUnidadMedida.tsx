@@ -19,7 +19,6 @@ export const useUnidadMedida = (options?: UseUnidadMedidaOptions) => {
     queryKey: ['unidadMedidas', paginationParams?.limit, paginationParams?.offset],
     queryFn: () => getUnidadMedidasAction(paginationParams),
     staleTime: paginationParams ? 0 : 1000 * 60 * 10, // No cachear cuando hay paginación
-    keepPreviousData: false,
   });
 
   const unidadMedidas = useMemo(() => {
@@ -31,7 +30,7 @@ export const useUnidadMedida = (options?: UseUnidadMedidaOptions) => {
   const totalItems = useMemo(() => {
     if (!query.data) return 0;
     if (Array.isArray(query.data)) return query.data.length;
-    return (query.data as PaginatedResponse<UnidadMedida>).total ?? 0;
+    return (query.data as unknown as PaginatedResponse<UnidadMedida>).total ?? 0;
   }, [query.data]);
 
   return {

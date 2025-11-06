@@ -1,3 +1,5 @@
+import type { FacturaEstado } from "@/shared/types/status";
+
 export interface Factura {
   id_factura: number;
   cliente: Cliente;
@@ -9,7 +11,7 @@ export interface Factura {
   fecha: Date;
   anulada: boolean;
   fechaAnulacion: string | null;
-  estado: string;
+  estado: FacturaEstado;
   subtotal: number;
   porcentajeDescuento: number;
   totalDescuento: number;

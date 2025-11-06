@@ -14,6 +14,10 @@ import {
   Shield,
   Warehouse,
   PackageSearch,
+  Car,
+  ClipboardList,
+  Inbox,
+  Receipt,
 } from '@/shared/icons';
 
 export interface MenuItem {
@@ -56,6 +60,31 @@ export const navigationConfig: MenuItem[] = [
     icon: ShoppingCart,
     userTypes: ['gerente', 'vendedor'],
   },
+  // Flujos de seguro
+  {
+    title: 'Vehículos',
+    url: '/vehiculos',
+    icon: Car,
+    userTypes: ['gerente', 'vendedor'],
+  },
+  {
+    title: 'Trámites de Seguros',
+    url: '/tramites-seguros',
+    icon: ClipboardList,
+    userTypes: ['gerente', 'vendedor'],
+  },
+  {
+    title: 'Recepciones',
+    url: '/recepciones',
+    icon: Inbox,
+    userTypes: ['gerente', 'vendedor'],
+  },
+  {
+    title: 'Proformas',
+    url: '/proformas',
+    icon: Receipt,
+    userTypes: ['gerente', 'vendedor'],
+  },
   {
     title: 'Bodegas',
     url: '/bodegas',
@@ -85,6 +114,12 @@ export const navigationConfig: MenuItem[] = [
     title: 'Tipos de Pago',
     url: '/tipos-pago',
     icon: CreditCard,
+    userTypes: ['gerente'],
+  },
+  {
+    title: 'Aseguradoras',
+    url: '/aseguradoras',
+    icon: Shield,
     userTypes: ['gerente'],
   },
   {
@@ -132,6 +167,16 @@ export const getGroupedNavigationItems = (userType: 'gerente' | 'vendedor') => {
     )
   );
 
+  const segurosItems = allItems.filter((item) =>
+    [
+      'Vehículos',
+      'Aseguradoras',
+      'Trámites de Seguros',
+      'Recepciones',
+      'Proformas',
+    ].includes(item.title)
+  );
+
   const systemItems = allItems.filter((item) =>
     ['Reportes', 'Configuración', 'Administración'].includes(item.title)
   );
@@ -139,6 +184,7 @@ export const getGroupedNavigationItems = (userType: 'gerente' | 'vendedor') => {
   return {
     navigationItems,
     catalogItems: catalogItems.length > 0 ? catalogItems : undefined,
+    segurosItems: segurosItems.length > 0 ? segurosItems : undefined,
     systemItems: systemItems.length > 0 ? systemItems : undefined,
   };
 };

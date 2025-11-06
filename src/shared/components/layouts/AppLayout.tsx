@@ -16,6 +16,7 @@ const CustomSideBarLazy = lazy(() =>
 interface AppLayoutProps {
   navigationItems?: MenuItem[];
   catalogItems?: MenuItem[];
+  segurosItems?: MenuItem[];
   systemItems?: MenuItem[];
 }
 
@@ -37,6 +38,7 @@ const BreadcrumbsFallback = () => (
 export const AppLayout = ({
   navigationItems,
   catalogItems,
+  segurosItems,
   systemItems,
 }: AppLayoutProps) => {
   const user = useAuthStore((s) => s.user);
@@ -45,6 +47,7 @@ export const AppLayout = ({
   // Generar navegación según roles (solo 'gerente' y 'vendedor')
   let finalNavigationItems: MenuItem[] = navigationItems ?? [];
   let finalCatalogItems = catalogItems;
+  let finalSegurosItems = segurosItems;
   let finalSystemItems = systemItems;
 
   if (!navigationItems) {
@@ -53,6 +56,7 @@ export const AppLayout = ({
     const grouped = getGroupedNavigationItems(userType);
     finalNavigationItems = grouped.navigationItems;
     finalCatalogItems = grouped.catalogItems;
+    finalSegurosItems = grouped.segurosItems;
     finalSystemItems = grouped.systemItems;
   }
 
@@ -63,6 +67,7 @@ export const AppLayout = ({
           <CustomSideBarLazy
             navigationItems={finalNavigationItems}
             catalogItems={finalCatalogItems}
+            segurosItems={finalSegurosItems}
             systemItems={finalSystemItems}
           />
         </Suspense>

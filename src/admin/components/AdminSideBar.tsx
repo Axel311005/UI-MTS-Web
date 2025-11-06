@@ -6,13 +6,14 @@ interface AdminSideBarProps {
 }
 
 export const AdminSideBar = ({ userType }: AdminSideBarProps) => {
-  const { navigationItems, catalogItems, systemItems } =
+  const { navigationItems, catalogItems, segurosItems, systemItems } =
     getGroupedNavigationItems(userType);
 
   return (
     <CustomSideBar
       navigationItems={navigationItems}
       catalogItems={catalogItems}
+      segurosItems={segurosItems}
       systemItems={systemItems}
     />
   );

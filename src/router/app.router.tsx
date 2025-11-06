@@ -5,6 +5,52 @@ import { AppLayout } from '@/shared/components/layouts/AppLayout';
 import { ProtectedRoute } from '@/shared/components/routes/ProtectedRoute';
 import { NotAuthenticatedRoute } from '@/shared/components/routes/NotAuthenticatedRoute';
 import { RoleGuard } from '@/shared/components/routes/RoleGuard';
+const AseguradorasPage = lazy(() =>
+  import('@/aseguradora/pages/AseguradoraPage').then((m) => ({
+    default: m.default,
+  }))
+);
+const NuevaAseguradoraPage = lazy(() =>
+  import('@/aseguradora/pages/NuevaAseguradoraPage').then((m) => ({
+    default: m.default,
+  }))
+);
+const EditarAseguradoraPage = lazy(() =>
+  import('@/aseguradora/pages/EditarAseguradoraPage').then((m) => ({
+    default: m.default,
+  }))
+);
+const TramitesSegurosPage = lazy(() =>
+  import('@/tramite-seguro/pages/TramiteSeguroPage').then((m) => ({
+    default: m.default,
+  }))
+);
+const NuevoTramiteSeguroPage = lazy(() =>
+  import('@/tramite-seguro/pages/NuevoTramiteSeguro').then((m) => ({
+    default: m.default,
+  }))
+);
+const EditarTramiteSeguroPage = lazy(() =>
+  import('@/tramite-seguro/pages/EditarTramiteSeguro').then((m) => ({
+    default: m.default,
+  }))
+);
+// Vehículos
+const VehiculosPage = lazy(() =>
+  import('@/vehiculo/pages/VehiculosPage').then((m) => ({
+    default: m.VehiculosPage,
+  }))
+);
+const NuevoVehiculoPage = lazy(() =>
+  import('@/vehiculo/pages/NuevoVehiculoPage').then((m) => ({
+    default: m.default,
+  }))
+);
+const EditarVehiculoPage = lazy(() =>
+  import('@/vehiculo/pages/EditarVehiculoPage').then((m) => ({
+    default: m.default,
+  }))
+);
 
 // Lazy loaded pages
 const FacturasPage = lazy(() =>
@@ -239,6 +285,51 @@ export const appRouter = createBrowserRouter([
             path: 'facturas/search',
             element: <FacturasPage />,
             handle: { crumb: 'Buscar' },
+          },
+          {
+            path: 'vehiculos',
+            element: <VehiculosPage />,
+            handle: { crumb: 'Vehículos' },
+          },
+          {
+            path: 'aseguradoras',
+            element: <AseguradorasPage />,
+            handle: { crumb: 'Aseguradoras' },
+          },
+          {
+            path: 'aseguradoras/nueva',
+            element: <NuevaAseguradoraPage />,
+            handle: { crumb: 'Nueva aseguradora' },
+          },
+          {
+            path: 'aseguradoras/editar/:id',
+            element: <EditarAseguradoraPage />,
+            handle: { crumb: 'Editar aseguradora' },
+          },
+          {
+            path: 'tramites-seguros',
+            element: <TramitesSegurosPage />,
+            handle: { crumb: 'Trámites de seguros' },
+          },
+          {
+            path: 'tramites-seguros/nuevo',
+            element: <NuevoTramiteSeguroPage />,
+            handle: { crumb: 'Nuevo trámite de seguro' },
+          },
+          {
+            path: 'tramites-seguros/editar/:id',
+            element: <EditarTramiteSeguroPage />,
+            handle: { crumb: 'Editar trámite de seguro' },
+          },
+          {
+            path: 'vehiculos/nuevo',
+            element: <NuevoVehiculoPage />,
+            handle: { crumb: 'Nuevo vehículo' },
+          },
+          {
+            path: 'vehiculos/:id/editar',
+            element: <EditarVehiculoPage />,
+            handle: { crumb: 'Editar vehículo' },
           },
           {
             path: 'clientes',

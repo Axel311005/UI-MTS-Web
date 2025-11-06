@@ -37,4 +37,8 @@ export {
   LogOut,
   Warehouse,
   PackageSearch,
+  Car,
+  ClipboardList,
+  Inbox,
+  Receipt,
 } from 'lucide-react';

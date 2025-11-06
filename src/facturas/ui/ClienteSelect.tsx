@@ -13,10 +13,8 @@ import { useCliente } from '@/clientes/hook/useCliente';
 import { EstadoActivo } from '@/shared/types/status';
 
 type Props = {
-  // Prefer id-based selection
   selectedId?: number | '';
   onSelectId?: (id: number) => void;
-  // Backwards compatibility: name-based selection
   value?: string;
   onSelect?: (nombre: string) => void;
   onClear: () => void;
@@ -31,7 +29,7 @@ export const ClienteSelect: React.FC<Props> = ({
   onClear,
   error,
 }) => {
-  const { clientes } = useCliente();
+  const { clientes } = useCliente({ usePagination: false });
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
 
@@ -39,9 +37,9 @@ export const ClienteSelect: React.FC<Props> = ({
     () => (Array.isArray(clientes) ? clientes : []),
     [clientes]
   );
+
   const activeClientes = useMemo(
-    () =>
-      allClientes.filter((cliente) => cliente.activo === EstadoActivo.ACTIVO),
+    () => allClientes.filter((c) => c.activo === EstadoActivo.ACTIVO),
     [allClientes]
   );
 
@@ -60,9 +58,7 @@ export const ClienteSelect: React.FC<Props> = ({
     if (selectedId !== undefined && selectedId !== '') {
       return allClientes.find((c) => c.idCliente === selectedId);
     }
-    if (value) {
-      return allClientes.find((c) => c.nombre === value);
-    }
+    if (value) return allClientes.find((c) => c.nombre === value);
     return undefined;
   }, [allClientes, selectedId, value]);
 
@@ -115,17 +111,22 @@ export const ClienteSelect: React.FC<Props> = ({
                     const v = (
                       e.currentTarget as HTMLInputElement
                     ).value.trim();
-                    if (v) {
-                      if (onSelect) onSelect(v);
-                      setOpen(false);
+                    if (!v) return;
+                    // Si hay resultados, seleccionar el primero por ID
+                    const first = filtered[0];
+                    if (first && onSelectId) {
+                      onSelectId(first.idCliente);
+                    } else if (onSelect) {
+                      onSelect(v);
                     }
+                    setOpen(false);
                   }
                 }}
               />
             </div>
             <ScrollArea className="max-h-60">
               <div className="py-1">
-                {filtered && filtered.length > 0 ? (
+                {filtered.length > 0 ? (
                   filtered.map((c) => (
                     <DropdownMenuItem
                       key={c.idCliente}

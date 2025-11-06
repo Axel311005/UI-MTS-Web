@@ -16,6 +16,7 @@ import { FileText } from '@/shared/icons';
 interface SidebarProps {
   navigationItems: MenuItem[];
   catalogItems?: MenuItem[];
+  segurosItems?: MenuItem[];
   systemItems?: MenuItem[];
   isCollapsed?: boolean;
 }
@@ -23,6 +24,7 @@ interface SidebarProps {
 export const CustomSideBar = ({
   navigationItems = [],
   catalogItems = [],
+  segurosItems = [],
   systemItems = [],
 }: SidebarProps) => {
   const location = useLocation();
@@ -95,6 +97,33 @@ export const CustomSideBar = ({
             <SidebarGroupContent>
               <SidebarMenu>
                 {catalogItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to={item.url}
+                        className={getNavCls({ isActive: isActive(item.url) })}
+                      >
+                        {item.icon && <item.icon className="h-4 w-4" />}
+                        <span className="group-data-[state=collapsed]:hidden">
+                          {item.title}
+                        </span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {segurosItems?.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="group-data-[state=collapsed]:hidden">
+              Seguros
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {segurosItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
                       <NavLink
