@@ -309,6 +309,7 @@ export const FacturasPage = () => {
                   <TableHead>Total</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead>Tipo Pago</TableHead>
+                  <TableHead>Origen</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
@@ -350,6 +351,15 @@ export const FacturasPage = () => {
                       </TableCell>
                       <TableCell>
                         {factura.tipoPago?.descripcion ?? '—'}
+                      </TableCell>
+                      <TableCell>
+                        {factura.proforma ? (
+                          <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                            Desde Proforma
+                          </Badge>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">Directa</span>
+                        )}
                       </TableCell>
                       <TableCell className="text-right">
                         <Suspense

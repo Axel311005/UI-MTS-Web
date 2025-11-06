@@ -10,7 +10,6 @@ import {
 } from '@/shared/components/ui/table';
 import { Trash2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import { postProformaLineaAction } from '../actions/post-proforma-linea';
 import { patchProformaLineaAction } from '../actions/patch-proforma-linea';
 import { ItemSelect } from '@/shared/components/selects/ItemSelect';
 
@@ -35,10 +34,8 @@ export function ProformaLinesTable({
   lines,
   onLinesChange,
   currencyName,
-  proformaId,
   immediatePersist,
 }: ProformaLinesTableProps) {
-
   const formatCurrency = (val: number) => {
     const name = (currencyName ?? '').toUpperCase();
     if (name === 'DOLARES') {
@@ -67,7 +64,7 @@ export function ProformaLinesTable({
     const monedaName = (currencyName ?? '').toUpperCase();
     const baseLocal = Number(item.precioBaseLocal ?? 0) || 0;
     const baseDolar = Number(item.precioBaseDolar ?? 0) || 0;
-    
+
     // Si la moneda contiene "DOLAR", usar precioBaseDolar
     if (monedaName.includes('DOLAR')) {
       return baseDolar || baseLocal || 0;
@@ -85,12 +82,12 @@ export function ProformaLinesTable({
     const precio = getPrecioByMoneda(item);
     const updatedLines = [...lines];
     const current = { ...updatedLines[index] } as ProformaLine;
-    
+
     // Actualizar idItem, precioUnitario y totalLinea
     current.idItem = item.idItem;
     current.precioUnitario = precio;
     current.totalLinea = current.cantidad * precio;
-    
+
     updatedLines[index] = current;
     onLinesChange(updatedLines);
   };
@@ -166,10 +163,7 @@ export function ProformaLinesTable({
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <p className="text-lg font-semibold">Líneas de la Proforma</p>
-        <Button
-          type="button"
-          onClick={addLine}
-        >
+        <Button type="button" onClick={addLine}>
           <Plus className="h-4 w-4 mr-2" />
           Agregar Línea
         </Button>

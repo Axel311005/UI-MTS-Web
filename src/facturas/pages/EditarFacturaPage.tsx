@@ -14,11 +14,13 @@ import { FacturaParametros } from '../ui/FacturaParametros';
 import { FacturaLineaTabla } from '../ui/FacturaLineasTabla';
 import { FacturaTotalCard } from '../ui/FacutraTotalCard';
 import { FacturaHeader } from '../ui/FacturaHeader';
+import { FacturaProformaInfo } from '../ui/FacturaProformaInfo';
 import { patchFactura } from '../actions/patch-factura';
 import { patchFacturaLinea } from '../actions/patch-facturaLinea';
 import { postFacturaLinea } from '../actions/post-facturalinea';
 import { getFacturaById } from '../actions/get-factura-by-id';
 import { useQueryClient } from '@tanstack/react-query';
+import type { Factura } from '../types/Factura.interface';
 
 type InvoiceStatus = 'PENDIENTE' | 'PAGADO' | 'ANULADA';
 
@@ -90,6 +92,7 @@ export default function EditarFacturaPage() {
     }>
   >([]);
   const [codigoPreview] = React.useState('');
+  const [facturaData, setFacturaData] = React.useState<Factura | null>(null);
 
   // Cargar datos reales de la factura
   React.useEffect(() => {
@@ -101,6 +104,7 @@ export default function EditarFacturaPage() {
           throw new Error('ID de factura inválido');
         }
         const factura = await getFacturaById(numericId);
+        setFacturaData(factura);
         const estadoBackend = (factura.estado as InvoiceStatus) ?? 'PENDIENTE';
         setEstadoFactura(estadoBackend);
         setFormValues({
@@ -302,6 +306,11 @@ export default function EditarFacturaPage() {
           </div>
         </div>
       </div>
+
+      {/* Información de Proforma si existe */}
+      {(facturaData?.proforma || (facturaData as any)?.idProforma || (facturaData as any)?.proformaId) && (
+        <FacturaProformaInfo factura={facturaData} />
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Columna izquierda: Formulario */}

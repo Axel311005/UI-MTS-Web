@@ -55,22 +55,35 @@ export function ProformaForm({
   immediatePersist,
 }: ProformaFormProps) {
   const today = useMemo(() => new Date().toISOString().split('T')[0], []);
-  
+
   // Normalizar valores por defecto para asegurar que sean números o strings vacíos
-  const normalizedDefaults = useMemo(() => {
+  const normalizedDefaults = useMemo((): ProformaHeaderValues | undefined => {
     if (!defaultValues) return undefined;
     return {
-      idTramiteSeguro: defaultValues.idTramiteSeguro ? Number(defaultValues.idTramiteSeguro) : '',
-      idConsecutivo: defaultValues.idConsecutivo ? Number(defaultValues.idConsecutivo) : '',
-      idMoneda: defaultValues.idMoneda ? Number(defaultValues.idMoneda) : '',
-      idImpuesto: defaultValues.idImpuesto === null || defaultValues.idImpuesto === undefined 
-        ? '' 
-        : Number(defaultValues.idImpuesto),
+      idTramiteSeguro:
+        defaultValues.idTramiteSeguro &&
+        Number(defaultValues.idTramiteSeguro) > 0
+          ? Number(defaultValues.idTramiteSeguro)
+          : ('' as const),
+      idConsecutivo:
+        defaultValues.idConsecutivo && Number(defaultValues.idConsecutivo) > 0
+          ? Number(defaultValues.idConsecutivo)
+          : ('' as const),
+      idMoneda:
+        defaultValues.idMoneda && Number(defaultValues.idMoneda) > 0
+          ? Number(defaultValues.idMoneda)
+          : ('' as const),
+      idImpuesto:
+        defaultValues.idImpuesto === null ||
+        defaultValues.idImpuesto === undefined ||
+        defaultValues.idImpuesto === ''
+          ? ('' as const)
+          : Number(defaultValues.idImpuesto),
       observaciones: defaultValues.observaciones ?? '',
       fecha: defaultValues.fecha ?? today,
     };
   }, [defaultValues, today]);
-  
+
   const [values, setValues] = useState<ProformaHeaderValues>({
     idTramiteSeguro: normalizedDefaults?.idTramiteSeguro ?? '',
     idConsecutivo: normalizedDefaults?.idConsecutivo ?? '',
@@ -80,16 +93,16 @@ export function ProformaForm({
     fecha: normalizedDefaults?.fecha ?? today,
   });
   const [lines, setLines] = useState<ProformaLine[]>(defaultLines);
-  
+
   // Actualizar valores cuando cambian los defaults (para edición)
   useEffect(() => {
     if (normalizedDefaults) {
       setValues({
-        idTramiteSeguro: normalizedDefaults.idTramiteSeguro ?? '',
-        idConsecutivo: normalizedDefaults.idConsecutivo ?? '',
-        idMoneda: normalizedDefaults.idMoneda ?? '',
-        idImpuesto: normalizedDefaults.idImpuesto ?? '',
-        observaciones: normalizedDefaults.observaciones ?? '',
+        idTramiteSeguro: normalizedDefaults.idTramiteSeguro,
+        idConsecutivo: normalizedDefaults.idConsecutivo,
+        idMoneda: normalizedDefaults.idMoneda,
+        idImpuesto: normalizedDefaults.idImpuesto,
+        observaciones: normalizedDefaults.observaciones,
         fecha: normalizedDefaults.fecha ?? today,
       });
     }
@@ -106,7 +119,12 @@ export function ProformaForm({
 
   const handleSaveHeader = (e?: React.MouseEvent) => {
     e?.preventDefault();
-    if (values.idTramiteSeguro === '' || values.idConsecutivo === '' || values.idMoneda === '') return;
+    if (
+      values.idTramiteSeguro === '' ||
+      values.idConsecutivo === '' ||
+      values.idMoneda === ''
+    )
+      return;
     onSaveHeader({
       idTramiteSeguro: Number(values.idTramiteSeguro),
       idConsecutivo: Number(values.idConsecutivo), // Requerido

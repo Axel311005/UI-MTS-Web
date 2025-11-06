@@ -21,6 +21,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { getFacturaById } from '../actions/get-factura-by-id';
+import { FacturaProformaInfo } from '../ui/FacturaProformaInfo';
 import type { Factura, FacturaLinea } from '../types/Factura.interface';
 
 type FacturaLineaDetalle = FacturaLinea & {
@@ -224,6 +225,11 @@ export default function VerDetallesFacturaPage() {
         </div>
       </div>
 
+      {/* Información de Proforma si existe */}
+      {(factura?.proforma || (factura as any)?.idProforma || (factura as any)?.proformaId) && (
+        <FacturaProformaInfo factura={factura as Factura} />
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Columna izquierda - Información principal */}
         <div className="lg:col-span-2 space-y-6">
@@ -294,45 +300,47 @@ export default function VerDetallesFacturaPage() {
           </Card>
 
           {/* Información del cliente */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Información del Cliente</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Nombre</p>
-                  <p className="font-medium">{factura.cliente.nombre}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">RUC</p>
-                  <p className="font-medium">{factura.cliente.ruc}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Teléfono</p>
-                  <p className="font-medium">{factura.cliente.telefono}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Exonerado</p>
-                  <p className="font-medium">
-                    {factura.cliente.esExonerado
-                      ? `Sí (${factura.cliente.porcentajeExonerado}%)`
-                      : 'No'}
-                  </p>
-                </div>
-                <div className="col-span-2">
-                  <p className="text-sm text-muted-foreground">Dirección</p>
-                  <p className="font-medium">{factura.cliente.direccion}</p>
-                </div>
-                {factura.cliente.notas && (
-                  <div className="col-span-2">
-                    <p className="text-sm text-muted-foreground">Notas</p>
-                    <p className="font-medium">{factura.cliente.notas}</p>
+          {factura.cliente && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Información del Cliente</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Nombre</p>
+                    <p className="font-medium">{factura.cliente.nombre ?? '—'}</p>
                   </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  <div>
+                    <p className="text-sm text-muted-foreground">RUC</p>
+                    <p className="font-medium">{factura.cliente.ruc ?? '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Teléfono</p>
+                    <p className="font-medium">{factura.cliente.telefono ?? '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Exonerado</p>
+                    <p className="font-medium">
+                      {factura.cliente.esExonerado
+                        ? `Sí (${factura.cliente.porcentajeExonerado ?? '0'}%)`
+                        : 'No'}
+                    </p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-sm text-muted-foreground">Dirección</p>
+                    <p className="font-medium">{factura.cliente.direccion ?? '—'}</p>
+                  </div>
+                  {factura.cliente.notas && (
+                    <div className="col-span-2">
+                      <p className="text-sm text-muted-foreground">Notas</p>
+                      <p className="font-medium">{factura.cliente.notas}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Líneas de factura */}
           <Card>
@@ -411,14 +419,16 @@ export default function VerDetallesFacturaPage() {
                 </span>
               </div>
               <Separator />
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">
-                  {factura.impuesto?.descripcion ?? 'Impuesto'}
-                </span>
-                <span className="font-semibold">
-                  {formatCurrency(factura.totalImpuesto, currencyCode)}
-                </span>
-              </div>
+              {factura.impuesto && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">
+                    {factura.impuesto.descripcion ?? 'Impuesto'}
+                  </span>
+                  <span className="font-semibold">
+                    {formatCurrency(factura.totalImpuesto, currencyCode)}
+                  </span>
+                </div>
+              )}
               <Separator className="my-4" />
               <div className="flex justify-between text-lg">
                 <span className="font-bold">Total</span>
@@ -471,35 +481,37 @@ export default function VerDetallesFacturaPage() {
           </Card>
 
           {/* Impuesto */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Detalles del Impuesto</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div>
-                <p className="text-sm text-muted-foreground">Descripción</p>
-                <p className="font-medium">{factura.impuesto.descripcion}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Porcentaje</p>
-                <p className="font-medium">{factura.impuesto.porcentaje}%</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Estado</p>
-                <Badge
-                  variant={
-                    (factura.impuesto as any).activo === 'ACTIVO'
-                      ? 'default'
-                      : 'secondary'
-                  }
-                >
-                  {(factura.impuesto as any).activo === 'ACTIVO'
-                    ? 'Activo'
-                    : 'Inactivo'}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
+          {factura.impuesto && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Detalles del Impuesto</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <p className="text-sm text-muted-foreground">Descripción</p>
+                  <p className="font-medium">{factura.impuesto.descripcion ?? '—'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Porcentaje</p>
+                  <p className="font-medium">{factura.impuesto.porcentaje ?? '—'}%</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Estado</p>
+                  <Badge
+                    variant={
+                      (factura.impuesto as any).activo === 'ACTIVO'
+                        ? 'default'
+                        : 'secondary'
+                    }
+                  >
+                    {(factura.impuesto as any).activo === 'ACTIVO'
+                      ? 'Activo'
+                      : 'Inactivo'}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>

@@ -21,6 +21,39 @@ export interface Factura {
   comentario: string;
   lineas: FacturaLinea[];
   consecutivo: Consecutivo | null;
+  proforma?: {
+    idProforma: number;
+    codigoProforma: string;
+    fecha?: string | Date;
+    tramiteSeguro?: {
+      idTramiteSeguro: number;
+      numeroTramite: string;
+      estado?: string;
+      cliente?: {
+        idCliente: number;
+        nombre: string;
+      };
+      vehiculo?: {
+        placa: string;
+        marca: string;
+        modelo: string;
+      };
+    };
+    moneda?: {
+      idMoneda: number;
+      descripcion: string;
+      simbolo: string;
+    };
+    impuesto?: {
+      idImpuesto: number;
+      descripcion: string;
+      porcentaje: string;
+    };
+    subtotal?: number;
+    totalImpuesto?: number;
+    totalEstimado?: number;
+    observaciones?: string;
+  } | null;
 }
 
 export interface FacturaLinea {
