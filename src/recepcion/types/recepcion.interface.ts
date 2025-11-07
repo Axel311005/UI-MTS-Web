@@ -1,5 +1,6 @@
 import type { RecepcionEstado } from '@/shared/types/status';
 import type { Vehiculo } from '@/vehiculo/types/vehiculo.interface';
+import type { Consecutivo } from '@/consecutivo/types/consecutivo.response';
 
 export interface Recepcion {
   idRecepcion: number;
@@ -8,7 +9,8 @@ export interface Recepcion {
   fechaRecepcion: Date;
   observaciones: string;
   estado: RecepcionEstado;
-  codigoRecepcion: string;
+  consecutivo?: Consecutivo;
+  codigoRecepcion?: string; // Código generado automáticamente por el consecutivo
   fechaEntregaEstimada: Date;
   fechaEntregaReal: Date;
 }

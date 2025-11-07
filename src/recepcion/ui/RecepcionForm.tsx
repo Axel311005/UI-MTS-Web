@@ -16,7 +16,6 @@ import { useAuthStore } from '@/auth/store/auth.store';
 
 export type RecepcionFormValues = {
   idVehiculo: number;
-  codigoRecepcion: string;
   estado: RecepcionEstado;
   fechaRecepcion: string; // yyyy-MM-dd
   fechaEntregaEstimada: string; // yyyy-MM-dd
@@ -48,7 +47,6 @@ export function RecepcionForm({
   const [values, setValues] = useState<RecepcionFormValues>({
     idVehiculo:
       defaultValues?.idVehiculo ?? activeVehiculos[0]?.idVehiculo ?? 0,
-    codigoRecepcion: defaultValues?.codigoRecepcion ?? '',
     estado: defaultValues?.estado ?? RecepcionEstado.PENDIENTE,
     fechaRecepcion: defaultValues?.fechaRecepcion ?? today(),
     fechaEntregaEstimada: defaultValues?.fechaEntregaEstimada ?? today(),
@@ -66,8 +64,6 @@ export function RecepcionForm({
     const e: Record<string, string> = {};
     if (!values.idVehiculo || values.idVehiculo <= 0)
       e.idVehiculo = 'Seleccione un vehículo';
-    if (!values.codigoRecepcion?.trim())
-      e.codigoRecepcion = 'El código es requerido';
     if (!values.fechaRecepcion)
       e.fechaRecepcion = 'La fecha de recepción es requerida';
     if (!values.fechaEntregaEstimada)
@@ -96,7 +92,6 @@ export function RecepcionForm({
     if (!validate()) return;
     onSubmit({
       idVehiculo: Number(values.idVehiculo),
-      codigoRecepcion: values.codigoRecepcion.trim(),
       estado: values.estado,
       fechaRecepcion: values.fechaRecepcion,
       fechaEntregaEstimada: values.fechaEntregaEstimada,
@@ -141,18 +136,6 @@ export function RecepcionForm({
           <p className="text-xs text-muted-foreground">
             Se toma del usuario autenticado.
           </p>
-        </div>
-
-        <div className="space-y-2">
-          <Label>Código de Recepción</Label>
-          <Input
-            placeholder="REC-2024-001"
-            value={values.codigoRecepcion}
-            onChange={(e) => update({ codigoRecepcion: e.target.value })}
-          />
-          {errors.codigoRecepcion && (
-            <p className="text-sm text-destructive">{errors.codigoRecepcion}</p>
-          )}
         </div>
 
         <div className="space-y-2">

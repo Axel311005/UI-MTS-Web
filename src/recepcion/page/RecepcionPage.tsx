@@ -69,7 +69,6 @@ export default function RecepcionesPage() {
     const list = recepciones ?? [];
     if (!debounced) return list;
     return list.filter((r) => {
-      const codigo = r.codigoRecepcion?.toLowerCase?.() ?? '';
       const placa = r.vehiculo?.placa?.toLowerCase?.() ?? '';
       const empleado = `${r.empleado?.primerNombre ?? ''} ${
         r.empleado?.primerApellido ?? ''
@@ -78,7 +77,6 @@ export default function RecepcionesPage() {
         .toLowerCase();
       const estado = (r.estado ?? '').toString().toLowerCase();
       return (
-        codigo.includes(debounced) ||
         placa.includes(debounced) ||
         empleado.includes(debounced) ||
         estado.includes(debounced)
@@ -136,7 +134,7 @@ export default function RecepcionesPage() {
       <RecepcionSearchBar
         containerClassName="w-full max-w-md"
         className="w-full"
-        placeholder="Buscar por código, vehículo, empleado o estado"
+        placeholder="Buscar por vehículo, empleado o estado"
       />
 
       <Card className="card-elegant">
@@ -147,7 +145,7 @@ export default function RecepcionesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Código</TableHead>
+                <TableHead>Consecutivo</TableHead>
                 <TableHead>Vehículo</TableHead>
                 <TableHead>Empleado</TableHead>
                 <TableHead>Fecha Recepción</TableHead>
@@ -168,7 +166,7 @@ export default function RecepcionesPage() {
                 paginated.map((r) => (
                   <TableRow key={r.idRecepcion} className="table-row-hover">
                     <TableCell className="font-medium">
-                      {r.codigoRecepcion}
+                      {r.codigoRecepcion ?? '—'}
                     </TableCell>
                     <TableCell>{r.vehiculo?.placa ?? '—'}</TableCell>
                     <TableCell>

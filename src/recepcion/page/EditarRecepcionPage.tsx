@@ -96,7 +96,6 @@ export default function EditarRecepcionPage() {
             <RecepcionForm
               defaultValues={{
                 idVehiculo: recepcion.vehiculo?.idVehiculo,
-                codigoRecepcion: recepcion.codigoRecepcion as any,
                 estado: recepcion.estado as any,
                 fechaRecepcion: toDateInput(recepcion.fechaRecepcion),
                 fechaEntregaEstimada: toDateInput(

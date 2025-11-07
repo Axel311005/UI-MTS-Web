@@ -25,7 +25,6 @@ export default function NuevaRecepcionPage() {
       await postRecepcionAction({
         idVehiculo: data.idVehiculo,
         idEmpleado: empleadoId,
-        codigoRecepcion: data.codigoRecepcion,
         fechaRecepcion: data.fechaRecepcion,
         observaciones: data.observaciones,
         estado: data.estado,
