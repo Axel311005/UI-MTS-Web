@@ -72,6 +72,28 @@ const EditarRecepcionPage = lazy(() =>
     default: m.default,
   }))
 );
+// Recepción Seguimiento
+const RecepcionSeguimientoPage = lazy(() =>
+  import('@/recepcion-seguimiento/page/RecepcionSeguimientoPage').then(
+    (m) => ({
+      default: m.default,
+    })
+  )
+);
+const NuevaRecepcionSeguimientoPage = lazy(() =>
+  import(
+    '@/recepcion-seguimiento/page/NuevaRecepcionSeguimientoPage'
+  ).then((m) => ({
+    default: m.default,
+  }))
+);
+const EditarRecepcionSeguimientoPage = lazy(() =>
+  import(
+    '@/recepcion-seguimiento/page/EditarRecepcionSeguimientoPage'
+  ).then((m) => ({
+    default: m.default,
+  }))
+);
 // Vehículos
 const VehiculosPage = lazy(() =>
   import('@/vehiculo/pages/VehiculosPage').then((m) => ({
@@ -342,6 +364,21 @@ export const appRouter = createBrowserRouter([
             path: 'recepciones/editar/:id',
             element: <EditarRecepcionPage />,
             handle: { crumb: 'Editar recepción' },
+          },
+          {
+            path: 'recepcion-seguimiento',
+            element: <RecepcionSeguimientoPage />,
+            handle: { crumb: 'Seguimiento Recepciones' },
+          },
+          {
+            path: 'recepcion-seguimiento/nueva',
+            element: <NuevaRecepcionSeguimientoPage />,
+            handle: { crumb: 'Nuevo seguimiento' },
+          },
+          {
+            path: 'recepcion-seguimiento/editar/:id',
+            element: <EditarRecepcionSeguimientoPage />,
+            handle: { crumb: 'Editar seguimiento' },
           },
           {
             path: 'aseguradoras',

@@ -16,6 +16,7 @@ import {
   PackageSearch,
   Car,
   ClipboardList,
+  ClipboardCheck,
   Inbox,
   Receipt,
 } from '@/shared/icons';
@@ -77,6 +78,12 @@ export const navigationConfig: MenuItem[] = [
     title: 'Recepciones',
     url: '/recepciones',
     icon: Inbox,
+    userTypes: ['gerente', 'vendedor'],
+  },
+  {
+    title: 'Seguimiento Recepciones',
+    url: '/recepcion-seguimiento',
+    icon: ClipboardCheck,
     userTypes: ['gerente', 'vendedor'],
   },
   {
@@ -173,6 +180,7 @@ export const getGroupedNavigationItems = (userType: 'gerente' | 'vendedor') => {
       'Aseguradoras',
       'Trámites de Seguros',
       'Recepciones',
+      'Seguimiento Recepciones',
       'Proformas',
     ].includes(item.title)
   );

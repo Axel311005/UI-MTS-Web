@@ -4,6 +4,7 @@ import { RecepcionEstado } from '@/shared/types/status';
 export interface CreateRecepcionPayload {
   idVehiculo: number;
   idEmpleado: number;
+  consecutivoId: number;
   fechaRecepcion?: string | Date;
   observaciones?: string;
   estado?: RecepcionEstado;
@@ -14,10 +15,11 @@ export interface CreateRecepcionPayload {
 export const postRecepcionAction = async (payload: CreateRecepcionPayload) => {
   if (
     !payload?.idVehiculo ||
-    !payload?.idEmpleado
+    !payload?.idEmpleado ||
+    !payload?.consecutivoId
   ) {
     throw new Error(
-      'Faltan campos requeridos: idVehiculo e idEmpleado'
+      'Faltan campos requeridos: idVehiculo, idEmpleado y consecutivoId'
     );
   }
   const body = {

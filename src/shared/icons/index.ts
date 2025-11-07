@@ -39,6 +39,7 @@ export {
   PackageSearch,
   Car,
   ClipboardList,
+  ClipboardCheck,
   Inbox,
   Receipt,
 } from 'lucide-react';

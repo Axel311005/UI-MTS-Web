@@ -13,9 +13,11 @@ import {
 import { useVehiculo } from '@/vehiculo/hook/useVehiculo';
 import { EstadoActivo, RecepcionEstado } from '@/shared/types/status';
 import { useAuthStore } from '@/auth/store/auth.store';
+import { ConsecutivoSelect } from '@/shared/components/selects/ConsecutivoSelect';
 
 export type RecepcionFormValues = {
   idVehiculo: number;
+  idConsecutivo: number;
   estado: RecepcionEstado;
   fechaRecepcion: string; // yyyy-MM-dd
   fechaEntregaEstimada: string; // yyyy-MM-dd
@@ -47,6 +49,7 @@ export function RecepcionForm({
   const [values, setValues] = useState<RecepcionFormValues>({
     idVehiculo:
       defaultValues?.idVehiculo ?? activeVehiculos[0]?.idVehiculo ?? 0,
+    idConsecutivo: defaultValues?.idConsecutivo ?? 5, // ID 5 es el consecutivo de recepción
     estado: defaultValues?.estado ?? RecepcionEstado.PENDIENTE,
     fechaRecepcion: defaultValues?.fechaRecepcion ?? today(),
     fechaEntregaEstimada: defaultValues?.fechaEntregaEstimada ?? today(),
@@ -64,6 +67,8 @@ export function RecepcionForm({
     const e: Record<string, string> = {};
     if (!values.idVehiculo || values.idVehiculo <= 0)
       e.idVehiculo = 'Seleccione un vehículo';
+    if (!values.idConsecutivo || values.idConsecutivo <= 0)
+      e.idConsecutivo = 'Seleccione un consecutivo';
     if (!values.fechaRecepcion)
       e.fechaRecepcion = 'La fecha de recepción es requerida';
     if (!values.fechaEntregaEstimada)
@@ -92,6 +97,7 @@ export function RecepcionForm({
     if (!validate()) return;
     onSubmit({
       idVehiculo: Number(values.idVehiculo),
+      idConsecutivo: Number(values.idConsecutivo),
       estado: values.estado,
       fechaRecepcion: values.fechaRecepcion,
       fechaEntregaEstimada: values.fechaEntregaEstimada,
@@ -136,6 +142,17 @@ export function RecepcionForm({
           <p className="text-xs text-muted-foreground">
             Se toma del usuario autenticado.
           </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Consecutivo</Label>
+          <ConsecutivoSelect
+            tipo="RECEPCION"
+            selectedId={values.idConsecutivo > 0 ? values.idConsecutivo : ''}
+            onSelectId={(id) => update({ idConsecutivo: id })}
+            onClear={() => update({ idConsecutivo: 5 })}
+            error={errors.idConsecutivo}
+          />
         </div>
 
         <div className="space-y-2">
