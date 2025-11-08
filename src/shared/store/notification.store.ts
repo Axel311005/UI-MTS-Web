@@ -127,57 +127,35 @@ const saveNotificationsToStorage = (notifications: Notification[]) => {
 
 export const useNotificationStore = create<NotificationState>((set, get) => {
   let socketInstance: Socket | null = null;
+  let audioInstance: HTMLAudioElement | null = null;
 
   // Cargar notificaciones iniciales desde localStorage
   const initialNotifications = loadNotificationsFromStorage();
   const initialUnreadCount = initialNotifications.filter((n) => !n.read).length;
 
-  // Reproducir un beep usando Web Audio API
-  const playNotificationSound = async () => {
+  // Inicializar audio para sonido de notificación
+  const initAudio = () => {
+    if (!audioInstance) {
+      audioInstance = new Audio('/public/sounds/notification.mp3');
+      audioInstance.volume = 0.5;
+      // Pre-cargar el audio
+      audioInstance.load();
+    }
+    return audioInstance;
+  };
+
+  // Reproducir el sonido de notificación
+  const playNotificationSound = () => {
     try {
-      // Crear contexto de audio (puede requerir interacción del usuario primero)
-      const AudioContextClass =
-        window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioContextClass) {
-        return; // El navegador no soporta Web Audio API
-      }
-
-      const audioContext = new AudioContextClass();
-
-      // Si el contexto está suspendido (requiere interacción del usuario), intentar reanudarlo
-      if (audioContext.state === 'suspended') {
-        await audioContext.resume();
-      }
-
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-
-      // Configurar el sonido: frecuencia 800Hz, tipo sine
-      oscillator.frequency.value = 800;
-      oscillator.type = 'sine';
-
-      // Configurar el volumen: empieza en 0.3 y baja exponencialmente
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(
-        0.01,
-        audioContext.currentTime + 0.2
-      );
-
-      // Reproducir el sonido por 200ms
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.2);
-
-      // Limpiar el contexto después de que termine el sonido
-      oscillator.onended = () => {
-        audioContext.close().catch(() => {
-          // Ignorar errores al cerrar el contexto
-        });
-      };
+      const audio = initAudio();
+      audio.currentTime = 0;
+      // Solo reproducir el archivo MP3, sin fallback
+      audio.play().catch(() => {
+        // Si falla, simplemente no reproducir nada
+        // No usar fallback para evitar sonidos duplicados
+      });
     } catch (error) {
-      // Silenciar errores si el navegador no soporta Web Audio API o hay problemas de permisos
+      // Si hay un error, no reproducir nada
     }
   };
 

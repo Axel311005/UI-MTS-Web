@@ -5,6 +5,7 @@ import {
   AlertTriangle,
   CheckCircle,
   XCircle,
+  X,
 } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
@@ -36,6 +37,7 @@ interface NotificationCenterProps {
   notifications: Notification[];
   onMarkAsRead: (id: string) => void;
   onMarkAllAsRead: () => void;
+  onRemoveNotification?: (id: string) => void;
   onNotificationClick?: (notification: Notification) => void;
 }
 
@@ -57,6 +59,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   notifications,
   onMarkAsRead,
   onMarkAllAsRead,
+  onRemoveNotification,
   onNotificationClick,
 }) => {
   const navigate = useNavigate();
@@ -122,11 +125,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  onClick={() => handleNotificationClick(notification)}
                   className={cn(
-                    'p-2.5 cursor-pointer transition-colors hover:bg-accent/50',
-                    !notification.read && 'bg-accent/20',
-                    notification.link && 'hover:bg-accent/70'
+                    'p-2.5 transition-colors hover:bg-accent/20 group relative',
+                    !notification.read && 'bg-accent/10',
+                    notification.link && 'hover:bg-accent/30'
                   )}
                 >
                   <div className="flex gap-2.5">
@@ -138,7 +140,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                     >
                       {notificationIcons[notification.type]}
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div
+                      className="flex-1 min-w-0 cursor-pointer"
+                      onClick={() => handleNotificationClick(notification)}
+                    >
                       <div className="flex items-start justify-between gap-1.5 mb-0.5">
                         <p
                           className={cn(
@@ -163,6 +168,19 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                         })}
                       </p>
                     </div>
+                    {onRemoveNotification && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive flex-shrink-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRemoveNotification(notification.id);
+                        }}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}

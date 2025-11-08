@@ -26,9 +26,10 @@ export const AppHeader = () => {
   const navigate = useNavigate();
   const {
     notifications,
-
+    unreadCount,
     markAsRead,
     markAllAsRead,
+    removeNotification,
   } = useNotifications();
 
   const handleLogout = () => {
@@ -75,6 +76,7 @@ export const AppHeader = () => {
           notifications={notifications}
           onMarkAsRead={markAsRead}
           onMarkAllAsRead={markAllAsRead}
+          onRemoveNotification={removeNotification}
         />
 
         {/* Avatar con dropdown */}

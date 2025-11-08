@@ -18,6 +18,7 @@ export const useNotifications = () => {
     markAllAsRead,
     clearAll,
     addNotification,
+    removeNotification,
   } = useNotificationStore();
 
   const { authStatus, token } = useAuthStore();
@@ -47,5 +48,6 @@ export const useNotifications = () => {
     markAllAsRead,
     clearAll,
     addNotification, // Para notificaciones manuales si es necesario
+    removeNotification,
   };
 };
