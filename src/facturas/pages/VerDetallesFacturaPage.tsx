@@ -8,7 +8,13 @@ import {
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 import { Separator } from '@/shared/components/ui/separator';
-import { ArrowLeft, Loader2, FileText, Edit } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/shared/components/ui/dropdown-menu';
+import { ArrowLeft, Loader2, FileText, Edit, Receipt, ChevronDown } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -19,8 +25,12 @@ import {
 } from '@/shared/components/ui/table';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { useAuthStore } from '@/auth/store/auth.store';
 
 import { getFacturaById } from '../actions/get-factura-by-id';
+import { getFacturaReciboPdfAction } from '../actions/get-factura-recibo-pdf';
+import { getFacturaPdfAction } from '../actions/get-factura-pdf';
+import { downloadPdf } from '../utils/download-pdf';
 import { FacturaProformaInfo } from '../ui/FacturaProformaInfo';
 import type { Factura, FacturaLinea } from '../types/Factura.interface';
 
@@ -46,6 +56,10 @@ export default function VerDetallesFacturaPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [factura, setFactura] = useState<FacturaDetalle | null>(null);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const hasPdfAccess = useAuthStore((state) =>
+    state.hasAnyRole(['gerente', 'vendedor'])
+  );
 
   useEffect(() => {
     const loadFactura = async () => {
@@ -214,10 +228,69 @@ export default function VerDetallesFacturaPage() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
-            <FileText className="h-4 w-4 mr-2" />
-            Generar PDF
-          </Button>
+          {hasPdfAccess && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={isDownloadingPdf}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Generar PDF
+                  <ChevronDown className="h-4 w-4 ml-2" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={async () => {
+                    if (isDownloadingPdf || !id) return;
+                    setIsDownloadingPdf(true);
+                    const dismiss = toast.loading('Generando PDF del recibo...');
+                    try {
+                      const blob = await getFacturaReciboPdfAction(Number(id));
+                      const filename = `recibo-${factura.codigoFactura || `FAC-${id}`}.pdf`;
+                      downloadPdf(blob, filename);
+                      toast.success('PDF del recibo descargado exitosamente');
+                    } catch (error: any) {
+                      const message =
+                        error?.response?.data?.message ||
+                        (error instanceof Error ? error.message : 'No se pudo generar el PDF del recibo');
+                      toast.error(message);
+                    } finally {
+                      toast.dismiss(dismiss);
+                      setIsDownloadingPdf(false);
+                    }
+                  }}
+                  disabled={isDownloadingPdf}
+                >
+                  <Receipt className="mr-2 h-4 w-4" />
+                  Descargar Recibo
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={async () => {
+                    if (isDownloadingPdf || !id) return;
+                    setIsDownloadingPdf(true);
+                    const dismiss = toast.loading('Generando PDF de la factura...');
+                    try {
+                      const blob = await getFacturaPdfAction(Number(id));
+                      const filename = `factura-${factura.codigoFactura || `FAC-${id}`}.pdf`;
+                      downloadPdf(blob, filename);
+                      toast.success('PDF de la factura descargado exitosamente');
+                    } catch (error: any) {
+                      const message =
+                        error?.response?.data?.message ||
+                        (error instanceof Error ? error.message : 'No se pudo generar el PDF de la factura');
+                      toast.error(message);
+                    } finally {
+                      toast.dismiss(dismiss);
+                      setIsDownloadingPdf(false);
+                    }
+                  }}
+                  disabled={isDownloadingPdf}
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  Descargar Factura
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           <Button onClick={() => navigate(`/facturas/${id}/editar`)}>
             <Edit className="h-4 w-4 mr-2" />
             Editar
