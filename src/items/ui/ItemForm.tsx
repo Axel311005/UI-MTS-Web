@@ -14,10 +14,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/components/ui/select';
+import { SearchableSelect } from '@/shared/components/custom/SearchableSelect';
 import type { ItemFormValues, ItemFormErrors } from './item-form.types';
 import { EstadoActivo } from '@/shared/types/status';
 import { useClasificacionItem } from '@/clasificacion-item/hook/useClasificacionItem';
 import { useUnidadMedida } from '@/unidad-medida/hook/useUnidadMedida';
+import { useMemo } from 'react';
 
 interface ItemFormProps {
   values: ItemFormValues;
@@ -34,6 +36,22 @@ export function ItemForm({
 }: ItemFormProps) {
   const { clasificacionItems } = useClasificacionItem();
   const { unidadMedidas } = useUnidadMedida();
+
+  // Convertir clasificaciones a opciones para SearchableSelect
+  const clasificacionOptions = useMemo(() => {
+    return (clasificacionItems || []).map((c) => ({
+      value: c.idClasificacion,
+      label: c.descripcion,
+    }));
+  }, [clasificacionItems]);
+
+  // Convertir unidades de medida a opciones para SearchableSelect
+  const unidadMedidaOptions = useMemo(() => {
+    return (unidadMedidas || []).map((u) => ({
+      value: u.idUnidadMedida,
+      label: u.descripcion,
+    }));
+  }, [unidadMedidas]);
 
   const handleChange = (
     field: keyof ItemFormValues,
@@ -119,29 +137,18 @@ export function ItemForm({
               <Label htmlFor="clasificacionId">
                 Clasificación <span className="text-destructive">*</span>
               </Label>
-              <Select
-                value={
-                  values.clasificacionId ? String(values.clasificacionId) : ''
-                }
+              <SearchableSelect
+                id="clasificacionId"
+                options={clasificacionOptions}
+                value={values.clasificacionId || ''}
                 onValueChange={(value) =>
                   handleChange('clasificacionId', value)
                 }
-                disabled={!clasificacionItems}
-              >
-                <SelectTrigger id="clasificacionId">
-                  <SelectValue placeholder="Selecciona una clasificación" />
-                </SelectTrigger>
-                <SelectContent>
-                  {clasificacionItems?.map((c) => (
-                    <SelectItem
-                      key={c.idClasificacion}
-                      value={String(c.idClasificacion)}
-                    >
-                      {c.descripcion}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                placeholder="Selecciona una clasificación"
+                searchPlaceholder="Buscar clasificación..."
+                emptyMessage="No se encontraron clasificaciones."
+                disabled={!clasificacionItems || clasificacionItems.length === 0}
+              />
               {errors.clasificacionId && (
                 <p className="text-sm text-destructive">
                   {errors.clasificacionId}
@@ -153,27 +160,16 @@ export function ItemForm({
               <Label htmlFor="unidadMedidaId">
                 Unidad de Medida <span className="text-destructive">*</span>
               </Label>
-              <Select
-                value={
-                  values.unidadMedidaId ? String(values.unidadMedidaId) : ''
-                }
+              <SearchableSelect
+                id="unidadMedidaId"
+                options={unidadMedidaOptions}
+                value={values.unidadMedidaId || ''}
                 onValueChange={(value) => handleChange('unidadMedidaId', value)}
-                disabled={!unidadMedidas}
-              >
-                <SelectTrigger id="unidadMedidaId">
-                  <SelectValue placeholder="Selecciona una unidad de medida" />
-                </SelectTrigger>
-                <SelectContent>
-                  {unidadMedidas?.map((u) => (
-                    <SelectItem
-                      key={u.idUnidadMedida}
-                      value={String(u.idUnidadMedida)}
-                    >
-                      {u.descripcion}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                placeholder="Selecciona una unidad de medida"
+                searchPlaceholder="Buscar unidad de medida..."
+                emptyMessage="No se encontraron unidades de medida."
+                disabled={!unidadMedidas || unidadMedidas.length === 0}
+              />
               {errors.unidadMedidaId && (
                 <p className="text-sm text-destructive">
                   {errors.unidadMedidaId}

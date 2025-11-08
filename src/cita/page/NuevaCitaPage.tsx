@@ -18,26 +18,22 @@ export default function NuevaCitaPage() {
 
   const handleSubmit = async (data: CitaFormValues) => {
     try {
-      let idMotivoCita = data.idMotivoCita;
+      // Siempre crear un nuevo motivo con la descripción proporcionada
+      const nuevoMotivo = await postMotivoCitaAction({
+        descripcion: data.motivoDescripcion.trim(),
+      });
 
-      // Si se está creando un nuevo motivo, crearlo primero
-      if (
-        data.nuevoMotivoDescripcion &&
-        data.nuevoMotivoDescripcion.trim() !== ''
-      ) {
-        const nuevoMotivo = await postMotivoCitaAction({
-          descripcion: data.nuevoMotivoDescripcion.trim(),
-        });
-        idMotivoCita = nuevoMotivo.idMotivoCita;
+      // Invalidar la lista de motivos para que se actualice
+      await queryClient.invalidateQueries({ queryKey: ['motivosCita'] });
 
-        // Invalidar la lista de motivos para que se actualice
-        await queryClient.invalidateQueries({ queryKey: ['motivosCita'] });
-      }
-
-      // Crear la cita con el motivo (nuevo o existente)
+      // Crear la cita con el motivo recién creado
       await postCitaAction({
-        ...data,
-        idMotivoCita,
+        idCliente: data.idCliente,
+        idVehiculo: data.idVehiculo,
+        idMotivoCita: nuevoMotivo.idMotivoCita,
+        fechaInicio: data.fechaInicio,
+        estado: data.estado,
+        canal: data.canal,
       });
 
       await queryClient.invalidateQueries({ queryKey: ['citas'] });

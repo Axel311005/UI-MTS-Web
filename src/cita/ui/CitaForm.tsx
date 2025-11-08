@@ -12,16 +12,13 @@ import {
 import { CitaEstado } from '@/shared/types/status';
 import { useCliente } from '@/clientes/hook/useCliente';
 import { useVehiculo } from '@/vehiculo/hook/useVehiculo';
-import { useMotivoCita } from '../hook/useMotivoCita';
 import { EstadoActivo } from '@/shared/types/status';
 import { ClienteSelect } from '@/facturas/ui/ClienteSelect';
-import { Plus } from 'lucide-react';
 
 export type CitaFormValues = {
   idCliente: number;
   idVehiculo: number;
-  idMotivoCita: number;
-  nuevoMotivoDescripcion?: string; // Para crear un nuevo motivo
+  motivoDescripcion: string; // Descripción del motivo (siempre se crea un nuevo motivo)
   fechaInicio: string; // datetime-local format
   estado: CitaEstado;
   canal: 'web' | 'telefono' | 'presencial';
@@ -56,7 +53,6 @@ export function CitaForm({
 }: CitaFormProps) {
   const { clientes } = useCliente({ usePagination: false });
   const { vehiculos } = useVehiculo({ usePagination: false });
-  const { motivosCita } = useMotivoCita({ usePagination: false });
 
   const activeClientes = useMemo(
     () => (clientes ?? []).filter((c) => c.activo === EstadoActivo.ACTIVO),
@@ -74,15 +70,13 @@ export function CitaForm({
   const [values, setValues] = useState<CitaFormValues>({
     idCliente: defaultValues?.idCliente ?? 0,
     idVehiculo: defaultValues?.idVehiculo ?? 0,
-    idMotivoCita: defaultValues?.idMotivoCita ?? 0,
-    nuevoMotivoDescripcion: defaultValues?.nuevoMotivoDescripcion ?? '',
+    motivoDescripcion: defaultValues?.motivoDescripcion ?? '',
     fechaInicio: defaultValues?.fechaInicio ?? defaultDateTime,
     estado: defaultValues?.estado ?? CitaEstado.PROGRAMADA,
     canal: defaultValues?.canal ?? 'web',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [crearNuevoMotivo, setCrearNuevoMotivo] = useState(false);
 
   const update = (patch: Partial<CitaFormValues>) =>
     setValues((prev) => ({ ...prev, ...patch }));
@@ -93,13 +87,8 @@ export function CitaForm({
       e.idCliente = 'Seleccione un cliente';
     if (!values.idVehiculo || values.idVehiculo <= 0)
       e.idVehiculo = 'Seleccione un vehículo';
-    if (crearNuevoMotivo) {
-      if (!values.nuevoMotivoDescripcion || values.nuevoMotivoDescripcion.trim() === '')
-        e.nuevoMotivoDescripcion = 'La descripción del motivo es requerida';
-    } else {
-      if (!values.idMotivoCita || values.idMotivoCita <= 0)
-        e.idMotivoCita = 'Seleccione un motivo';
-    }
+    if (!values.motivoDescripcion || values.motivoDescripcion.trim() === '')
+      e.motivoDescripcion = 'La descripción del motivo es requerida';
     if (!values.fechaInicio) e.fechaInicio = 'La fecha es requerida';
 
     setErrors(e);
@@ -112,7 +101,7 @@ export function CitaForm({
     onSubmit({
       idCliente: Number(values.idCliente),
       idVehiculo: Number(values.idVehiculo),
-      idMotivoCita: Number(values.idMotivoCita),
+      motivoDescripcion: values.motivoDescripcion.trim(),
       fechaInicio: new Date(values.fechaInicio).toISOString(),
       estado: values.estado,
       canal: values.canal,
@@ -159,56 +148,16 @@ export function CitaForm({
         </div>
 
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label>
-              Motivo de Cita <span className="text-destructive">*</span>
-            </Label>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setCrearNuevoMotivo(!crearNuevoMotivo);
-                if (!crearNuevoMotivo) {
-                  update({ idMotivoCita: 0, nuevoMotivoDescripcion: '' });
-                } else {
-                  update({ nuevoMotivoDescripcion: '' });
-                }
-              }}
-              className="h-8"
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              {crearNuevoMotivo ? 'Seleccionar existente' : 'Crear nuevo'}
-            </Button>
-          </div>
-          {crearNuevoMotivo ? (
-            <Input
-              placeholder="Ej: Mantenimiento preventivo"
-              value={values.nuevoMotivoDescripcion ?? ''}
-              onChange={(e) => update({ nuevoMotivoDescripcion: e.target.value })}
-            />
-          ) : (
-            <Select
-              value={values.idMotivoCita > 0 ? String(values.idMotivoCita) : ''}
-              onValueChange={(v) => update({ idMotivoCita: Number(v) })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccione un motivo" />
-              </SelectTrigger>
-              <SelectContent>
-                {(motivosCita ?? []).map((m) => (
-                  <SelectItem key={m.idMotivoCita} value={String(m.idMotivoCita)}>
-                    {m.descripcion}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          {errors.idMotivoCita && (
-            <p className="text-sm text-destructive">{errors.idMotivoCita}</p>
-          )}
-          {errors.nuevoMotivoDescripcion && (
-            <p className="text-sm text-destructive">{errors.nuevoMotivoDescripcion}</p>
+          <Label>
+            Motivo de Cita <span className="text-destructive">*</span>
+          </Label>
+          <Input
+            placeholder="Ej: Mantenimiento preventivo, Reparación de frenos, etc."
+            value={values.motivoDescripcion}
+            onChange={(e) => update({ motivoDescripcion: e.target.value })}
+          />
+          {errors.motivoDescripcion && (
+            <p className="text-sm text-destructive">{errors.motivoDescripcion}</p>
           )}
         </div>
 
