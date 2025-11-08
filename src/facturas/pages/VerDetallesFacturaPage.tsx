@@ -33,6 +33,7 @@ import { getFacturaPdfAction } from '../actions/get-factura-pdf';
 import { downloadPdf } from '../utils/download-pdf';
 import { FacturaProformaInfo } from '../ui/FacturaProformaInfo';
 import type { Factura, FacturaLinea } from '../types/Factura.interface';
+import { getClienteNombre } from '@/clientes/utils/cliente.utils';
 
 type FacturaLineaDetalle = FacturaLinea & {
   item?: {
@@ -382,7 +383,7 @@ export default function VerDetallesFacturaPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Nombre</p>
-                    <p className="font-medium">{factura.cliente.nombre ?? '—'}</p>
+                    <p className="font-medium">{getClienteNombre(factura.cliente)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">RUC</p>

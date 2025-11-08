@@ -16,6 +16,7 @@ import type {
   ClienteFormErrors,
   ClienteFormValues,
 } from '../ui/cliente-form.types';
+import { getClienteNombre } from '../utils/cliente.utils';
 
 export default function NuevoClientePage() {
   const navigate = useNavigate();
@@ -29,8 +30,10 @@ export default function NuevoClientePage() {
   const validateForm = () => {
     const newErrors: ClienteFormErrors = {};
 
-    if (!formValues.nombre.trim()) {
-      newErrors.nombre = 'El nombre es requerido';
+    // Al menos uno de los nombres o el RUC debe estar presente
+    const hasNombre = formValues.primerNombre.trim() || formValues.primerApellido.trim();
+    if (!hasNombre && !formValues.ruc.trim()) {
+      newErrors.primerNombre = 'Debe proporcionar al menos un nombre o RUC';
     }
 
     if (!formValues.ruc.trim()) {
@@ -52,7 +55,8 @@ export default function NuevoClientePage() {
   };
 
   const buildPayload = (): CreateClientePayload => ({
-    nombre: formValues.nombre.trim(),
+    primerNombre: formValues.primerNombre.trim() || null,
+    primerApellido: formValues.primerApellido.trim() || null,
     ruc: formValues.ruc.trim(),
     esExonerado: formValues.esExonerado,
     porcentajeExonerado: formValues.esExonerado
@@ -78,7 +82,8 @@ export default function NuevoClientePage() {
     try {
       const payload = buildPayload();
       const { clienteId } = await postCliente(payload);
-      toast.success(`Cliente ${payload.nombre} creado (ID ${clienteId})`);
+      const nombreCompleto = [payload.primerNombre, payload.primerApellido].filter(Boolean).join(' ') || payload.ruc;
+      toast.success(`Cliente ${nombreCompleto} creado (ID ${clienteId})`);
 
       await queryClient.invalidateQueries({
         queryKey: ['clientes'],

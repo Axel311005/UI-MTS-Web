@@ -23,6 +23,7 @@ import type { TramiteSeguro } from '../types/tramiteSeguro.interface';
 import { TramiteSeguroSearchBar } from '../ui/TramiteSeguroSearchBar';
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import { TramiteSeguroEstado } from '@/shared/types/status';
+import { getClienteNombre, getClienteSearchText } from '@/clientes/utils/cliente.utils';
 
 const estadoVariantMap: Record<
   string,
@@ -86,7 +87,7 @@ export default function TramitesSegurosPage() {
 
     return items.filter((tramite) => {
       const numero = tramite.numeroTramite?.toLowerCase?.() ?? '';
-      const cliente = tramite.cliente?.nombre?.toLowerCase?.() ?? '';
+      const cliente = tramite.cliente ? getClienteSearchText(tramite.cliente) : '';
       const vehiculo = tramite.vehiculo?.placa?.toLowerCase?.() ?? '';
       const aseguradora =
         tramite.aseguradora?.descripcion?.toLowerCase?.() ?? '';
@@ -212,7 +213,7 @@ export default function TramitesSegurosPage() {
                     <TableCell className="font-medium">
                       {tramite.numeroTramite}
                     </TableCell>
-                    <TableCell>{tramite.cliente?.nombre ?? '—'}</TableCell>
+                    <TableCell>{tramite.cliente ? getClienteNombre(tramite.cliente) : '—'}</TableCell>
                     <TableCell>{tramite.vehiculo?.placa ?? '—'}</TableCell>
                     <TableCell>
                       {tramite.aseguradora?.descripcion ?? '—'}

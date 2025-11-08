@@ -24,6 +24,7 @@ import type { Cotizacion } from '../types/cotizacion.interface';
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import { CotizacionEstado } from '@/shared/types/status';
 import { formatMoney } from '@/shared/utils/formatters';
+import { getClienteNombre } from '@/clientes/utils/cliente.utils';
 
 const estadoVariant: Record<CotizacionEstado, 'default' | 'destructive'> = {
   [CotizacionEstado.GENERADA]: 'default',
@@ -140,8 +141,9 @@ export default function CotizacionesPage() {
                     </TableCell>
                     <TableCell>
                       {cotizacion.nombreCliente ??
-                        cotizacion.cliente?.nombre ??
-                        '—'}
+                        (cotizacion.cliente
+                          ? getClienteNombre(cotizacion.cliente)
+                          : '—')}
                     </TableCell>
                     <TableCell>{cotizacion.cliente?.ruc ?? '—'}</TableCell>
                     <TableCell>{formatDate(cotizacion.fecha)}</TableCell>

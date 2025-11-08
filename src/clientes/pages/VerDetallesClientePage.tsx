@@ -14,6 +14,7 @@ import { Separator } from '@/shared/components/ui/separator';
 import { Skeleton } from '@/shared/components/ui/skeleton';
 import { getClienteById } from '../actions/get-cliente-by-id';
 import { EstadoActivo } from '@/shared/types/status';
+import { getClienteNombre } from '../utils/cliente.utils';
 
 type ClienteDetalle = Awaited<ReturnType<typeof getClienteById>>;
 
@@ -137,7 +138,7 @@ export default function VerDetallesClientePage() {
           <div>
             <div className="flex items-center space-x-3">
               <h1 className="text-3xl font-bold tracking-tight">
-                {cliente.nombre}
+                {getClienteNombre(cliente)}
               </h1>
               <Badge
                 variant={

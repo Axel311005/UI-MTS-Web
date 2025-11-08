@@ -80,7 +80,9 @@ export default function NuevoItemPage() {
     esCotizable: formValues.esCotizable,
     ultimaSalida: null,
     ultimoIngreso: null,
-    usuarioUltModif: user?.empleado?.nombreCompleto || 'admin',
+    usuarioUltModif: user?.empleado 
+      ? [user.empleado.primerNombre, user.empleado.primerApellido].filter(Boolean).join(' ') || user.empleado.nombreCompleto || 'admin'
+      : 'admin',
     fechaUltModif: null,
     perecedero: false,
     activo: formValues.activo,

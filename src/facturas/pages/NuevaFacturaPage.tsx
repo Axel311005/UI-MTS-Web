@@ -49,10 +49,12 @@ interface InvoiceFormValues {
 export default function NuevaFacturaPage() {
   const queryClient = useQueryClient();
   const empleado = useAuthStore((s) => s.user?.empleado);
-  const empleadoForForm = useMemo(
-    () => ({ id: empleado?.id ?? 0, nombre: empleado?.nombreCompleto ?? '' }),
-    [empleado]
-  );
+  const empleadoForForm = useMemo(() => {
+    if (!empleado) return { id: 0, nombre: '' };
+    const nombre = empleado.nombreCompleto || 
+      [empleado.primerNombre, empleado.primerApellido].filter(Boolean).join(' ') || '';
+    return { id: empleado.id ?? 0, nombre };
+  }, [empleado]);
   const { monedas } = useMoneda();
 
   // Form state (UI only, no real logic)

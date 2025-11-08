@@ -11,6 +11,7 @@ import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { X } from '@/shared/icons';
 import { useTramiteSeguro } from '@/tramite-seguro/hook/useTramiteSeguro';
 import { TramiteSeguroEstado } from '@/shared/types/status';
+import { getClienteNombre, getClienteSearchText } from '@/clientes/utils/cliente.utils';
 
 type Props = {
   selectedId?: number | '';
@@ -47,7 +48,7 @@ export const TramiteSeguroSelect: React.FC<Props> = ({
     return availableTramites.filter(
       (t) =>
         (t.numeroTramite?.toLowerCase?.() ?? '').includes(q) ||
-        (t.cliente?.nombre?.toLowerCase?.() ?? '').includes(q) ||
+        (t.cliente ? getClienteSearchText(t.cliente) : '').includes(q) ||
         (t.vehiculo?.placa?.toLowerCase?.() ?? '').includes(q) ||
         (t.aseguradora?.descripcion?.toLowerCase?.() ?? '').includes(q)
     );
@@ -85,7 +86,7 @@ export const TramiteSeguroSelect: React.FC<Props> = ({
               {selected.numeroTramite}
             </span>
             <span className="text-xs text-muted-foreground leading-tight">
-              {selected.cliente?.nombre} - {selected.vehiculo?.placa}
+              {selected.cliente ? getClienteNombre(selected.cliente) : '—'} - {selected.vehiculo?.placa}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -162,7 +163,7 @@ export const TramiteSeguroSelect: React.FC<Props> = ({
                             {getEstadoBadge(t.estado)}
                           </div>
                           <span className="text-xs text-muted-foreground leading-tight">
-                            {t.cliente?.nombre} - {t.vehiculo?.placa} -{' '}
+                            {t.cliente ? getClienteNombre(t.cliente) : '—'} - {t.vehiculo?.placa} -{' '}
                             {t.aseguradora?.descripcion}
                           </span>
                         </div>

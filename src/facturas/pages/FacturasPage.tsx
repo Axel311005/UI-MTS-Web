@@ -28,6 +28,7 @@ import { useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { SearchFacturaAction } from '../actions/search-facturas-action';
 import type { Factura } from '../types/Factura.interface';
+import { getClienteNombre } from '@/clientes/utils/cliente.utils';
 import type { PaginatedResponse } from '@/shared/types/pagination';
 
 const FacturaRowActions = lazy(() => import('../ui/FacturaRowActions'));
@@ -327,7 +328,7 @@ export const FacturasPage = () => {
                       <TableCell>
                         <div>
                           <div className="font-medium">
-                            {factura.cliente?.nombre}
+                            {factura.cliente ? getClienteNombre(factura.cliente) : '—'}
                           </div>
                           <div className="text-xs text-muted-foreground">
                             {factura.cliente?.ruc}

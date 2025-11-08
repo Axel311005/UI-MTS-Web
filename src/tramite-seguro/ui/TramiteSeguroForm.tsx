@@ -7,6 +7,7 @@ import { useVehiculo } from '@/vehiculo/hook/useVehiculo';
 import { useCliente } from '@/clientes/hook/useCliente';
 import { useAseguradora } from '@/aseguradora/hook/useAseguradora';
 import { EstadoActivo, TramiteSeguroEstado } from '@/shared/types/status';
+import { getClienteNombre } from '@/clientes/utils/cliente.utils';
 
 type FormValues = {
   idVehiculo: number | '';
@@ -232,7 +233,7 @@ export function TramiteSeguroForm({
             </option>
             {activeClientes.map((cliente) => (
               <option key={cliente.idCliente} value={cliente.idCliente}>
-                {cliente.nombre}
+                {getClienteNombre(cliente)}
               </option>
             ))}
           </select>

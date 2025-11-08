@@ -11,6 +11,7 @@ import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { X } from '@/shared/icons';
 import { useCliente } from '@/clientes/hook/useCliente';
 import { EstadoActivo } from '@/shared/types/status';
+import { getClienteNombre, getClienteSearchText } from '@/clientes/utils/cliente.utils';
 
 type Props = {
   selectedId?: number | '';
@@ -47,18 +48,20 @@ export const ClienteSelect: React.FC<Props> = ({
     const q = query.trim().toLowerCase();
     const list = activeClientes;
     if (!q) return list;
-    return list.filter(
-      (c) =>
-        (c.nombre?.toLowerCase?.() ?? '').includes(q) ||
-        (c.ruc?.toLowerCase?.() ?? '').includes(q)
-    );
+    return list.filter((c) => {
+      const searchText = getClienteSearchText(c);
+      return searchText.includes(q);
+    });
   }, [activeClientes, query]);
 
   const selected = useMemo(() => {
     if (selectedId !== undefined && selectedId !== '') {
       return allClientes.find((c) => c.idCliente === selectedId);
     }
-    if (value) return allClientes.find((c) => c.nombre === value);
+    if (value) {
+      // Buscar por nombre completo
+      return allClientes.find((c) => getClienteNombre(c) === value);
+    }
     return undefined;
   }, [allClientes, selectedId, value]);
 
@@ -69,7 +72,7 @@ export const ClienteSelect: React.FC<Props> = ({
       {selected ? (
         <div className="inline-flex items-center gap-2 rounded-md bg-muted px-3 py-2">
           <div className="flex flex-col">
-            <span className="font-medium leading-tight">{selected.nombre}</span>
+            <span className="font-medium leading-tight">{getClienteNombre(selected)}</span>
             <span className="text-xs text-muted-foreground leading-tight">
               RUC: {selected.ruc}
             </span>
@@ -132,14 +135,14 @@ export const ClienteSelect: React.FC<Props> = ({
                       key={c.idCliente}
                       onClick={() => {
                         if (onSelectId) onSelectId(c.idCliente);
-                        else if (onSelect) onSelect(c.nombre);
+                        else if (onSelect) onSelect(getClienteNombre(c));
                         setOpen(false);
                       }}
                       className="cursor-pointer"
                     >
                       <div className="flex flex-col">
                         <span className="font-medium leading-tight">
-                          {c.nombre}
+                          {getClienteNombre(c)}
                         </span>
                         <span className="text-xs text-muted-foreground leading-tight">
                           RUC: {c.ruc}

@@ -18,6 +18,7 @@ import {
 import { useState } from 'react';
 import { useAuthStore } from '@/auth/store/auth.store';
 import { ConsecutivoSelect } from '@/shared/components/selects/ConsecutivoSelect';
+import { getEmpleadoNombre } from '@/empleados/utils/empleado.utils';
 
 interface InvoiceHeaderProps {
   consecutivoId: number | '';
@@ -46,9 +47,13 @@ export function FacturaHeader({
   errors = {},
 }: InvoiceHeaderProps) {
   const [openEstado, setOpenEstado] = useState(false);
-  const empleadoAuth = useAuthStore(
-    (state) => state.user?.empleado.nombreCompleto
-  );
+  const empleadoAuth = useAuthStore((state) => {
+    const empleado = state.user?.empleado;
+    if (!empleado) return '—';
+    // Si tiene nombreCompleto (compatibilidad), usarlo; si no, calcular desde primerNombre y primerApellido
+    if (empleado.nombreCompleto) return empleado.nombreCompleto;
+    return getEmpleadoNombre(empleado as any);
+  });
   const opcionesEstado: Array<{
     value: 'PENDIENTE' | 'PAGADO';
     label: string;

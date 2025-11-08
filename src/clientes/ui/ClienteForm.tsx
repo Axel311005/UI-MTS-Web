@@ -37,20 +37,37 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="nombre">
-                Nombre <span className="text-destructive">*</span>
+              <Label htmlFor="primerNombre">
+                Primer Nombre
               </Label>
               <Input
-                id="nombre"
-                value={values.nombre}
-                onChange={(e) => handleChange('nombre', e.target.value)}
-                placeholder="Empresa ABC S.A."
+                id="primerNombre"
+                value={values.primerNombre}
+                onChange={(e) => handleChange('primerNombre', e.target.value)}
+                placeholder="Juan"
               />
-              {errors.nombre && (
-                <p className="text-sm text-destructive">{errors.nombre}</p>
+              {errors.primerNombre && (
+                <p className="text-sm text-destructive">{errors.primerNombre}</p>
               )}
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="primerApellido">
+                Primer Apellido
+              </Label>
+              <Input
+                id="primerApellido"
+                value={values.primerApellido}
+                onChange={(e) => handleChange('primerApellido', e.target.value)}
+                placeholder="Pérez"
+              />
+              {errors.primerApellido && (
+                <p className="text-sm text-destructive">{errors.primerApellido}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="ruc">
                 RUC <span className="text-destructive">*</span>

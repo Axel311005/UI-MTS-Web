@@ -12,6 +12,7 @@ import { getVehiculoById } from '../actions/get-vehiculo-by-id';
 import { patchVehiculoAction } from '../actions/patch-vehiculo';
 import { VehiculoForm } from '../ui/VehiculoForm';
 import { useQueryClient } from '@tanstack/react-query';
+import { getClienteNombre } from '@/clientes/utils/cliente.utils';
 
 export default function EditarVehiculoPage() {
   const navigate = useNavigate();
@@ -36,7 +37,7 @@ export default function EditarVehiculoPage() {
           numChasis: vehiculo.numChasis ?? '',
         };
         setInitialValues(values);
-        setClienteNombre(vehiculo.cliente?.nombre ?? '');
+        setClienteNombre(vehiculo.cliente ? getClienteNombre(vehiculo.cliente) : '');
       } catch (e) {
         toast.error('No se pudo cargar el vehículo');
       } finally {

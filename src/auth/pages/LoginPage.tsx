@@ -33,10 +33,18 @@ export default function LoginPage() {
       const ok = await login(email, password);
       if (ok) {
         const hasAccess = useAuthStore.getState().hasPanelAccess();
-        const user =
-          useAuthStore.getState().user?.empleado?.nombreCompleto ||
-          useAuthStore.getState().user?.cliente?.nombre ||
-          'Usuario';
+        const empleado = useAuthStore.getState().user?.empleado;
+        const cliente = useAuthStore.getState().user?.cliente;
+        const user = empleado
+          ? empleado.nombreCompleto ||
+            [empleado.primerNombre, empleado.primerApellido]
+              .filter(Boolean)
+              .join(' ')
+          : cliente
+          ? [cliente.primerNombre, cliente.primerApellido]
+              .filter(Boolean)
+              .join(' ') || cliente.ruc
+          : 'Usuario';
         if (hasAccess) {
           toast.success(`Inicio de sesión exitoso. Bienvenido ${user}`, {
             position: 'top-right',

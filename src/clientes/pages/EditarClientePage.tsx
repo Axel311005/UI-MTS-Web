@@ -17,6 +17,7 @@ import type {
 import { getClienteById } from '../actions/get-cliente-by-id';
 import { patchCliente } from '../actions/patch-cliente';
 import { EstadoActivo } from '@/shared/types/status';
+import { getClienteNombre } from '../utils/cliente.utils';
 
 export default function EditarClientePage() {
   const navigate = useNavigate();
@@ -64,7 +65,8 @@ export default function EditarClientePage() {
           return String(porcentajeRaw);
         })();
         setFormValues({
-          nombre: cliente.nombre ?? '',
+          primerNombre: cliente.primerNombre ?? '',
+          primerApellido: cliente.primerApellido ?? '',
           ruc: cliente.ruc ?? '',
           direccion: cliente.direccion ?? '',
           telefono: cliente.telefono ?? '',
@@ -97,8 +99,10 @@ export default function EditarClientePage() {
   const validateForm = () => {
     const newErrors: ClienteFormErrors = {};
 
-    if (!formValues.nombre.trim()) {
-      newErrors.nombre = 'El nombre es requerido';
+    // Al menos uno de los nombres o el RUC debe estar presente
+    const hasNombre = formValues.primerNombre.trim() || formValues.primerApellido.trim();
+    if (!hasNombre && !formValues.ruc.trim()) {
+      newErrors.primerNombre = 'Debe proporcionar al menos un nombre o RUC';
     }
 
     if (!formValues.ruc.trim()) {
@@ -120,7 +124,8 @@ export default function EditarClientePage() {
   };
 
   const buildPayload = () => ({
-    nombre: formValues.nombre.trim(),
+    primerNombre: formValues.primerNombre.trim() || null,
+    primerApellido: formValues.primerApellido.trim() || null,
     ruc: formValues.ruc.trim(),
     esExonerado: formValues.esExonerado,
     porcentajeExonerado: formValues.esExonerado
@@ -145,7 +150,8 @@ export default function EditarClientePage() {
     try {
       const payload = buildPayload();
       await patchCliente(clienteId, payload);
-      toast.success(`Cliente ${payload.nombre} actualizado`);
+      const nombreCompleto = [payload.primerNombre, payload.primerApellido].filter(Boolean).join(' ') || payload.ruc;
+      toast.success(`Cliente ${nombreCompleto} actualizado`);
 
       await queryClient.invalidateQueries({
         queryKey: ['clientes'],

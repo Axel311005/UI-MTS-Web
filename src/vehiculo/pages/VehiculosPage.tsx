@@ -24,6 +24,7 @@ import { toast } from 'sonner';
 import { patchVehiculoAction } from '../actions/patch-vehiculo';
 import { EstadoActivo } from '@/shared/types/status';
 import { useDebounce } from '@/shared/hooks/use-debounce';
+import { getClienteNombre, getClienteSearchText } from '@/clientes/utils/cliente.utils';
 
 export const VehiculosPage = () => {
   const navigate = useNavigate();
@@ -63,7 +64,7 @@ export const VehiculosPage = () => {
         v.anio !== undefined && v.anio !== null
           ? String(v.anio).toLowerCase()
           : '';
-      const cliente = v.cliente?.nombre?.toLowerCase?.() ?? '';
+      const cliente = v.cliente ? getClienteSearchText(v.cliente) : '';
       return (
         placa.includes(debouncedQuery) ||
         marca.includes(debouncedQuery) ||
@@ -179,7 +180,7 @@ export const VehiculosPage = () => {
                   <TableCell>{v.modelo || '—'}</TableCell>
                   <TableCell>{v.anio ?? '—'}</TableCell>
                   <TableCell>{v.color || '—'}</TableCell>
-                  <TableCell>{v.cliente?.nombre || '—'}</TableCell>
+                  <TableCell>{v.cliente ? getClienteNombre(v.cliente) : '—'}</TableCell>
                   <TableCell>
                     <span
                       className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${

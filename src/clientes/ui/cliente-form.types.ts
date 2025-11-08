@@ -1,7 +1,8 @@
 import { EstadoActivo } from '@/shared/types/status';
 
 export interface ClienteFormValues {
-  nombre: string;
+  primerNombre: string;
+  primerApellido: string;
   ruc: string;
   direccion: string;
   telefono: string;
@@ -16,7 +17,8 @@ export type ClienteFormErrors = Partial<
 >;
 
 export const INITIAL_CLIENTE_FORM_VALUES: ClienteFormValues = {
-  nombre: '',
+  primerNombre: '',
+  primerApellido: '',
   ruc: '',
   direccion: '',
   telefono: '',

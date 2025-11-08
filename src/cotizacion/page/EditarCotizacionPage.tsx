@@ -14,6 +14,7 @@ import {
 } from '../ui/CotizacionForm';
 import { getCotizacionByIdAction } from '../actions/get-cotizacion-by-id';
 import { patchCotizacionAction } from '../actions/patch-cotizacion';
+import { getClienteNombre } from '@/clientes/utils/cliente.utils';
 
 export default function EditarCotizacionPage() {
   const navigate = useNavigate();
@@ -75,7 +76,10 @@ export default function EditarCotizacionPage() {
             {cotizacion && (
               <>
                 Código: {cotizacion.codigoCotizacion} | Cliente:{' '}
-                {cotizacion.nombreCliente || cotizacion.cliente?.nombre}
+                {cotizacion.nombreCliente ||
+                  (cotizacion.cliente
+                    ? getClienteNombre(cotizacion.cliente)
+                    : '—')}
               </>
             )}
           </CardDescription>

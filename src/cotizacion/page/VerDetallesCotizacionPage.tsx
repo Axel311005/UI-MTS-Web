@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 
 import { getCotizacionByIdAction } from '../actions/get-cotizacion-by-id';
 import type { Cotizacion } from '../types/cotizacion.interface';
+import { getClienteNombre } from '@/clientes/utils/cliente.utils';
 import type { DetalleCotizacion } from '../types/detalle-cotizacion.interface';
 
 type CotizacionDetalle = Cotizacion & {
@@ -156,10 +157,11 @@ export default function VerDetallesCotizacionPage() {
   })();
 
   // Calcular subtotal de los detalles
-  const subtotal = cotizacion.detalles?.reduce((sum, detalle) => {
-    const total = Number(detalle.totalLineas ?? 0);
-    return sum + (Number.isFinite(total) ? total : 0);
-  }, 0) ?? 0;
+  const subtotal =
+    cotizacion.detalles?.reduce((sum, detalle) => {
+      const total = Number(detalle.totalLineas ?? 0);
+      return sum + (Number.isFinite(total) ? total : 0);
+    }, 0) ?? 0;
 
   return (
     <div className="space-y-6 p-6">
@@ -175,7 +177,9 @@ export default function VerDetallesCotizacionPage() {
           </Button>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold">{cotizacion.codigoCotizacion}</h1>
+              <h1 className="text-3xl font-bold">
+                {cotizacion.codigoCotizacion}
+              </h1>
               <Badge variant={getEstadoBadgeVariant(cotizacion.estado)}>
                 {cotizacion.estado?.toUpperCase?.()}
               </Badge>
@@ -218,7 +222,10 @@ export default function VerDetallesCotizacionPage() {
                 <div>
                   <p className="text-sm text-muted-foreground">Cliente</p>
                   <p className="font-medium">
-                    {cotizacion.nombreCliente ?? cotizacion.cliente?.nombre ?? '—'}
+                    {cotizacion.nombreCliente ??
+                      (cotizacion.cliente
+                        ? getClienteNombre(cotizacion.cliente)
+                        : '—')}
                   </p>
                 </div>
               </div>
@@ -235,27 +242,37 @@ export default function VerDetallesCotizacionPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Nombre</p>
-                    <p className="font-medium">{cotizacion.cliente.nombre ?? '—'}</p>
+                    <p className="font-medium">
+                      {getClienteNombre(cotizacion.cliente)}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">RUC</p>
-                    <p className="font-medium">{cotizacion.cliente.ruc ?? '—'}</p>
+                    <p className="font-medium">
+                      {cotizacion.cliente.ruc ?? '—'}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Teléfono</p>
-                    <p className="font-medium">{cotizacion.cliente.telefono ?? '—'}</p>
+                    <p className="font-medium">
+                      {cotizacion.cliente.telefono ?? '—'}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Exonerado</p>
                     <p className="font-medium">
                       {cotizacion.cliente.esExonerado
-                        ? `Sí (${cotizacion.cliente.porcentajeExonerado ?? '0'}%)`
+                        ? `Sí (${
+                            cotizacion.cliente.porcentajeExonerado ?? '0'
+                          }%)`
                         : 'No'}
                     </p>
                   </div>
                   <div className="col-span-2">
                     <p className="text-sm text-muted-foreground">Dirección</p>
-                    <p className="font-medium">{cotizacion.cliente.direccion ?? '—'}</p>
+                    <p className="font-medium">
+                      {cotizacion.cliente.direccion ?? '—'}
+                    </p>
                   </div>
                   {cotizacion.cliente.notas && (
                     <div className="col-span-2">
@@ -277,7 +294,6 @@ export default function VerDetallesCotizacionPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>ID Detalle</TableHead>
                     <TableHead>Descripción</TableHead>
                     <TableHead className="text-right">Cantidad</TableHead>
                     <TableHead className="text-right">
@@ -290,9 +306,6 @@ export default function VerDetallesCotizacionPage() {
                   {cotizacion.detalles && cotizacion.detalles.length > 0 ? (
                     cotizacion.detalles.map((detalle) => (
                       <TableRow key={detalle.idDetalleCotizacion}>
-                        <TableCell className="font-medium">
-                          #{detalle.idDetalleCotizacion}
-                        </TableCell>
                         <TableCell>
                           {detalle.item?.descripcion ?? '—'}
                         </TableCell>
@@ -392,4 +405,3 @@ export default function VerDetallesCotizacionPage() {
     </div>
   );
 }
-

@@ -187,7 +187,7 @@ export default function NuevaFacturaFromProformaPage() {
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Cliente</p>
                 <p className="font-medium">
-                  {proforma.tramiteSeguro?.cliente?.nombre || '—'}
+                  {proforma.tramiteSeguro?.cliente ? getClienteNombre(proforma.tramiteSeguro.cliente) : '—'}
                 </p>
               </div>
               <div>

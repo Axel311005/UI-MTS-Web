@@ -2,7 +2,8 @@ import { EstadoActivo } from '@/shared/types/status';
 
 export interface Cliente {
   idCliente: number;
-  nombre: string;
+  primerNombre: string | null;
+  primerApellido: string | null;
   ruc: string;
   esExonerado: boolean;
   porcentajeExonerado: string;

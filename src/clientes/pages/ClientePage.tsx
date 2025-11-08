@@ -25,6 +25,7 @@ import { useCliente } from '../hook/useCliente';
 import { EstadoActivo } from '@/shared/types/status';
 import type { Cliente } from '../types/cliente.interface';
 import { useDebounce } from '@/shared/hooks/use-debounce';
+import { getClienteNombre, getClienteSearchText } from '../utils/cliente.utils';
 
 export const ClientesPage = () => {
   const navigate = useNavigate();
@@ -65,18 +66,8 @@ export const ClientesPage = () => {
     if (!debouncedSearch) return items;
 
     return items.filter((cliente) => {
-      const nombre = cliente.nombre?.toLowerCase() ?? '';
-      const ruc = cliente.ruc?.toLowerCase() ?? '';
-      const telefono = cliente.telefono?.toLowerCase() ?? '';
-      const direccion = cliente.direccion?.toLowerCase() ?? '';
-      const notas = cliente.notas?.toLowerCase() ?? '';
-      return (
-        nombre.includes(debouncedSearch) ||
-        ruc.includes(debouncedSearch) ||
-        telefono.includes(debouncedSearch) ||
-        direccion.includes(debouncedSearch) ||
-        notas.includes(debouncedSearch)
-      );
+      const searchText = getClienteSearchText(cliente);
+      return searchText.includes(debouncedSearch);
     });
   }, [clientes, debouncedSearch]);
 
@@ -181,7 +172,7 @@ export const ClientesPage = () => {
                 return (
                   <TableRow key={cliente.idCliente} className="table-row-hover">
                     <TableCell className="font-medium">
-                      {cliente.nombre}
+                      {getClienteNombre(cliente)}
                     </TableCell>
                     <TableCell>{cliente.ruc || '—'}</TableCell>
                     <TableCell>

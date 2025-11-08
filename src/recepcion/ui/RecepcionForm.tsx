@@ -58,7 +58,10 @@ export function RecepcionForm({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const empleadoNombre = user?.empleado?.nombreCompleto ?? '—';
+  const empleadoNombre = user?.empleado
+    ? (user.empleado.nombreCompleto || 
+       [user.empleado.primerNombre, user.empleado.primerApellido].filter(Boolean).join(' '))
+    : '—';
 
   const update = (patch: Partial<RecepcionFormValues>) =>
     setValues((prev) => ({ ...prev, ...patch }));

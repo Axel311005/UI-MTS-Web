@@ -23,6 +23,10 @@ import { CitaSearchBar } from '../ui/CitaSearchBar';
 import type { Cita } from '../types/cita.interface';
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import { CitaEstado } from '@/shared/types/status';
+import {
+  getClienteNombre,
+  getClienteSearchText,
+} from '@/clientes/utils/cliente.utils';
 
 const estadoVariant: Record<
   CitaEstado,
@@ -76,12 +80,14 @@ export default function CitasPage() {
     const list = citas ?? [];
     if (!debounced) return list;
     return list.filter((c) => {
-      const clienteNombre = c.cliente?.nombre?.toLowerCase?.() ?? '';
+      const clienteSearchText = c.cliente
+        ? getClienteSearchText(c.cliente)
+        : '';
       const vehiculoPlaca = c.vehiculo?.placa?.toLowerCase?.() ?? '';
       const motivo = c.motivoCita?.descripcion?.toLowerCase?.() ?? '';
       const estado = (c.estado ?? '').toString().toLowerCase();
       return (
-        clienteNombre.includes(debounced) ||
+        clienteSearchText.includes(debounced) ||
         vehiculoPlaca.includes(debounced) ||
         motivo.includes(debounced) ||
         estado.includes(debounced)
@@ -150,7 +156,7 @@ export default function CitasPage() {
                 paginated.map((cita) => (
                   <TableRow key={cita.idCita} className="table-row-hover">
                     <TableCell className="font-medium">
-                      {cita.cliente?.nombre ?? '—'}
+                      {cita.cliente ? getClienteNombre(cita.cliente) : '—'}
                     </TableCell>
                     <TableCell>
                       {cita.vehiculo?.placa

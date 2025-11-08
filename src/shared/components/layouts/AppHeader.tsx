@@ -17,11 +17,19 @@ import { Badge } from '../ui/badge';
 import { useAuthStore } from '@/auth/store/auth.store';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
+import { NotificationCenter } from './NotificationCenter';
+import { useNotifications } from '@/shared/hooks/use-notification';
 
 export const AppHeader = () => {
   const { theme, setTheme } = useTheme();
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const {
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+  } = useNotifications();
 
   const handleLogout = () => {
     logout();
@@ -63,12 +71,11 @@ export const AppHeader = () => {
         </Button>
 
         {/* Notificaciones */}
-        <Button variant="ghost" size="sm" className="button-hover relative">
-          <Bell className="h-4 w-4" />
-          <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs bg-destructive">
-            3
-          </Badge>
-        </Button>
+        <NotificationCenter
+          notifications={notifications}
+          onMarkAsRead={markAsRead}
+          onMarkAllAsRead={markAllAsRead}
+        />
 
         {/* Avatar con dropdown */}
         <DropdownMenu>

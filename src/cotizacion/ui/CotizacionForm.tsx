@@ -14,6 +14,7 @@ import { useCliente } from '@/clientes/hook/useCliente';
 import { EstadoActivo } from '@/shared/types/status';
 import { ClienteSelect } from '@/facturas/ui/ClienteSelect';
 import { ConsecutivoSelect } from '@/shared/components/selects/ConsecutivoSelect';
+import { getClienteNombre } from '@/clientes/utils/cliente.utils';
 
 export type CotizacionFormValues = {
   idCliente: number;
@@ -73,7 +74,7 @@ export function CotizacionForm({
       idCliente: Number(values.idCliente),
       idConsecutivo: Number(values.idConsecutivo),
       estado: values.estado,
-      nombreCliente: selectedCliente?.nombre || values.nombreCliente,
+      nombreCliente: selectedCliente ? getClienteNombre(selectedCliente) : values.nombreCliente,
     });
   };
 

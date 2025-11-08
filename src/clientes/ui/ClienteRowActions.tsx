@@ -44,7 +44,8 @@ export function ClienteRowActions({ cliente }: ClienteRowActionsProps) {
     const dismiss = toast.loading('Marcando cliente inactivo...');
     try {
       const payload = {
-        nombre: cliente.nombre ?? '',
+        primerNombre: cliente.primerNombre ?? null,
+        primerApellido: cliente.primerApellido ?? null,
         ruc: cliente.ruc ?? '',
         esExonerado: Boolean(cliente.esExonerado),
         porcentajeExonerado: cliente.esExonerado
