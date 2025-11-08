@@ -3,7 +3,7 @@ import { useAuthStore } from '@/auth/store/auth.store';
 
 export function ProtectedRoute() {
   const authStatus = useAuthStore((s) => s.authStatus);
-  const allowed = useAuthStore((s) => s.hasAnyRole(['gerente', 'vendedor']));
+  const hasPanelAccess = useAuthStore((s) => s.hasPanelAccess());
   const location = useLocation();
 
   const isAuthenticated = authStatus === 'authenticated';
@@ -12,7 +12,7 @@ export function ProtectedRoute() {
     return <div style={{ padding: 16 }} />;
   }
 
-  if (isAuthenticated && !allowed) {
+  if (isAuthenticated && !hasPanelAccess) {
     // Redirect to login with reason, NotAuthenticatedRoute will handle messaging/log-out
     return (
       <Navigate

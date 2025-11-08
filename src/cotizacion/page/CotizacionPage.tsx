@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { Plus, Pencil } from 'lucide-react';
+import { Pencil, Eye } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 import {
   Card,
@@ -96,9 +96,6 @@ export default function CotizacionesPage() {
             Gestión de cotizaciones generadas por clientes
           </p>
         </div>
-        <Button onClick={() => navigate('/cotizaciones/nueva')}>
-          <Plus className="mr-2 h-4 w-4" /> Nueva Cotización
-        </Button>
       </div>
 
       <CotizacionSearchBar
@@ -167,17 +164,28 @@ export default function CotizacionesPage() {
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          navigate(
-                            `/cotizaciones/editar/${cotizacion.idCotizacion}`
-                          )
-                        }
-                      >
-                        <Pencil className="mr-2 h-4 w-4" /> Editar
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            navigate(`/cotizaciones/${cotizacion.idCotizacion}`)
+                          }
+                        >
+                          <Eye className="mr-2 h-4 w-4" /> Ver
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            navigate(
+                              `/cotizaciones/${cotizacion.idCotizacion}/editar`
+                            )
+                          }
+                        >
+                          <Pencil className="mr-2 h-4 w-4" /> Editar
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

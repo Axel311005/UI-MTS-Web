@@ -39,8 +39,20 @@ export function ItemForm({
     field: keyof ItemFormValues,
     value: string | boolean
   ) => {
-    onChange({ ...values, [field]: value });
+    const newValues = { ...values, [field]: value };
+    
+    // Si el tipo es SERVICIO, bloquear precios y establecerlos en 1
+    if (field === 'tipo' && value === 'SERVICIO') {
+      newValues.precioBaseLocal = '1';
+      newValues.precioBaseDolar = '1';
+      newValues.precioAdquisicionLocal = '1';
+      newValues.precioAdquisicionDolar = '1';
+    }
+    
+    onChange(newValues);
   };
+  
+  const isServicio = values.tipo === 'SERVICIO';
 
   return (
     <div className="space-y-6">
@@ -193,6 +205,7 @@ export function ItemForm({
                   handleChange('precioBaseLocal', e.target.value)
                 }
                 placeholder="5000000"
+                disabled={isServicio}
               />
               {errors.precioBaseLocal && (
                 <p className="text-sm text-destructive">
@@ -216,6 +229,7 @@ export function ItemForm({
                   handleChange('precioBaseDolar', e.target.value)
                 }
                 placeholder="714.29"
+                disabled={isServicio}
               />
               {errors.precioBaseDolar && (
                 <p className="text-sm text-destructive">
@@ -240,6 +254,7 @@ export function ItemForm({
                   handleChange('precioAdquisicionLocal', e.target.value)
                 }
                 placeholder="4000000"
+                disabled={isServicio}
               />
               {errors.precioAdquisicionLocal && (
                 <p className="text-sm text-destructive">
@@ -262,6 +277,7 @@ export function ItemForm({
                   handleChange('precioAdquisicionDolar', e.target.value)
                 }
                 placeholder="571.43"
+                disabled={isServicio}
               />
               {errors.precioAdquisicionDolar && (
                 <p className="text-sm text-destructive">

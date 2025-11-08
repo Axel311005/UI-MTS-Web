@@ -17,6 +17,7 @@ interface SidebarProps {
   navigationItems: MenuItem[];
   catalogItems?: MenuItem[];
   segurosItems?: MenuItem[];
+  clientPortalItems?: MenuItem[];
   systemItems?: MenuItem[];
   isCollapsed?: boolean;
 }
@@ -25,6 +26,7 @@ export const CustomSideBar = ({
   navigationItems = [],
   catalogItems = [],
   segurosItems = [],
+  clientPortalItems = [],
   systemItems = [],
 }: SidebarProps) => {
   const location = useLocation();
@@ -124,6 +126,33 @@ export const CustomSideBar = ({
             <SidebarGroupContent>
               <SidebarMenu>
                 {segurosItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to={item.url}
+                        className={getNavCls({ isActive: isActive(item.url) })}
+                      >
+                        {item.icon && <item.icon className="h-4 w-4" />}
+                        <span className="group-data-[state=collapsed]:hidden">
+                          {item.title}
+                        </span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {clientPortalItems?.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="group-data-[state=collapsed]:hidden">
+              Portal Cliente
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {clientPortalItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
                       <NavLink

@@ -38,38 +38,45 @@ export default function NuevoItemPage() {
     if (!formValues.unidadMedidaId || Number(formValues.unidadMedidaId) < 1) {
       newErrors.unidadMedidaId = 'Unidad de medida requerida';
     }
-    if (!formValues.precioBaseLocal || Number(formValues.precioBaseLocal) < 0) {
-      newErrors.precioBaseLocal = 'Precio local requerido';
-    }
-    if (!formValues.precioBaseDolar || Number(formValues.precioBaseDolar) < 0) {
-      newErrors.precioBaseDolar = 'Precio USD requerido';
-    }
-    if (
-      !formValues.precioAdquisicionLocal ||
-      Number(formValues.precioAdquisicionLocal) < 0
-    ) {
-      newErrors.precioAdquisicionLocal = 'Precio adquisición local requerido';
-    }
-    if (
-      !formValues.precioAdquisicionDolar ||
-      Number(formValues.precioAdquisicionDolar) < 0
-    ) {
-      newErrors.precioAdquisicionDolar = 'Precio adquisición USD requerido';
+    // Si es SERVICIO, no validar precios (se envían como 1)
+    const isServicio = formValues.tipo === 'SERVICIO';
+    if (!isServicio) {
+      if (!formValues.precioBaseLocal || Number(formValues.precioBaseLocal) < 0) {
+        newErrors.precioBaseLocal = 'Precio local requerido';
+      }
+      if (!formValues.precioBaseDolar || Number(formValues.precioBaseDolar) < 0) {
+        newErrors.precioBaseDolar = 'Precio USD requerido';
+      }
+      if (
+        !formValues.precioAdquisicionLocal ||
+        Number(formValues.precioAdquisicionLocal) < 0
+      ) {
+        newErrors.precioAdquisicionLocal = 'Precio adquisición local requerido';
+      }
+      if (
+        !formValues.precioAdquisicionDolar ||
+        Number(formValues.precioAdquisicionDolar) < 0
+      ) {
+        newErrors.precioAdquisicionDolar = 'Precio adquisición USD requerido';
+      }
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const buildPayload = (): CreateItemPayload => ({
-    clasificacionId: Number(formValues.clasificacionId),
-    unidadMedidaId: Number(formValues.unidadMedidaId),
-    codigoItem: formValues.codigoItem.trim(),
-    descripcion: formValues.descripcion.trim(),
-    tipo: formValues.tipo,
-    precioBaseLocal: toNumberOrZero(formValues.precioBaseLocal),
-    precioBaseDolar: toNumberOrZero(formValues.precioBaseDolar),
-    precioAdquisicionLocal: toNumberOrZero(formValues.precioAdquisicionLocal),
-    precioAdquisicionDolar: toNumberOrZero(formValues.precioAdquisicionDolar),
+  const buildPayload = (): CreateItemPayload => {
+    // Si es SERVICIO, enviar 1 a todos los precios
+    const isServicio = formValues.tipo === 'SERVICIO';
+    return {
+      clasificacionId: Number(formValues.clasificacionId),
+      unidadMedidaId: Number(formValues.unidadMedidaId),
+      codigoItem: formValues.codigoItem.trim(),
+      descripcion: formValues.descripcion.trim(),
+      tipo: formValues.tipo,
+      precioBaseLocal: isServicio ? 1 : toNumberOrZero(formValues.precioBaseLocal),
+      precioBaseDolar: isServicio ? 1 : toNumberOrZero(formValues.precioBaseDolar),
+      precioAdquisicionLocal: isServicio ? 1 : toNumberOrZero(formValues.precioAdquisicionLocal),
+      precioAdquisicionDolar: isServicio ? 1 : toNumberOrZero(formValues.precioAdquisicionDolar),
     esCotizable: formValues.esCotizable,
     ultimaSalida: null,
     ultimoIngreso: null,
@@ -77,7 +84,8 @@ export default function NuevoItemPage() {
     fechaUltModif: null,
     perecedero: false,
     activo: formValues.activo,
-  });
+    };
+  };
 
   const handleSave = async () => {
     if (saving) return;

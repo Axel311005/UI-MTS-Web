@@ -1,9 +1,11 @@
+import type { Cliente } from "@/clientes/types/cliente.interface";
+
   export interface AuthResponse {
     id:       string;
     email:    string;
     roles:    string[];
     empleado: Empleado;
-    cliente:  null;
+    cliente:  Cliente;
     token:    string;
   }
 

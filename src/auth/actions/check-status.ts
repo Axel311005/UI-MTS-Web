@@ -5,14 +5,11 @@ export const checkAuthAction = async (): Promise<AuthResponse> => {
   const token = localStorage.getItem('token');
   if (!token) throw new Error('No token found');
 
-  try {
-    const { data } = await tallerApi.get<AuthResponse>('/auth/check-status');
+  const { data } = await tallerApi.get<AuthResponse>('/auth/check-status');
 
+  // Solo actualizar el token si el servidor devuelve uno nuevo
+  if (data.token) {
     localStorage.setItem('token', data.token);
-    return data;
-  } catch (error) {
-    console.log(error);
-    localStorage.removeItem('token');
-    throw new Error('Token expired or not valid');
   }
+  return data;
 };

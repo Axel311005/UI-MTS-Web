@@ -56,6 +56,43 @@ const NuevaFacturaFromProformaPage = lazy(() =>
     default: m.default,
   }))
 );
+// Cotizaciones
+const CotizacionesPage = lazy(() =>
+  import('@/cotizacion/page/CotizacionPage').then((m) => ({
+    default: m.default,
+  }))
+);
+const EditarCotizacionPage = lazy(() =>
+  import('@/cotizacion/page/EditarCotizacionPage').then((m) => ({
+    default: m.default,
+  }))
+);
+const VerDetallesCotizacionPage = lazy(() =>
+  import('@/cotizacion/page/VerDetallesCotizacionPage').then((m) => ({
+    default: m.default,
+  }))
+);
+// Citas
+const CitasPage = lazy(() =>
+  import('@/cita/page/CitasPage').then((m) => ({
+    default: m.default,
+  }))
+);
+const NuevaCitaPage = lazy(() =>
+  import('@/cita/page/NuevaCitaPage').then((m) => ({
+    default: m.default,
+  }))
+);
+const EditarCitasPage = lazy(() =>
+  import('@/cita/page/EditarCitasPage').then((m) => ({
+    default: m.default,
+  }))
+);
+const VerDetallesCitaPage = lazy(() =>
+  import('@/cita/page/VerDetallesCitaPage').then((m) => ({
+    default: m.default,
+  }))
+);
 // Recepciones
 const RecepcionesPage = lazy(() =>
   import('@/recepcion/page/RecepcionPage').then((m) => ({
@@ -481,6 +518,41 @@ export const appRouter = createBrowserRouter([
             handle: { crumb: 'Factura desde proforma' },
           },
           {
+            path: 'cotizaciones',
+            element: <CotizacionesPage />,
+            handle: { crumb: 'Cotizaciones' },
+          },
+          {
+            path: 'cotizaciones/:id',
+            element: <VerDetallesCotizacionPage />,
+            handle: { crumb: 'Cotización' },
+          },
+          {
+            path: 'cotizaciones/:id/editar',
+            element: <EditarCotizacionPage />,
+            handle: { crumb: 'Editar cotización' },
+          },
+          {
+            path: 'citas',
+            element: <CitasPage />,
+            handle: { crumb: 'Citas' },
+          },
+          {
+            path: 'citas/nueva',
+            element: <NuevaCitaPage />,
+            handle: { crumb: 'Nueva cita' },
+          },
+          {
+            path: 'citas/:id',
+            element: <VerDetallesCitaPage />,
+            handle: { crumb: 'Cita' },
+          },
+          {
+            path: 'citas/:id/editar',
+            element: <EditarCitasPage />,
+            handle: { crumb: 'Editar cita' },
+          },
+          {
             path: 'clasificaciones',
             element: <ClasificacionesPage />,
             handle: { crumb: 'Clasificaciones' },
@@ -526,7 +598,7 @@ export const appRouter = createBrowserRouter([
             handle: { crumb: 'Editar clasificación' },
           },
           {
-            element: <RoleGuard allow={['gerente']} />,
+            element: <RoleGuard allow={['gerente', 'superuser']} />,
             children: [
               {
                 path: 'bodegas',
@@ -564,7 +636,7 @@ export const appRouter = createBrowserRouter([
       },
       {
         path: '/admin',
-        element: <RoleGuard allow={['admin', 'gerente']} />, // mapea 'admin' a 'gerente'
+        element: <RoleGuard allow={['gerente', 'superuser']} />,
         children: [
           {
             element: <AppLayout />,

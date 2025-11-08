@@ -42,4 +42,5 @@ export {
   ClipboardCheck,
   Inbox,
   Receipt,
+  FileSpreadsheet,
 } from 'lucide-react';

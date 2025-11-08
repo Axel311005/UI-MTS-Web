@@ -21,7 +21,6 @@ export default function LoginPage() {
   const location = useLocation();
 
   const login = useAuthStore((s) => s.login);
-  const getHasAnyRole = useAuthStore((s) => s.hasAnyRole);
 
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -33,9 +32,12 @@ export default function LoginPage() {
     try {
       const ok = await login(email, password);
       if (ok) {
-        const allowed = getHasAnyRole(['gerente', 'vendedor']);
-        const user = useAuthStore.getState().user?.empleado.nombreCompleto;
-        if (allowed) {
+        const hasAccess = useAuthStore.getState().hasPanelAccess();
+        const user =
+          useAuthStore.getState().user?.empleado?.nombreCompleto ||
+          useAuthStore.getState().user?.cliente?.nombre ||
+          'Usuario';
+        if (hasAccess) {
           toast.success(`Inicio de sesión exitoso. Bienvenido ${user}`, {
             position: 'top-right',
           });
@@ -43,7 +45,7 @@ export default function LoginPage() {
           navigate(from, { replace: true });
         } else {
           toast.error(
-            'Tu cuenta no tiene permisos para acceder. Solo vendedor o gerente.',
+            'Tu cuenta no tiene permisos para acceder al panel. Solo gerente, vendedor y superuser pueden acceder.',
             { position: 'top-right' }
           );
           // Cerrar sesión y permanecer/volver en login
@@ -55,8 +57,12 @@ export default function LoginPage() {
           position: 'top-right',
         });
       }
-    } catch {
-      toast.error('Error al iniciar sesión. Verifica tus credenciales.', {
+    } catch (error: any) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Error al iniciar sesión. Verifica tus credenciales.';
+      toast.error(errorMessage, {
         position: 'top-right',
       });
     } finally {

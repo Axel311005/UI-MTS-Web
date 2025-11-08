@@ -2,7 +2,7 @@ import { SidebarProvider } from '@/shared/components/ui/sidebar';
 import { AppHeader } from './AppHeader';
 import { Suspense, lazy } from 'react';
 import { Outlet } from 'react-router';
-import { useAuthStore } from '@/auth/store/auth.store';
+import { useAuthStore, type PanelRole } from '@/auth/store/auth.store';
 import { getGroupedNavigationItems } from '@/shared/config/navigation';
 import type { MenuItem } from '@/shared/config/navigation';
 
@@ -17,6 +17,7 @@ interface AppLayoutProps {
   navigationItems?: MenuItem[];
   catalogItems?: MenuItem[];
   segurosItems?: MenuItem[];
+  clientPortalItems?: MenuItem[];
   systemItems?: MenuItem[];
 }
 
@@ -39,24 +40,43 @@ export const AppLayout = ({
   navigationItems,
   catalogItems,
   segurosItems,
+  clientPortalItems,
   systemItems,
 }: AppLayoutProps) => {
   const user = useAuthStore((s) => s.user);
-  const isAdmin = useAuthStore((s) => s.isAdmin());
 
-  // Generar navegación según roles (solo 'gerente' y 'vendedor')
+  // Generar navegación según roles (gerente, vendedor, superuser)
   let finalNavigationItems: MenuItem[] = navigationItems ?? [];
   let finalCatalogItems = catalogItems;
   let finalSegurosItems = segurosItems;
+  let finalClientPortalItems = clientPortalItems;
   let finalSystemItems = systemItems;
 
   if (!navigationItems) {
-    const userType: 'gerente' | 'vendedor' =
-      user && isAdmin ? 'gerente' : 'vendedor';
+    // Obtener todos los roles del usuario
+    const rawRoles = user?.roles ?? [];
+    const roles = Array.isArray(rawRoles)
+      ? rawRoles.map((r) => String(r).toLowerCase().trim())
+      : [];
+    
+    // Si el usuario tiene múltiples roles, obtener items para todos los roles
+    // Priorizar superuser > gerente > vendedor para determinar el tipo principal
+    let userType: PanelRole = 'vendedor';
+    if (roles.includes('superuser')) {
+      // Superuser tiene acceso completo como gerente
+      userType = 'superuser';
+    } else if (roles.includes('gerente')) {
+      userType = 'gerente';
+    } else if (roles.includes('vendedor')) {
+      userType = 'vendedor';
+    }
+    
+    // Obtener items para el tipo principal (superuser se mapea a gerente internamente)
     const grouped = getGroupedNavigationItems(userType);
     finalNavigationItems = grouped.navigationItems;
     finalCatalogItems = grouped.catalogItems;
     finalSegurosItems = grouped.segurosItems;
+    finalClientPortalItems = grouped.clientPortalItems;
     finalSystemItems = grouped.systemItems;
   }
 
@@ -68,6 +88,7 @@ export const AppLayout = ({
             navigationItems={finalNavigationItems}
             catalogItems={finalCatalogItems}
             segurosItems={finalSegurosItems}
+            clientPortalItems={finalClientPortalItems}
             systemItems={finalSystemItems}
           />
         </Suspense>

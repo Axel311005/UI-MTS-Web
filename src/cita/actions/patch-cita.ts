@@ -5,7 +5,7 @@ export const patchCitaAction = async (
   id: number,
   payload: UpdateCitaPayload
 ) => {
-  if (!id) {
+  if (!Number.isFinite(id) || id <= 0) {
     throw new Error('ID de cita inválido');
   }
   const { data } = await citaApi.patch(`/${id}`, payload);

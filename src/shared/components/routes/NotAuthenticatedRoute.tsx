@@ -13,7 +13,7 @@ export function NotAuthenticatedRoute() {
   useEffect(() => {
     if (reason === 'unauthorized') {
       toast.error(
-        'Tu cuenta no tiene permisos para acceder. Solo vendedor o gerente.'
+        'Tu cuenta no tiene permisos para acceder al panel. Solo gerente, vendedor y superuser pueden acceder.'
       );
       logout();
     }

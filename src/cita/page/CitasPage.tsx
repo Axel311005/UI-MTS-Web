@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { Plus, Pencil } from 'lucide-react';
+import { Plus, Pencil, Eye } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 import {
   Card,
@@ -175,13 +175,24 @@ export default function CitasPage() {
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => navigate(`/citas/editar/${cita.idCita}`)}
-                      >
-                        <Pencil className="mr-2 h-4 w-4" /> Editar
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigate(`/citas/${cita.idCita}`)}
+                        >
+                          <Eye className="mr-2 h-4 w-4" /> Ver
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            navigate(`/citas/${cita.idCita}/editar`)
+                          }
+                        >
+                          <Pencil className="mr-2 h-4 w-4" /> Editar
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
