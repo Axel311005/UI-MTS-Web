@@ -17,8 +17,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import { patchCompra } from '../actions/patch-compra';
 import { patchCompraLinea } from '../actions/patch-compra-linea';
 import { postCompraLinea } from '../actions/post-compra-linea';
+import { deleteCompraLinea } from '../actions/delete-compra-linea';
+import { getCompraById } from '../actions/get-compra-by-id';
 import { useAuthStore } from '@/auth/store/auth.store';
 import { useMoneda } from '@/moneda/hook/useMoneda';
+import { useImpuesto } from '@/impuesto/hook/useImpuesto';
+import { useNavigate } from 'react-router';
 
 interface CompraFormValues {
   consecutivoId: number | '';
@@ -48,20 +52,42 @@ interface CompraFormValues {
 
 export default function EditarCompraPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const queryClient = useQueryClient();
   const empleado = useAuthStore((s) => s.user?.empleado);
   const { monedas } = useMoneda();
+  const { impuestos } = useImpuesto();
 
-  // Mock empleado data
-  const empleadoForForm = useMemo(() => ({ id: 1, nombre: 'Juan Pérez' }), []);
+  // Refrescar datos del servidor al entrar a esta página
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ['items'] });
+    queryClient.invalidateQueries({ queryKey: ['monedas'] });
+    queryClient.invalidateQueries({ queryKey: ['impuestos'] });
+    queryClient.invalidateQueries({ queryKey: ['tipoPagos'] });
+    queryClient.invalidateQueries({ queryKey: ['bodegas'] });
+    queryClient.invalidateQueries({ queryKey: ['consecutivos'] });
+  }, [queryClient]);
+
+  // Guardar las IDs originales de las líneas para detectar las eliminadas
+  const [originalLineIds, setOriginalLineIds] = useState<number[]>([]);
 
   const [formValues, setFormValues] = useState<CompraFormValues>({
     consecutivoId: '',
     codigoPreview: '',
     fecha: new Date().toISOString().split('T')[0],
-    empleado: empleadoForForm,
+    empleado: empleado
+      ? {
+          id: empleado.id,
+          nombre:
+            empleado.nombreCompleto ||
+            [empleado.primerNombre, empleado.primerApellido]
+              .filter(Boolean)
+              .join(' ') ||
+            '',
+        }
+      : { id: 0, nombre: 'Usuario Actual' },
     estado: 'PENDIENTE',
     monedaId: '',
     tipoPagoId: '',
@@ -82,47 +108,173 @@ export default function EditarCompraPage() {
   useEffect(() => {
     const loadCompra = async () => {
       try {
-        // Mock API call - simulate loading existing compra
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        setIsLoading(true);
+        const numericId = Number(id);
+        if (!Number.isFinite(numericId)) {
+          throw new Error('ID de compra inválido');
+        }
 
-        // Mock data
+        const compra = await getCompraById(numericId);
+
+        // Mapear las líneas incluyendo el id para poder hacer PATCH
+        const lineasMapeadas = (compra.lineas || []).map((l: any) => ({
+          id: l.idCompraLinea || (l as any).id,
+          itemId: (l.item?.idItem ?? (l as any).itemId ?? '') as number | '',
+          cantidad: l.cantidad as number | '',
+          precioUnitario: l.precioUnitario as number | '',
+          totalLinea: l.totalLinea as number,
+        }));
+
+        // Calcular totales desde los datos de la compra
+        const subtotal = Number(compra.subtotal) || 0;
+        const porcentajeDescuento = Number(compra.porcentajeDescuento) || 0;
+        const totalDescuento = Number(compra.totalDescuento) || 0;
+        const totalImpuesto = Number(compra.totalImpuesto) || 0;
+        const total = Number(compra.total) || 0;
+
         setFormValues({
-          consecutivoId: 1,
-          codigoPreview: 'CO-000001',
-          fecha: '2025-10-30',
-          empleado: empleadoForForm,
-          estado: 'PENDIENTE',
-          monedaId: 1,
-          tipoPagoId: 1,
-          impuestoId: 1,
-          bodegaId: 1,
-          comentario: 'Compra de insumos',
-          descuentoPct: 10,
-          lineas: [
-            {
-              itemId: 1,
-              cantidad: 10,
-              precioUnitario: 100,
-              totalLinea: 1000,
-            },
-          ],
+          consecutivoId: (compra as any).consecutivo?.idConsecutivo ?? '',
+          codigoPreview: compra.codigoCompra ?? '',
+          fecha: compra.fecha
+            ? new Date(compra.fecha).toISOString().split('T')[0]
+            : new Date().toISOString().split('T')[0],
+          empleado: empleado
+            ? {
+                id: empleado.id,
+                nombre:
+                  empleado.nombreCompleto ||
+                  [empleado.primerNombre, empleado.primerApellido]
+                    .filter(Boolean)
+                    .join(' ') ||
+                  '',
+              }
+            : { id: 0, nombre: 'Usuario Actual' },
+          estado:
+            (compra.estado as 'PENDIENTE' | 'COMPLETADA' | 'ANULADA') ??
+            'PENDIENTE',
+          monedaId: compra.moneda?.idMoneda ?? '',
+          tipoPagoId: compra.tipoPago?.idTipoPago ?? '',
+          impuestoId: compra.impuesto?.idImpuesto ?? '',
+          bodegaId: compra.bodega?.idBodega ?? '',
+          comentario: compra.comentario ?? '',
+          descuentoPct: porcentajeDescuento || '',
+          lineas: lineasMapeadas,
           totales: {
-            subtotal: 1000,
-            totalDescuento: 100,
-            totalImpuesto: 135,
-            total: 1035,
+            subtotal,
+            totalDescuento,
+            totalImpuesto,
+            total,
           },
         });
-      } catch (err) {
+
+        // Guardar las IDs originales de las líneas
+        const originalIds = lineasMapeadas
+          .map((l) => l.id)
+          .filter(
+            (id): id is number => id !== undefined && typeof id === 'number'
+          );
+        setOriginalLineIds(originalIds);
+
+        toast.success(`Editando compra #${id}`);
+      } catch (err: any) {
         console.error('Error cargando compra:', err);
-        toast.error('No se pudo cargar la compra');
+        const message =
+          err?.response?.data?.message ||
+          err?.message ||
+          'No se pudo cargar la compra';
+        toast.error(message);
+        navigate('/compras');
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadCompra();
-  }, [id, empleadoForForm]);
+    if (id) {
+      loadCompra();
+    }
+  }, [id, navigate, empleado]);
+
+  // Calcular totales cuando cambien las líneas o el descuento
+  const totals = useMemo(() => {
+    const subtotal = formValues.lineas.reduce((sum, line) => {
+      const qty = Number(line.cantidad) || 0;
+      const price = Number(line.precioUnitario) || 0;
+      const lineTotal = qty * price;
+      return sum + lineTotal;
+    }, 0);
+
+    const descuentoDecimal =
+      typeof formValues.descuentoPct === 'number'
+        ? formValues.descuentoPct / 100
+        : typeof formValues.descuentoPct === 'string' &&
+          formValues.descuentoPct !== ''
+        ? Number(formValues.descuentoPct) / 100
+        : 0;
+    const totalDescuento = subtotal * descuentoDecimal;
+    const subtotalConDescuento = subtotal - totalDescuento;
+
+    // Obtener el porcentaje de impuesto desde el impuestoId
+    const impuestoIdNum =
+      typeof formValues.impuestoId === 'number'
+        ? formValues.impuestoId
+        : Number(formValues.impuestoId);
+    const impuesto = (impuestos ?? []).find(
+      (i) => i.idImpuesto === impuestoIdNum
+    );
+    const impuestoRate = impuesto ? Number(impuesto.porcentaje) / 100 : 0;
+    const totalImpuesto = subtotalConDescuento * impuestoRate;
+    const total = subtotalConDescuento + totalImpuesto;
+
+    return {
+      subtotal: Number(subtotal.toFixed(2)),
+      totalDescuento: Number(totalDescuento.toFixed(2)),
+      totalImpuesto: Number(totalImpuesto.toFixed(2)),
+      total: Number(total.toFixed(2)),
+    };
+  }, [
+    formValues.lineas,
+    formValues.descuentoPct,
+    formValues.impuestoId,
+    impuestos,
+  ]);
+
+  // Actualizar totalLinea de cada línea cuando cambien cantidad o precio unitario
+  useEffect(() => {
+    setFormValues((prev) => {
+      let hasChanges = false;
+      const updatedLines = prev.lineas.map((line) => {
+        const qty = Number(line.cantidad) || 0;
+        const price = Number(line.precioUnitario) || 0;
+        const calculatedTotal = qty * price;
+        if (Math.abs(line.totalLinea - calculatedTotal) > 0.01) {
+          hasChanges = true;
+        }
+        return {
+          ...line,
+          totalLinea: calculatedTotal,
+        };
+      });
+      // Solo actualizar si hay cambios para evitar loops infinitos
+      if (hasChanges) {
+        return {
+          ...prev,
+          lineas: updatedLines,
+        };
+      }
+      return prev;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    formValues.lineas.map((l) => `${l.cantidad}-${l.precioUnitario}`).join(','),
+  ]);
+
+  // Actualizar totales en formValues cuando cambien
+  useEffect(() => {
+    setFormValues((prev) => ({
+      ...prev,
+      totals,
+    }));
+  }, [totals]);
 
   // Compute currency name hint unconditionally to keep hook order stable
   const currencyNameHint = useMemo(() => {
@@ -144,15 +296,14 @@ export default function EditarCompraPage() {
   };
 
   const isFormValid = () => {
-    const hasSomeItem = formValues.lineas.some((l) => l.itemId !== '');
+    // Permitir guardar incluso sin líneas (para eliminar todas las líneas existentes)
     return (
       formValues.consecutivoId !== '' &&
       formValues.fecha !== '' &&
       formValues.monedaId !== '' &&
       formValues.tipoPagoId !== '' &&
       formValues.impuestoId !== '' &&
-      formValues.bodegaId !== '' &&
-      hasSomeItem
+      formValues.bodegaId !== ''
     );
   };
 
@@ -211,10 +362,29 @@ export default function EditarCompraPage() {
       };
       await patchCompra(Number(id), headerPayload);
 
-      // 2) Crear/actualizar líneas
+      // 2) Detectar líneas eliminadas, crear nuevas y actualizar existentes
       const lines = buildLinesPayload();
+      const currentLineIds = lines
+        .map((l) => l.id)
+        .filter(
+          (id): id is number => id !== undefined && typeof id === 'number'
+        );
+
+      // Líneas que estaban originalmente pero ya no están (eliminadas)
+      const deletedLineIds = originalLineIds.filter(
+        (originalId) => !currentLineIds.includes(originalId)
+      );
+
       const createPromises: Promise<any>[] = [];
       const updatePromises: Promise<any>[] = [];
+      const deletePromises: Promise<any>[] = [];
+
+      // Eliminar líneas que ya no están
+      for (const deletedId of deletedLineIds) {
+        deletePromises.push(deleteCompraLinea(deletedId));
+      }
+
+      // Crear/actualizar líneas
       for (const line of lines) {
         if (line.id) {
           updatePromises.push(
@@ -238,8 +408,23 @@ export default function EditarCompraPage() {
           );
         }
       }
+
+      // Ejecutar todas las operaciones
+      if (deletePromises.length) await Promise.all(deletePromises);
       if (updatePromises.length) await Promise.all(updatePromises);
-      if (createPromises.length) await Promise.all(createPromises);
+
+      // Capturar los IDs de las nuevas líneas creadas
+      const createdResults =
+        createPromises.length > 0 ? await Promise.all(createPromises) : [];
+      const newLineIds = createdResults.map((result) => result.compraLineaId);
+
+      // Actualizar las IDs originales después de guardar (incluyendo las nuevas)
+      const existingIds = lines
+        .map((l) => l.id)
+        .filter(
+          (id): id is number => id !== undefined && typeof id === 'number'
+        );
+      setOriginalLineIds([...existingIds, ...newLineIds]);
 
       toast.success('Compra actualizada correctamente');
 
@@ -339,6 +524,10 @@ export default function EditarCompraPage() {
                 comentario={formValues.comentario}
                 onComentarioChange={(value) =>
                   setFormValues((prev) => ({ ...prev, comentario: value }))
+                }
+                descuentoPct={formValues.descuentoPct}
+                onDescuentoPctChange={(value) =>
+                  setFormValues((prev) => ({ ...prev, descuentoPct: value }))
                 }
               />
             </CardContent>

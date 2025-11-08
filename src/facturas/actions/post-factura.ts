@@ -8,6 +8,8 @@ export interface CreateFacturaPayload {
   bodegaId: number;
   consecutivoId: number;
   empleadoId: number;
+  proformaId?: number | null;
+  recepcionId?: number | null;
   estado: 'PENDIENTE' | 'PAGADO' | 'ANULADA';
   porcentajeDescuento: number;
   tipoCambioUsado: number;

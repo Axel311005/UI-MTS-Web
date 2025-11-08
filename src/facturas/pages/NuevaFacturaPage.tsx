@@ -57,6 +57,16 @@ export default function NuevaFacturaPage() {
   }, [empleado]);
   const { monedas } = useMoneda();
 
+  // Refrescar datos del servidor al entrar a esta página
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ['items'] });
+    queryClient.invalidateQueries({ queryKey: ['monedas'] });
+    queryClient.invalidateQueries({ queryKey: ['impuestos'] });
+    queryClient.invalidateQueries({ queryKey: ['tipoPagos'] });
+    queryClient.invalidateQueries({ queryKey: ['bodegas'] });
+    queryClient.invalidateQueries({ queryKey: ['consecutivos'] });
+  }, [queryClient]);
+
   // Form state (UI only, no real logic)
   const [formValues, setFormValues] = useState<InvoiceFormValues>({
     consecutivoId: '',
@@ -348,6 +358,10 @@ export default function NuevaFacturaPage() {
                 comentario={formValues.comentario}
                 onComentarioChange={(value) =>
                   setFormValues((prev) => ({ ...prev, comentario: value }))
+                }
+                descuentoPct={formValues.descuentoPct}
+                onDescuentoPctChange={(value) =>
+                  setFormValues((prev) => ({ ...prev, descuentoPct: value }))
                 }
               />
             </CardContent>

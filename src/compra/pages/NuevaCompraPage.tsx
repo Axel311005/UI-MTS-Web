@@ -25,6 +25,16 @@ export default function NuevaCompraPage() {
   const { monedas } = useMoneda();
   const empleado = useAuthStore((s) => s.user?.empleado);
 
+  // Refrescar datos del servidor al entrar a esta página
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ['items'] });
+    queryClient.invalidateQueries({ queryKey: ['monedas'] });
+    queryClient.invalidateQueries({ queryKey: ['impuestos'] });
+    queryClient.invalidateQueries({ queryKey: ['tipoPagos'] });
+    queryClient.invalidateQueries({ queryKey: ['bodegas'] });
+    queryClient.invalidateQueries({ queryKey: ['consecutivos'] });
+  }, [queryClient]);
+
   interface CompraFormValues {
     consecutivoId: number | '';
     codigoPreview: string;
@@ -332,6 +342,10 @@ export default function NuevaCompraPage() {
                 comentario={formValues.comentario}
                 onComentarioChange={(value) =>
                   setFormValues((prev) => ({ ...prev, comentario: value }))
+                }
+                descuentoPct={formValues.descuentoPct}
+                onDescuentoPctChange={(value) =>
+                  setFormValues((prev) => ({ ...prev, descuentoPct: value }))
                 }
               />
             </CardContent>

@@ -15,20 +15,49 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/components/ui/select';
-import { Calendar, DollarSign, Filter, X } from '@/shared/icons';
+import { Calendar, DollarSign, FileText, Filter, X } from '@/shared/icons';
 import { useTipoPago } from '@/tiposPago/hook/useTipoPago';
 import { useSearchParams } from 'react-router';
 import { toast } from 'sonner';
+import { EmpleadoSelect } from '@/facturas/ui/EmpleadoSelect';
+import { useEmpleado } from '@/empleados/hook/useEmpleado';
+import { useMemo, useEffect, useState } from 'react';
+import { getEmpleadoNombre } from '@/empleados/utils/empleado.utils';
 
 type Props = {
   onClose?: () => void;
 };
 
+const EMPLEADO_ID_STORAGE_KEY = 'compra_filters_empleadoId';
+
 export const CompraFilters = ({ onClose }: Props) => {
   const { bodegas } = useBodega();
   const { monedas } = useMoneda();
   const { tipoPagos } = useTipoPago();
+  const { empleados } = useEmpleado({ usePagination: false });
   const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Estado interno para empleadoId (no se muestra en URL)
+  const [empleadoId, setEmpleadoId] = useState<number | ''>(() => {
+    const stored = sessionStorage.getItem(EMPLEADO_ID_STORAGE_KEY);
+    return stored ? Number(stored) : '';
+  });
+
+  // Sincronizar con sessionStorage cuando cambia y forzar re-render en ComprasPage
+  useEffect(() => {
+    if (empleadoId && empleadoId !== '') {
+      sessionStorage.setItem(EMPLEADO_ID_STORAGE_KEY, String(empleadoId));
+    } else {
+      sessionStorage.removeItem(EMPLEADO_ID_STORAGE_KEY);
+    }
+    // Actualizar un parámetro dummy en la URL para forzar re-render en ComprasPage
+    setSearchParams((prev) => {
+      const sp = new URLSearchParams(prev);
+      sp.set('_refresh', Date.now().toString());
+      return sp;
+    }, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [empleadoId]);
 
   const commitParam = (key: string, value?: string | number | null) => {
     const sp = new URLSearchParams(searchParams);
@@ -70,6 +99,8 @@ export const CompraFilters = ({ onClose }: Props) => {
     ];
     keys.forEach((k) => sp.delete(k));
     setSearchParams(sp, { replace: true });
+    // Limpiar también el ID del sessionStorage
+    setEmpleadoId('');
   };
 
   // nuevos filtros del backend
@@ -97,9 +128,15 @@ export const CompraFilters = ({ onClose }: Props) => {
       value: searchParams.get('bodegaNombre') ?? '',
     },
     {
-      key: 'empleadoNombre',
+      key: 'empleadoId',
       label: 'Empleado',
-      value: searchParams.get('empleadoNombre') ?? '',
+      value: useMemo(() => {
+        if (!empleadoId || empleadoId === '' || !empleados) return '';
+        const empleado = Array.isArray(empleados)
+          ? empleados.find((e) => e.idEmpleado === empleadoId)
+          : null;
+        return empleado ? getEmpleadoNombre(empleado) : '';
+      }, [empleadoId, empleados]),
     },
     {
       key: 'moneda',
@@ -153,7 +190,9 @@ export const CompraFilters = ({ onClose }: Props) => {
     if (key === 'bodegaNombre') sp.delete('id_bodega');
     if (key === 'moneda') sp.delete('id_moneda');
     if (key === 'tipo_pago') sp.delete('id_tipo_pago');
-    if (key === 'empleadoNombre') sp.delete('id_empleado');
+    if (key === 'empleadoId') {
+      setEmpleadoId('');
+    }
     sp.delete('page');
     setSearchParams(sp, { replace: true });
   };
@@ -317,22 +356,15 @@ export const CompraFilters = ({ onClose }: Props) => {
               </SelectContent>
             </Select>
           </div>
-          {/* Empleado (búsqueda por nombre simple) */}
-          <div className="space-y-2">
+          {/* Empleado */}
+          <div>
             <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
-              Empleado
+              <FileText className="h-3 w-3" /> Empleado
             </label>
-            <Input
-              key={`empleadoNombre:${searchParams.get('empleadoNombre') ?? ''}`}
-              placeholder="Nombre del empleado"
-              className="h-9"
-              defaultValue={searchParams.get('empleadoNombre') ?? ''}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === 'NumpadEnter') {
-                  const v = (e.target as HTMLInputElement).value;
-                  commitParam('empleadoNombre', v);
-                }
-              }}
+            <EmpleadoSelect
+              selectedId={empleadoId || ''}
+              onSelectId={(id) => setEmpleadoId(id)}
+              onClear={() => setEmpleadoId('')}
             />
           </div>
           {/* Moneda */}

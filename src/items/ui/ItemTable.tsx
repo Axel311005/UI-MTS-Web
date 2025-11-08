@@ -38,6 +38,7 @@ export function ItemTable({ items }: ItemTableProps) {
             <TableRow>
               <TableHead>Código</TableHead>
               <TableHead>Nombre</TableHead>
+              <TableHead>Tipo</TableHead>
               <TableHead>Clasificación</TableHead>
               <TableHead className="text-right">Precio Córdoba</TableHead>
               <TableHead className="text-right">Precio USD</TableHead>
@@ -80,6 +81,13 @@ export function ItemTable({ items }: ItemTableProps) {
                     {item.descripcion}
                   </TableCell>
                   <TableCell>
+                    <Badge
+                      variant={item.tipo === 'PRODUCTO' ? 'default' : 'secondary'}
+                    >
+                      {item.tipo === 'PRODUCTO' ? 'Producto' : 'Servicio'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
                     <Badge variant="outline">{clasificacion}</Badge>
                   </TableCell>
                   <TableCell className="text-right font-mono">
@@ -118,7 +126,7 @@ export function ItemTable({ items }: ItemTableProps) {
             {items.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={8}
+                  colSpan={9}
                   className="h-24 text-center text-sm text-muted-foreground"
                 >
                   No se encontraron productos.

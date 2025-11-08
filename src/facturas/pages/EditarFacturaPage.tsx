@@ -18,6 +18,7 @@ import { FacturaProformaInfo } from '../ui/FacturaProformaInfo';
 import { patchFactura } from '../actions/patch-factura';
 import { patchFacturaLinea } from '../actions/patch-facturaLinea';
 import { postFacturaLinea } from '../actions/post-facturalinea';
+import { deleteFacturaLinea } from '../actions/delete-factura-linea';
 import { getFacturaById } from '../actions/get-factura-by-id';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Factura } from '../types/Factura.interface';
@@ -65,6 +66,16 @@ export default function EditarFacturaPage() {
   const [saving, setSaving] = React.useState(false);
   const facturaId = React.useMemo(() => Number(id), [id]);
 
+  // Refrescar datos del servidor al entrar a esta página
+  React.useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ['items'] });
+    queryClient.invalidateQueries({ queryKey: ['monedas'] });
+    queryClient.invalidateQueries({ queryKey: ['impuestos'] });
+    queryClient.invalidateQueries({ queryKey: ['tipoPagos'] });
+    queryClient.invalidateQueries({ queryKey: ['bodegas'] });
+    queryClient.invalidateQueries({ queryKey: ['consecutivos'] });
+  }, [queryClient]);
+
   const [formValues, setFormValues] = React.useState<InvoiceFormValues>({
     consecutivoId: '',
     fecha: new Date().toISOString().split('T')[0],
@@ -93,6 +104,9 @@ export default function EditarFacturaPage() {
   >([]);
   const [codigoPreview] = React.useState('');
   const [facturaData, setFacturaData] = React.useState<Factura | null>(null);
+
+  // Guardar las IDs originales de las líneas para detectar las eliminadas
+  const [originalLineIds, setOriginalLineIds] = React.useState<number[]>([]);
 
   // Cargar datos reales de la factura
   React.useEffect(() => {
@@ -128,6 +142,14 @@ export default function EditarFacturaPage() {
           descuentoPct: (factura.porcentajeDescuento as any) ?? '',
           tipoCambioUsado: factura.tipoCambioUsado ?? 0,
         });
+
+        // Guardar las IDs originales de las líneas
+        const originalIds = (factura.lineas || [])
+          .map((l) => (l as any).idFacturaLinea)
+          .filter(
+            (id): id is number => id !== undefined && typeof id === 'number'
+          );
+        setOriginalLineIds(originalIds);
 
         toast.success(`Editando factura #${id}`);
       } catch (error) {
@@ -172,14 +194,14 @@ export default function EditarFacturaPage() {
   }, [formValues.lineas, formValues.descuentoPct]);
 
   const isFormValid = () => {
+    // Permitir guardar incluso sin líneas (para eliminar todas las líneas existentes)
     return (
       formValues.consecutivoId !== '' &&
       formValues.clienteId !== '' &&
       formValues.monedaId !== '' &&
       formValues.tipoPagoId !== '' &&
       formValues.impuestoId !== '' &&
-      formValues.bodegaId !== '' &&
-      formValues.lineas.length > 0
+      formValues.bodegaId !== ''
     );
   };
 
@@ -249,7 +271,10 @@ export default function EditarFacturaPage() {
         // If a mapping is needed, do it here.
         estado: payload.estado as any, // Change as needed based on API's FacturaEstado
       };
-      const { facturaId: updatedId } = await patchFactura(facturaId, fixedPayload);
+      const { facturaId: updatedId } = await patchFactura(
+        facturaId,
+        fixedPayload
+      );
       // eslint-disable-next-line no-console
       console.log('[EditarFactura] patchFactura ok, facturaId:', updatedId);
       toast.success(`Factura #${facturaId} actualizada`);
@@ -315,7 +340,9 @@ export default function EditarFacturaPage() {
       </div>
 
       {/* Información de Proforma si existe */}
-      {(facturaData?.proforma || (facturaData as any)?.idProforma || (facturaData as any)?.proformaId) && (
+      {(facturaData?.proforma ||
+        (facturaData as any)?.idProforma ||
+        (facturaData as any)?.proformaId) && (
         <FacturaProformaInfo factura={facturaData as any} />
       )}
 
@@ -398,6 +425,10 @@ export default function EditarFacturaPage() {
                 onComentarioChange={(value) =>
                   setFormValues((prev) => ({ ...prev, comentario: value }))
                 }
+                descuentoPct={formValues.descuentoPct}
+                onDescuentoPctChange={(value) =>
+                  setFormValues((prev) => ({ ...prev, descuentoPct: value }))
+                }
                 errors={errors}
               />
             </CardContent>
@@ -446,52 +477,92 @@ export default function EditarFacturaPage() {
                 const dismiss = toast.loading('Guardando líneas de factura...');
                 try {
                   const lines = buildLinesPayload();
-                  if (lines.length === 0) {
-                    toast.warning('No hay líneas válidas para guardar');
-                  } else {
-                    const createPromises: Promise<any>[] = [];
-                    const updatePromises: Promise<any>[] = [];
-                    for (const p of lines) {
-                      if ((p as any).id) {
-                        updatePromises.push(
-                          patchFacturaLinea({
-                            id: Number((p as any).id),
-                            facturaId: Number(p.facturaId),
-                            itemId: Number(p.itemId),
-                            cantidad: Number(p.cantidad),
-                            precioUnitario: Number(p.precioUnitario),
-                            totalLinea: Number(p.totalLinea),
-                          })
-                        );
-                      } else {
-                        createPromises.push(
-                          postFacturaLinea({
-                            facturaId: Number(p.facturaId),
-                            itemId: Number(p.itemId),
-                            cantidad: Number(p.cantidad),
-                            precioUnitario: Number(p.precioUnitario),
-                            totalLinea: Number(p.totalLinea),
-                          })
-                        );
-                      }
-                    }
-                    if (updatePromises.length)
-                      await Promise.all(updatePromises);
-                    if (createPromises.length)
-                      await Promise.all(createPromises);
+                  const currentLineIds = lines
+                    .map((p) => (p as any).id)
+                    .filter(
+                      (id): id is number =>
+                        id !== undefined && typeof id === 'number'
+                    );
 
-                    toast.success('Líneas actualizadas');
-                    await Promise.all([
-                      queryClient.invalidateQueries({
-                        queryKey: ['facturas'],
-                        exact: false,
-                      }),
-                      queryClient.invalidateQueries({
-                        queryKey: ['facturas.search'],
-                        exact: false,
-                      }),
-                    ]);
+                  // Líneas que estaban originalmente pero ya no están (eliminadas)
+                  const deletedLineIds = originalLineIds.filter(
+                    (originalId) => !currentLineIds.includes(originalId)
+                  );
+
+                  const createPromises: Promise<any>[] = [];
+                  const updatePromises: Promise<any>[] = [];
+                  const deletePromises: Promise<any>[] = [];
+
+                  // Eliminar líneas que ya no están
+                  for (const deletedId of deletedLineIds) {
+                    deletePromises.push(deleteFacturaLinea(deletedId));
                   }
+
+                  // Crear/actualizar líneas
+                  for (const p of lines) {
+                    if ((p as any).id) {
+                      updatePromises.push(
+                        patchFacturaLinea({
+                          id: Number((p as any).id),
+                          facturaId: Number(p.facturaId),
+                          itemId: Number(p.itemId),
+                          cantidad: Number(p.cantidad),
+                          precioUnitario: Number(p.precioUnitario),
+                          totalLinea: Number(p.totalLinea),
+                        })
+                      );
+                    } else {
+                      createPromises.push(
+                        postFacturaLinea({
+                          facturaId: Number(p.facturaId),
+                          itemId: Number(p.itemId),
+                          cantidad: Number(p.cantidad),
+                          precioUnitario: Number(p.precioUnitario),
+                          totalLinea: Number(p.totalLinea),
+                        })
+                      );
+                    }
+                  }
+
+                  // Ejecutar todas las operaciones
+                  if (deletePromises.length) await Promise.all(deletePromises);
+                  if (updatePromises.length) await Promise.all(updatePromises);
+
+                  // Capturar los IDs de las nuevas líneas creadas
+                  const createdResults =
+                    createPromises.length > 0
+                      ? await Promise.all(createPromises)
+                      : [];
+                  const newLineIds = createdResults
+                    .map(
+                      (result: any) =>
+                        result?.idFacturaLinea ?? result?.id ?? result?.Id
+                    )
+                    .filter(
+                      (id): id is number =>
+                        id !== undefined && typeof id === 'number'
+                    );
+
+                  // Actualizar las IDs originales después de guardar (incluyendo las nuevas)
+                  const existingIds = lines
+                    .map((p) => (p as any).id)
+                    .filter(
+                      (id): id is number =>
+                        id !== undefined && typeof id === 'number'
+                    );
+                  setOriginalLineIds([...existingIds, ...newLineIds]);
+
+                  toast.success('Líneas actualizadas');
+                  await Promise.all([
+                    queryClient.invalidateQueries({
+                      queryKey: ['facturas'],
+                      exact: false,
+                    }),
+                    queryClient.invalidateQueries({
+                      queryKey: ['facturas.search'],
+                      exact: false,
+                    }),
+                  ]);
                 } catch (error: any) {
                   console.error('Error guardando líneas:', error);
                   const raw = error?.response?.data;

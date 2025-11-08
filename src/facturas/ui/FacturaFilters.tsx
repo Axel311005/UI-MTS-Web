@@ -19,15 +19,107 @@ import { Calendar, DollarSign, FileText, Filter, X } from '@/shared/icons';
 import { useTipoPago } from '@/tiposPago/hook/useTipoPago';
 import { useSearchParams } from 'react-router';
 import { ClienteSelect } from './ClienteSelect';
+import { EmpleadoSelect } from './EmpleadoSelect';
+import { useCliente } from '@/clientes/hook/useCliente';
+import { useEmpleado } from '@/empleados/hook/useEmpleado';
+import { useMemo, useEffect, useState } from 'react';
+import { getClienteNombre } from '@/clientes/utils/cliente.utils';
+import { getEmpleadoNombre } from '@/empleados/utils/empleado.utils';
 
 type Props = {
   onClose?: () => void;
 };
+const CLIENTE_ID_STORAGE_KEY = 'factura_filters_clienteId';
+const EMPLEADO_ID_STORAGE_KEY = 'factura_filters_empleadoId';
+const MONEDA_ID_STORAGE_KEY = 'factura_filters_monedaId';
+const TIPO_PAGO_ID_STORAGE_KEY = 'factura_filters_tipoPagoId';
+
 export const FacturaFilters = ({ onClose }: Props) => {
   const { bodegas } = useBodega();
   const { monedas } = useMoneda();
   const { tipoPagos } = useTipoPago();
+  const { clientes } = useCliente({ usePagination: false });
+  const { empleados } = useEmpleado({ usePagination: false });
   const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Estado interno para IDs (no se muestran en URL)
+  const [clienteId, setClienteId] = useState<number | ''>(() => {
+    const stored = sessionStorage.getItem(CLIENTE_ID_STORAGE_KEY);
+    return stored ? Number(stored) : '';
+  });
+  const [empleadoId, setEmpleadoId] = useState<number | ''>(() => {
+    const stored = sessionStorage.getItem(EMPLEADO_ID_STORAGE_KEY);
+    return stored ? Number(stored) : '';
+  });
+  const [monedaId, setMonedaId] = useState<number | ''>(() => {
+    const stored = sessionStorage.getItem(MONEDA_ID_STORAGE_KEY);
+    return stored ? Number(stored) : '';
+  });
+  const [tipoPagoId, setTipoPagoId] = useState<number | ''>(() => {
+    const stored = sessionStorage.getItem(TIPO_PAGO_ID_STORAGE_KEY);
+    return stored ? Number(stored) : '';
+  });
+
+  // Sincronizar con sessionStorage cuando cambian y forzar re-render en FacturasPage
+  useEffect(() => {
+    if (clienteId && clienteId !== '') {
+      sessionStorage.setItem(CLIENTE_ID_STORAGE_KEY, String(clienteId));
+    } else {
+      sessionStorage.removeItem(CLIENTE_ID_STORAGE_KEY);
+    }
+    // Actualizar un parámetro dummy en la URL para forzar re-render en FacturasPage
+    setSearchParams((prev) => {
+      const sp = new URLSearchParams(prev);
+      sp.set('_refresh', Date.now().toString());
+      return sp;
+    }, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clienteId]);
+
+  useEffect(() => {
+    if (empleadoId && empleadoId !== '') {
+      sessionStorage.setItem(EMPLEADO_ID_STORAGE_KEY, String(empleadoId));
+    } else {
+      sessionStorage.removeItem(EMPLEADO_ID_STORAGE_KEY);
+    }
+    // Actualizar un parámetro dummy en la URL para forzar re-render en FacturasPage
+    setSearchParams((prev) => {
+      const sp = new URLSearchParams(prev);
+      sp.set('_refresh', Date.now().toString());
+      return sp;
+    }, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [empleadoId]);
+
+  useEffect(() => {
+    if (monedaId && monedaId !== '') {
+      sessionStorage.setItem(MONEDA_ID_STORAGE_KEY, String(monedaId));
+    } else {
+      sessionStorage.removeItem(MONEDA_ID_STORAGE_KEY);
+    }
+    // Actualizar un parámetro dummy en la URL para forzar re-render en FacturasPage
+    setSearchParams((prev) => {
+      const sp = new URLSearchParams(prev);
+      sp.set('_refresh', Date.now().toString());
+      return sp;
+    }, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [monedaId]);
+
+  useEffect(() => {
+    if (tipoPagoId && tipoPagoId !== '') {
+      sessionStorage.setItem(TIPO_PAGO_ID_STORAGE_KEY, String(tipoPagoId));
+    } else {
+      sessionStorage.removeItem(TIPO_PAGO_ID_STORAGE_KEY);
+    }
+    // Actualizar un parámetro dummy en la URL para forzar re-render en FacturasPage
+    setSearchParams((prev) => {
+      const sp = new URLSearchParams(prev);
+      sp.set('_refresh', Date.now().toString());
+      return sp;
+    }, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tipoPagoId]);
 
   const commitParam = (key: string, value?: string | number | null) => {
     const sp = new URLSearchParams(searchParams);
@@ -48,7 +140,6 @@ export const FacturaFilters = ({ onClose }: Props) => {
     const keys = [
       'codigoLike',
       'codigo_factura',
-      'clienteNombre',
       'empleadoNombre',
       'estado',
       'bodegaNombre',
@@ -61,11 +152,50 @@ export const FacturaFilters = ({ onClose }: Props) => {
     ];
     keys.forEach((k) => sp.delete(k));
     setSearchParams(sp, { replace: true });
+    // Limpiar también los IDs del sessionStorage
+    setClienteId('');
+    setEmpleadoId('');
+    setMonedaId('');
+    setTipoPagoId('');
   };
 
   const codigoExactoValue = searchParams.get('codigo_factura') ?? '';
-  const nombreClienteValue = searchParams.get('clienteNombre') ?? '';
-  const nombreEmpleadoValue = searchParams.get('empleadoNombre') ?? '';
+
+  // Obtener el nombre del cliente desde el ID para mostrarlo en los filtros activos
+  const clienteNombreParaMostrar = useMemo(() => {
+    if (!clienteId || clienteId === '' || !clientes) return '';
+    const cliente = Array.isArray(clientes)
+      ? clientes.find((c) => c.idCliente === clienteId)
+      : null;
+    return cliente ? getClienteNombre(cliente) : '';
+  }, [clienteId, clientes]);
+
+  // Obtener el nombre del empleado desde el ID para mostrarlo en los filtros activos
+  const empleadoNombreParaMostrar = useMemo(() => {
+    if (!empleadoId || empleadoId === '' || !empleados) return '';
+    const empleado = Array.isArray(empleados)
+      ? empleados.find((e) => e.idEmpleado === empleadoId)
+      : null;
+    return empleado ? getEmpleadoNombre(empleado) : '';
+  }, [empleadoId, empleados]);
+
+  // Obtener el nombre de la moneda desde el ID para mostrarlo en los filtros activos
+  const monedaNombreParaMostrar = useMemo(() => {
+    if (!monedaId || monedaId === '' || !monedas) return '';
+    const moneda = Array.isArray(monedas)
+      ? monedas.find((m) => m.idMoneda === monedaId)
+      : null;
+    return moneda ? moneda.descripcion : '';
+  }, [monedaId, monedas]);
+
+  // Obtener el nombre del tipo de pago desde el ID para mostrarlo en los filtros activos
+  const tipoPagoNombreParaMostrar = useMemo(() => {
+    if (!tipoPagoId || tipoPagoId === '' || !tipoPagos) return '';
+    const tipoPago = Array.isArray(tipoPagos)
+      ? tipoPagos.find((tp) => tp.idTipoPago === tipoPagoId)
+      : null;
+    return tipoPago ? tipoPago.descripcion : '';
+  }, [tipoPagoId, tipoPagos]);
 
   const filterKeys: Array<{ key: string; label: string; value: string }> = [
     {
@@ -75,20 +205,30 @@ export const FacturaFilters = ({ onClose }: Props) => {
     },
     { key: 'codigoExacto', label: 'Código exacto', value: codigoExactoValue },
     {
-      key: 'clienteNombre',
+      key: 'clienteId',
       label: 'Cliente',
-      value: nombreClienteValue,
+      value: clienteNombreParaMostrar,
     },
     {
-      key: 'empleadoNombre',
+      key: 'empleadoId',
       label: 'Empleado',
-      value: nombreEmpleadoValue,
+      value: empleadoNombreParaMostrar,
     },
     { key: 'estado', label: 'Estado', value: searchParams.get('estado') ?? '' },
     {
       key: 'bodegaNombre',
       label: 'Bodega',
       value: searchParams.get('bodegaNombre') ?? '',
+    },
+    {
+      key: 'monedaId',
+      label: 'Moneda',
+      value: monedaNombreParaMostrar,
+    },
+    {
+      key: 'tipoPagoId',
+      label: 'Tipo de Pago',
+      value: tipoPagoNombreParaMostrar,
     },
     {
       key: 'dateFrom',
@@ -110,16 +250,6 @@ export const FacturaFilters = ({ onClose }: Props) => {
       label: 'Monto máximo',
       value: searchParams.get('maxTotal') ?? '',
     },
-    {
-      key: 'moneda',
-      label: 'Moneda',
-      value: searchParams.get('moneda') ?? '',
-    },
-    {
-      key: 'tipo_pago',
-      label: 'Tipo de Pago',
-      value: searchParams.get('tipo_pago') ?? '',
-    },
   ];
   const activeFilters = filterKeys.filter(
     (f) => f.value && f.value.toString().trim() !== ''
@@ -129,6 +259,14 @@ export const FacturaFilters = ({ onClose }: Props) => {
     const sp = new URLSearchParams(searchParams);
     if (key === 'codigoExacto') {
       sp.delete('codigo_factura');
+    } else if (key === 'clienteId') {
+      setClienteId('');
+    } else if (key === 'empleadoId') {
+      setEmpleadoId('');
+    } else if (key === 'monedaId') {
+      setMonedaId('');
+    } else if (key === 'tipoPagoId') {
+      setTipoPagoId('');
     } else {
       sp.delete(key);
     }
@@ -206,29 +344,22 @@ export const FacturaFilters = ({ onClose }: Props) => {
           </div>
           <div>
             <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
-              <FileText className="h-3 w-3" /> Nombre del Cliente
+              <FileText className="h-3 w-3" /> Cliente
             </label>
             <ClienteSelect
-              value={nombreClienteValue}
-              onSelect={(nombre) => commitParam('clienteNombre', nombre)}
-              onClear={() => commitParam('clienteNombre', '')}
+              selectedId={clienteId || ''}
+              onSelectId={(id) => setClienteId(id)}
+              onClear={() => setClienteId('')}
             />
           </div>
-          <div className="space-y-2">
+          <div>
             <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
-              <FileText className="h-3 w-3" /> Nombre del Empleado
+              <FileText className="h-3 w-3" /> Empleado
             </label>
-            <Input
-              key={`empleadoNombre:${nombreEmpleadoValue}`}
-              placeholder="Nombre del Empleado"
-              className="h-9"
-              defaultValue={nombreEmpleadoValue}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === 'NumpadEnter') {
-                  const v = (e.target as HTMLInputElement).value;
-                  commitParam('empleadoNombre', v);
-                }
-              }}
+            <EmpleadoSelect
+              selectedId={empleadoId || ''}
+              onSelectId={(id) => setEmpleadoId(id)}
+              onClear={() => setEmpleadoId('')}
             />
           </div>
           <div className="space-y-2">
@@ -245,8 +376,7 @@ export const FacturaFilters = ({ onClose }: Props) => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="PENDIENTE">Pendiente</SelectItem>
-                <SelectItem value="PAGADA">Pagada</SelectItem>
-                <SelectItem value="VENCIDA">Vencida</SelectItem>
+                <SelectItem value="PAGADO">Pagado</SelectItem>
                 <SelectItem value="ANULADA">Anulada</SelectItem>
               </SelectContent>
             </Select>
@@ -280,49 +410,75 @@ export const FacturaFilters = ({ onClose }: Props) => {
             <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
               Moneda
             </label>
-            <Select
-              key={`moneda:${searchParams.get('moneda') ?? ''}`}
-              defaultValue={searchParams.get('moneda') ?? undefined}
-              onValueChange={(v) => commitParam('moneda', v)}
-            >
-              <SelectTrigger className="h-9">
-                <SelectValue placeholder="Todos" />
-              </SelectTrigger>
-              <SelectContent>
-                {monedas?.map((moneda) => (
-                  <SelectItem
-                    key={moneda.idMoneda.toString()}
-                    value={moneda.descripcion}
-                  >
-                    {moneda.descripcion}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex gap-2">
+              <Select
+                key={`moneda:${monedaId || ''}`}
+                value={monedaId ? monedaId.toString() : undefined}
+                onValueChange={(v) => setMonedaId(v ? Number(v) : '')}
+              >
+                <SelectTrigger className="h-9 flex-1">
+                  <SelectValue placeholder="Todas" />
+                </SelectTrigger>
+                <SelectContent>
+                  {monedas?.map((moneda) => (
+                    <SelectItem
+                      key={moneda.idMoneda.toString()}
+                      value={moneda.idMoneda.toString()}
+                    >
+                      {moneda.descripcion}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {monedaId && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9"
+                  onClick={() => setMonedaId('')}
+                  aria-label="Limpiar moneda"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
               Tipo de pago
             </label>
-            <Select
-              key={`tipo_pago:${searchParams.get('tipo_pago') ?? ''}`}
-              defaultValue={searchParams.get('tipo_pago') ?? undefined}
-              onValueChange={(v) => commitParam('tipo_pago', v)}
-            >
-              <SelectTrigger className="h-9">
-                <SelectValue placeholder="Todos" />
-              </SelectTrigger>
-              <SelectContent>
-                {tipoPagos?.map((tipoPago) => (
-                  <SelectItem
-                    key={tipoPago.idTipoPago.toString()}
-                    value={tipoPago.descripcion}
-                  >
-                    {tipoPago.descripcion}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex gap-2">
+              <Select
+                key={`tipo_pago:${tipoPagoId || ''}`}
+                value={tipoPagoId ? tipoPagoId.toString() : undefined}
+                onValueChange={(v) => setTipoPagoId(v ? Number(v) : '')}
+              >
+                <SelectTrigger className="h-9 flex-1">
+                  <SelectValue placeholder="Todos" />
+                </SelectTrigger>
+                <SelectContent>
+                  {tipoPagos?.map((tipoPago) => (
+                    <SelectItem
+                      key={tipoPago.idTipoPago.toString()}
+                      value={tipoPago.idTipoPago.toString()}
+                    >
+                      {tipoPago.descripcion}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {tipoPagoId && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9"
+                  onClick={() => setTipoPagoId('')}
+                  aria-label="Limpiar tipo de pago"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
 
           {(['dateFrom', 'dateTo'] as const).map((key) => (

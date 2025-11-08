@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { Plus, Filter } from '@/shared/icons';
 import {
@@ -30,12 +30,14 @@ const CompraRowActions = lazy(() => import('../ui/CompraRowActions'));
 
 export function ComprasPage() {
   const [showFilters, setShowFilters] = useState(false);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  // Leer parámetros de paginación de la URL o usar valores por defecto
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
   const limit = pageSize;
   const offset = (page - 1) * pageSize;
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
 
   // Lectura completa de filtros compatibles con backend
   const codigoLike = (searchParams.get('codigoLike') || '').trim();
@@ -47,9 +49,28 @@ export function ComprasPage() {
   const tipo_pago = (searchParams.get('tipo_pago') || '').trim();
   const moneda = (searchParams.get('moneda') || '').trim();
   const id_bodega = (searchParams.get('id_bodega') || '').trim();
-  const id_empleado = (searchParams.get('id_empleado') || '').trim();
+  // Leer empleadoId desde sessionStorage (no se muestra en URL)
+  const [empleadoId, setEmpleadoId] = useState(() => {
+    const stored = sessionStorage.getItem('compra_filters_empleadoId');
+    return stored ? stored : '';
+  });
+  const id_empleado = empleadoId || (searchParams.get('id_empleado') || '').trim();
   const id_tipo_pago = (searchParams.get('id_tipo_pago') || '').trim();
   const id_moneda = (searchParams.get('id_moneda') || '').trim();
+
+  // Sincronizar con sessionStorage cuando cambien los searchParams (para detectar cambios desde CompraFilters)
+  useEffect(() => {
+    const storedEmpleadoId = sessionStorage.getItem('compra_filters_empleadoId');
+    if (storedEmpleadoId !== empleadoId) {
+      setEmpleadoId(storedEmpleadoId || '');
+    }
+    // Limpiar el parámetro _refresh si existe (no debe mostrarse en la URL)
+    if (searchParams.has('_refresh')) {
+      const sp = new URLSearchParams(searchParams);
+      sp.delete('_refresh');
+      setSearchParams(sp, { replace: true });
+    }
+  }, [searchParams, empleadoId, setSearchParams]);
   const dateFrom = searchParams.get('dateFrom') || '';
   const dateTo = searchParams.get('dateTo') || '';
   const minTotal = searchParams.get('minTotal') || '';
@@ -284,12 +305,24 @@ export function ComprasPage() {
           pageSize={pageSize}
           totalItems={totalRows}
           onPageChange={(newPage) => {
-            setPage(newPage);
+            const params = new URLSearchParams(searchParams);
+            if (newPage > 1) {
+              params.set('page', newPage.toString());
+            } else {
+              params.delete('page');
+            }
+            setSearchParams(params, { replace: true });
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           onPageSizeChange={(newSize) => {
-            setPageSize(newSize);
-            setPage(1);
+            const params = new URLSearchParams(searchParams);
+            params.delete('page'); // Reset a página 1
+            if (newSize !== 10) {
+              params.set('pageSize', newSize.toString());
+            } else {
+              params.delete('pageSize');
+            }
+            setSearchParams(params, { replace: true });
           }}
         />
       )}

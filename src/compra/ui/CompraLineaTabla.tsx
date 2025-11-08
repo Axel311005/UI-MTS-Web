@@ -99,11 +99,11 @@ export function CompraLineaTabla({
           <Table>
             <TableHeader className="sticky top-0 bg-background">
               <TableRow>
-                <TableHead className="w-[40%]">Item</TableHead>
-                <TableHead className="w-[15%]">Cantidad</TableHead>
-                <TableHead className="w-[20%]">Precio unitario</TableHead>
-                <TableHead className="w-[20%]">Total línea</TableHead>
-                <TableHead className="w-[5%]"></TableHead>
+                <TableHead className="w-[30%] max-w-[220px]">Item</TableHead>
+                <TableHead className="w-[10%] min-w-[80px]">Cantidad</TableHead>
+                <TableHead className="w-[25%] min-w-[140px]">Precio unitario</TableHead>
+                <TableHead className="w-[20%] min-w-[120px]">Total línea</TableHead>
+                <TableHead className="w-[5%] min-w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -120,8 +120,9 @@ export function CompraLineaTabla({
               ) : (
                 lines.map((line, index) => (
                   <TableRow key={index} className="hover:bg-muted/50">
-                    <TableCell>
-                      <ItemSelect
+                    <TableCell className="max-w-[220px]">
+                      <div className="w-full max-w-[220px]">
+                        <ItemSelect
                         value={line.itemId || ''}
                         onChange={(value) => {
                           const numValue = value === '' ? '' : Number(value);
@@ -170,9 +171,12 @@ export function CompraLineaTabla({
                         error={errors[index]?.item}
                         bodegaId={bodegaId}
                         showStock={true}
+                        allowZeroStock={true}
+                        onlyProductos={true}
                       />
+                      </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="min-w-[80px]">
                       <Input
                         type="number"
                         min="0"
@@ -197,7 +201,7 @@ export function CompraLineaTabla({
                         </p>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="min-w-[140px]">
                       <Input
                         type="number"
                         min="0"
@@ -211,7 +215,7 @@ export function CompraLineaTabla({
                           )
                         }
                         className={cn(
-                          'w-full',
+                          'w-full min-w-[120px]',
                           errors[index]?.precioUnitario && 'border-destructive'
                         )}
                         placeholder="0.00"
@@ -222,7 +226,7 @@ export function CompraLineaTabla({
                         </p>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="min-w-[120px]">
                       {(() => {
                         const qty = Number(line.cantidad) || 0;
                         const price = Number(line.precioUnitario) || 0;
@@ -231,7 +235,7 @@ export function CompraLineaTabla({
                           <Input
                             value={total.toFixed(2)}
                             readOnly
-                            className="bg-muted"
+                            className="bg-muted w-full"
                           />
                         );
                       })()}

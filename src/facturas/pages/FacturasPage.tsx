@@ -55,8 +55,50 @@ export const FacturasPage = () => {
   const codigoFactura = searchParams.get('codigo_factura')?.trim() || '';
   const estado = searchParams.get('estado')?.trim() || '';
   const bodegaNombre = searchParams.get('bodegaNombre')?.trim() || '';
-  const clienteNombre = searchParams.get('clienteNombre')?.trim() || '';
-  const empleadoNombre = searchParams.get('empleadoNombre')?.trim() || '';
+  // Leer IDs desde sessionStorage (no se muestran en URL)
+  // Usar un estado que se actualice cuando cambien los searchParams (para forzar re-render)
+  const [clienteId, setClienteId] = useState(() => {
+    const stored = sessionStorage.getItem('factura_filters_clienteId');
+    return stored ? stored : '';
+  });
+  const [empleadoId, setEmpleadoId] = useState(() => {
+    const stored = sessionStorage.getItem('factura_filters_empleadoId');
+    return stored ? stored : '';
+  });
+  const [monedaId, setMonedaId] = useState(() => {
+    const stored = sessionStorage.getItem('factura_filters_monedaId');
+    return stored ? stored : '';
+  });
+  const [tipoPagoId, setTipoPagoId] = useState(() => {
+    const stored = sessionStorage.getItem('factura_filters_tipoPagoId');
+    return stored ? stored : '';
+  });
+
+  // Sincronizar con sessionStorage cuando cambien los searchParams (para detectar cambios desde FacturaFilters)
+  useEffect(() => {
+    const storedClienteId = sessionStorage.getItem('factura_filters_clienteId');
+    const storedEmpleadoId = sessionStorage.getItem('factura_filters_empleadoId');
+    const storedMonedaId = sessionStorage.getItem('factura_filters_monedaId');
+    const storedTipoPagoId = sessionStorage.getItem('factura_filters_tipoPagoId');
+    if (storedClienteId !== clienteId) {
+      setClienteId(storedClienteId || '');
+    }
+    if (storedEmpleadoId !== empleadoId) {
+      setEmpleadoId(storedEmpleadoId || '');
+    }
+    if (storedMonedaId !== monedaId) {
+      setMonedaId(storedMonedaId || '');
+    }
+    if (storedTipoPagoId !== tipoPagoId) {
+      setTipoPagoId(storedTipoPagoId || '');
+    }
+    // Limpiar el parámetro _refresh si existe (no debe mostrarse en la URL)
+    if (searchParams.has('_refresh')) {
+      const sp = new URLSearchParams(searchParams);
+      sp.delete('_refresh');
+      setSearchParams(sp, { replace: true });
+    }
+  }, [searchParams, clienteId, empleadoId, monedaId, tipoPagoId, setSearchParams]);
   const fechaInicio = searchParams.get('dateFrom')?.trim() || '';
   const fechaFin = searchParams.get('dateTo')?.trim() || '';
   const minTotal = searchParams.get('minTotal')?.trim() || '';
@@ -68,8 +110,10 @@ export const FacturasPage = () => {
         codigoLike,
         codigoFactura,
         estado,
-        clienteNombre,
-        empleadoNombre,
+        clienteId,
+        empleadoId,
+        monedaId,
+        tipoPagoId,
         bodegaNombre,
         fechaInicio,
         fechaFin,
@@ -80,8 +124,10 @@ export const FacturasPage = () => {
       codigoLike,
       codigoFactura,
       estado,
-      clienteNombre,
-      empleadoNombre,
+      clienteId,
+      empleadoId,
+      monedaId,
+      tipoPagoId,
       bodegaNombre,
       fechaInicio,
       fechaFin,
@@ -103,8 +149,10 @@ export const FacturasPage = () => {
         codigoLike,
         codigoFactura,
         estado,
-        clienteNombre,
-        empleadoNombre,
+        clienteId,
+        empleadoId,
+        monedaId,
+        tipoPagoId,
         bodegaNombre,
         fechaInicio,
         fechaFin,
@@ -118,8 +166,10 @@ export const FacturasPage = () => {
           codigoLike,
           codigo_factura: codigoFactura,
           estado,
-          clienteNombre,
-          empleadoNombre,
+          clienteId,
+          empleadoId,
+          monedaId,
+          tipoPagoId,
           bodegaNombre,
           dateFrom: fechaInicio,
           dateTo: fechaFin,
@@ -230,9 +280,8 @@ export const FacturasPage = () => {
     string,
     'secondary' | 'outline' | 'destructive' | 'default'
   > = {
-    PAGADA: 'secondary',
+    PAGADO: 'secondary',
     PENDIENTE: 'outline',
-    VENCIDA: 'destructive',
     ANULADA: 'destructive',
   };
 

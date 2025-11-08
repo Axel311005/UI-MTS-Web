@@ -1,8 +1,73 @@
-import { tipoPagoApi } from '../api/tipoPago.api';
-import type { Impuesto } from '../types/impuesto.response';
+import { impuestoApi } from '../api/impuesto.api';
+import type { Impuesto } from '../types/impuesto.interface';
+import type {
+  PaginationParams,
+  PaginatedResponse,
+} from '@/shared/types/pagination';
+import { EstadoActivo } from '@/shared/types/status';
 
-export const getImpuestoAction = async () => {
-  const { data: impuestos } = await tipoPagoApi.get<Impuesto[]>('/');
+const coerceActivo = (raw: any): EstadoActivo => {
+  if (raw === true) return EstadoActivo.ACTIVO;
+  if (raw === false) return EstadoActivo.INACTIVO;
+  const s = String(raw).toUpperCase();
+  return s === EstadoActivo.INACTIVO
+    ? EstadoActivo.INACTIVO
+    : EstadoActivo.ACTIVO;
+};
 
-  return impuestos;
+const normalize = (i: any): Impuesto => ({
+  ...(i as Impuesto),
+  activo: coerceActivo((i as any)?.activo ?? (i as any)?.estado),
+});
+
+export const getImpuestoAction = async (params?: PaginationParams) => {
+  const queryParams: Record<string, number> = {};
+  if (params?.limit !== undefined) queryParams.limit = params.limit;
+  if (params?.offset !== undefined) queryParams.offset = params.offset;
+
+  const { data } = await impuestoApi.get<Impuesto[] | PaginatedResponse<Impuesto>>(
+    '/',
+    {
+      params: Object.keys(queryParams).length > 0 ? queryParams : undefined,
+    }
+  );
+
+  if (
+    data &&
+    typeof data === 'object' &&
+    'data' in data &&
+    Array.isArray((data as any).data)
+  ) {
+    const page = (data as PaginatedResponse<Impuesto>).data.map(normalize);
+    const filtered = page.filter(
+      (item) => item?.activo === EstadoActivo.ACTIVO
+    );
+    return {
+      ...(data as any),
+      data: filtered,
+      total: (data as any)?.total ?? filtered.length,
+    } as PaginatedResponse<Impuesto>;
+  }
+
+  // Si viene como array simple, filtrar activos y aplicar paginación
+  const allItems = Array.isArray(data) ? data.map(normalize) : [];
+  const filtered = allItems.filter(
+    (item) => item?.activo === EstadoActivo.ACTIVO
+  );
+  const total = filtered.length;
+
+  // Aplicar paginación si se especificó
+  let paginatedData = filtered;
+  if (params?.limit !== undefined || params?.offset !== undefined) {
+    const start = params?.offset ?? 0;
+    const end = params?.limit !== undefined ? start + params.limit : undefined;
+    paginatedData = filtered.slice(start, end);
+  }
+
+  return {
+    data: paginatedData,
+    total: total,
+    limit: params?.limit,
+    offset: params?.offset,
+  } as PaginatedResponse<Impuesto>;
 };

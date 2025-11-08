@@ -24,13 +24,8 @@ export const AppHeader = () => {
   const { theme, setTheme } = useTheme();
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
-  const {
-    notifications,
-    unreadCount,
-    markAsRead,
-    markAllAsRead,
-    removeNotification,
-  } = useNotifications();
+  const { notifications, markAsRead, markAllAsRead, removeNotification } =
+    useNotifications();
 
   const handleLogout = () => {
     logout();

@@ -6,6 +6,7 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select';
 import { Textarea } from '@/shared/components/ui/textarea';
+import { Input } from '@/shared/components/ui/input';
 import { cn } from '@/shared/lib/utils';
 import { useMoneda } from '@/moneda/hook/useMoneda';
 import { useTipoPago } from '@/tiposPago/hook/useTipoPago';
@@ -23,6 +24,8 @@ interface CompraParametrosProps {
   onBodegaChange: (value: number | '') => void;
   comentario: string;
   onComentarioChange: (value: string) => void;
+  descuentoPct: number | '';
+  onDescuentoPctChange: (value: number | '') => void;
   errors?: {
     moneda?: string;
     tipoPago?: string;
@@ -42,6 +45,8 @@ export function CompraParametros({
   onBodegaChange,
   comentario,
   onComentarioChange,
+  descuentoPct,
+  onDescuentoPctChange,
   errors = {},
 }: CompraParametrosProps) {
   const { monedas } = useMoneda();
@@ -153,6 +158,24 @@ export function CompraParametros({
           onSelectId={(id) => onBodegaChange(id)}
           onClear={() => onBodegaChange('')}
           error={errors.bodega}
+        />
+      </div>
+
+      {/* Porcentaje de Descuento */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium">
+          Descuento (%) <span className="text-muted-foreground text-xs">(opcional)</span>
+        </label>
+        <Input
+          type="number"
+          min="0"
+          max="100"
+          step="0.01"
+          value={descuentoPct}
+          onChange={(e) =>
+            onDescuentoPctChange(e.target.value ? Number(e.target.value) : '')
+          }
+          placeholder="0.00"
         />
       </div>
 

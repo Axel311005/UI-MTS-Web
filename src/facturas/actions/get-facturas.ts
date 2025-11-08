@@ -32,6 +32,14 @@ export const getFacturasAction = async (params?: PaginationParams) => {
         factura.estado.toUpperCase() === 'ANULADA';
       return !isAnulada && !isEstadoAnulado;
     });
+    
+    // Ordenar por fecha ASC (más antiguas primero)
+    filteredPage.sort((a, b) => {
+      const dateA = new Date(a.fecha).getTime();
+      const dateB = new Date(b.fecha).getTime();
+      return dateA - dateB; // ASC
+    });
+    
     const limitValue = params?.limit ?? paged.limit ?? filteredPage.length;
     const offsetValue = params?.offset ?? paged.offset ?? 0;
 
@@ -107,6 +115,13 @@ export const getFacturasAction = async (params?: PaginationParams) => {
       typeof factura.estado === 'string' &&
       factura.estado.toUpperCase() === 'ANULADA';
     return !isAnulada && !isEstadoAnulado;
+  });
+  
+  // Ordenar por fecha ASC (más antiguas primero)
+  filtered.sort((a, b) => {
+    const dateA = new Date(a.fecha).getTime();
+    const dateB = new Date(b.fecha).getTime();
+    return dateA - dateB; // ASC
   });
 
   const limitValue = params?.limit;

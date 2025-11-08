@@ -21,6 +21,7 @@ import {
   Receipt,
   FileSpreadsheet,
   Calendar,
+  DollarSign,
 } from '@/shared/icons';
 
 import type { PanelRole } from '@/auth/store/auth.store';
@@ -140,6 +141,18 @@ export const navigationConfig: MenuItem[] = [
     userTypes: ['gerente', 'superuser'],
   },
   {
+    title: 'Monedas',
+    url: '/monedas',
+    icon: DollarSign,
+    userTypes: ['gerente', 'superuser'],
+  },
+  {
+    title: 'Impuestos',
+    url: '/impuestos',
+    icon: Receipt,
+    userTypes: ['gerente', 'superuser'],
+  },
+  {
     title: 'Aseguradoras',
     url: '/aseguradoras',
     icon: Shield,
@@ -187,7 +200,7 @@ export const getGroupedNavigationItems = (userType: PanelRole) => {
   );
 
   const catalogItems = allItems.filter((item) =>
-    ['Clasificaciones', 'Unidades de Medida', 'Tipos de Pago'].includes(
+    ['Clasificaciones', 'Unidades de Medida', 'Tipos de Pago', 'Monedas', 'Impuestos'].includes(
       item.title
     )
   );

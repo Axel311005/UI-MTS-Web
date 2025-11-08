@@ -291,6 +291,40 @@ const EditarTipoPagoPage = lazy(() =>
   }))
 );
 
+// Monedas
+const MonedaPage = lazy(() =>
+  import('@/moneda/pages/MonedaPage').then((m) => ({
+    default: m.MonedaPage,
+  }))
+);
+const NuevaMonedaPage = lazy(() =>
+  import('@/moneda/pages/NuevaMonedaPage').then((m) => ({
+    default: m.default,
+  }))
+);
+const EditarMonedaPage = lazy(() =>
+  import('@/moneda/pages/EditarMonedaPage').then((m) => ({
+    default: m.default,
+  }))
+);
+
+// Impuestos
+const ImpuestoPage = lazy(() =>
+  import('@/impuesto/pages/ImpuestoPage').then((m) => ({
+    default: m.ImpuestoPage,
+  }))
+);
+const NuevaImpuestoPage = lazy(() =>
+  import('@/impuesto/pages/NuevaImpuestoPage').then((m) => ({
+    default: m.default,
+  }))
+);
+const EditarImpuestoPage = lazy(() =>
+  import('@/impuesto/pages/EditarImpuestoPage').then((m) => ({
+    default: m.default,
+  }))
+);
+
 const BodegasPage = lazy(() =>
   import('@/bodega/pages/BodegasPage').then((m) => ({
     default: m.BodegasPage,
@@ -586,6 +620,36 @@ export const appRouter = createBrowserRouter([
             path: 'tipos-pago/:id/editar',
             element: <EditarTipoPagoPage />,
             handle: { crumb: 'Editar tipo de pago' },
+          },
+          {
+            path: 'monedas',
+            element: <MonedaPage />,
+            handle: { crumb: 'Monedas' },
+          },
+          {
+            path: 'monedas/nueva',
+            element: <NuevaMonedaPage />,
+            handle: { crumb: 'Nueva moneda' },
+          },
+          {
+            path: 'monedas/:id/editar',
+            element: <EditarMonedaPage />,
+            handle: { crumb: 'Editar moneda' },
+          },
+          {
+            path: 'impuestos',
+            element: <ImpuestoPage />,
+            handle: { crumb: 'Impuestos' },
+          },
+          {
+            path: 'impuestos/nuevo',
+            element: <NuevaImpuestoPage />,
+            handle: { crumb: 'Nuevo impuesto' },
+          },
+          {
+            path: 'impuestos/:id/editar',
+            element: <EditarImpuestoPage />,
+            handle: { crumb: 'Editar impuesto' },
           },
           {
             path: 'clasificaciones/nueva',

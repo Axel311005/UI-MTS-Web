@@ -18,6 +18,14 @@ export const getComprasAction = async (params?: PaginationParams) => {
       const isEstadoAnulado = typeof compra.estado === 'string' && compra.estado.toUpperCase() === 'ANULADA';
       return !isAnulado && !isEstadoAnulado;
     });
+    
+    // Ordenar por fecha ASC (más antiguas primero)
+    filtered.sort((a, b) => {
+      const dateA = new Date(a.fecha).getTime();
+      const dateB = new Date(b.fecha).getTime();
+      return dateA - dateB; // ASC
+    });
+    
     return {
       ...data,
       data: filtered,
@@ -33,6 +41,14 @@ export const getComprasAction = async (params?: PaginationParams) => {
     const isEstadoAnulado = typeof compra.estado === 'string' && compra.estado.toUpperCase() === 'ANULADA';
     return !isAnulado && !isEstadoAnulado;
   });
+  
+  // Ordenar por fecha ASC (más antiguas primero)
+  filtered.sort((a, b) => {
+    const dateA = new Date(a.fecha).getTime();
+    const dateB = new Date(b.fecha).getTime();
+    return dateA - dateB; // ASC
+  });
+  
   const total = filtered.length;
   
   // Aplicar paginación si se especificó

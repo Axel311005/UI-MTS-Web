@@ -43,4 +43,5 @@ export {
   Inbox,
   Receipt,
   FileSpreadsheet,
+  Coins,
 } from 'lucide-react';
