@@ -62,11 +62,13 @@ export default function EditarTramiteSeguroPage() {
 
       toast.success('Trámite de seguro actualizado');
       navigate('/tramites-seguros');
-    } catch (err) {
+    } catch (err: any) {
+      const raw = err?.response?.data;
       const message =
-        err instanceof Error
-          ? err.message
-          : 'No se pudo actualizar el trámite de seguro';
+        raw?.message ||
+        (typeof raw === 'string' ? raw : undefined) ||
+        (err instanceof Error ? err.message : undefined) ||
+        'No se pudo actualizar el trámite de seguro';
       toast.error(message);
     } finally {
       setIsSubmitting(false);

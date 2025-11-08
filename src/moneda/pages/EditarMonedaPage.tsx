@@ -91,7 +91,13 @@ export default function EditarMonedaPage() {
       await queryClient.invalidateQueries({ queryKey: ['monedas'] });
       navigate('/monedas');
     } catch (error: any) {
-      toast.error('No se pudo actualizar la moneda');
+      const raw = error?.response?.data;
+      const message =
+        raw?.message ||
+        (typeof raw === 'string' ? raw : undefined) ||
+        (error instanceof Error ? error.message : undefined) ||
+        'No se pudo actualizar la moneda';
+      toast.error(message);
     } finally {
       toast.dismiss(dismiss);
       setIsSubmitting(false);

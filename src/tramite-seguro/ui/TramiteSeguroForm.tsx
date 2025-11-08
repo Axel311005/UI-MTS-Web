@@ -1,13 +1,19 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Textarea } from '@/shared/components/ui/textarea';
-import { useVehiculo } from '@/vehiculo/hook/useVehiculo';
-import { useCliente } from '@/clientes/hook/useCliente';
-import { useAseguradora } from '@/aseguradora/hook/useAseguradora';
-import { EstadoActivo, TramiteSeguroEstado } from '@/shared/types/status';
-import { getClienteNombre } from '@/clientes/utils/cliente.utils';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/components/ui/select';
+import { TramiteSeguroEstado } from '@/shared/types/status';
+import { ClienteSelect } from '@/facturas/ui/ClienteSelect';
+import { VehiculoSelect } from '@/shared/components/selects/VehiculoSelect';
+import { AseguradoraSelect } from '@/shared/components/selects/AseguradoraSelect';
 
 type FormValues = {
   idVehiculo: number | '';
@@ -67,49 +73,8 @@ export function TramiteSeguroForm({
 
   const [errors, setErrors] = useState<FormErrors>({});
 
-  const { vehiculos, isLoading: isLoadingVehiculos } = useVehiculo({
-    usePagination: false,
-  });
-  const { clientes, isLoading: isLoadingClientes } = useCliente({
-    usePagination: false,
-  });
-  const { aseguradoras, isLoading: isLoadingAseguradoras } = useAseguradora({
-    usePagination: false,
-  });
-
-  const activeVehiculos = useMemo(
-    () =>
-      vehiculos.filter((vehiculo) => vehiculo.activo === EstadoActivo.ACTIVO),
-    [vehiculos]
-  );
-
-  const activeClientes = useMemo(
-    () => clientes.filter((cliente) => cliente.activo === EstadoActivo.ACTIVO),
-    [clientes]
-  );
-
-  const activeAseguradoras = useMemo(
-    () =>
-      aseguradoras.filter(
-        (aseguradora) => aseguradora.activo === EstadoActivo.ACTIVO
-      ),
-    [aseguradoras]
-  );
-
-  const selectClassName =
-    'h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
-
   const setFieldError = (field: keyof FormValues, message?: string) => {
     setErrors((prev) => ({ ...prev, [field]: message }));
-  };
-
-  const handleSelectChange = (
-    field: 'idVehiculo' | 'idCliente' | 'idAseguradora',
-    rawValue: string
-  ) => {
-    const nextValue = rawValue === '' ? '' : Number(rawValue);
-    setValues((prev) => ({ ...prev, [field]: nextValue }));
-    if (errors[field]) setFieldError(field, undefined);
   };
 
   const handleInputChange = (field: keyof FormValues, value: string) => {
@@ -187,93 +152,54 @@ export function TramiteSeguroForm({
           <Label htmlFor="idVehiculo">
             Vehículo <span className="text-destructive">*</span>
           </Label>
-          <select
-            id="idVehiculo"
-            className={selectClassName}
-            value={values.idVehiculo === '' ? '' : String(values.idVehiculo)}
-            onChange={(event) =>
-              handleSelectChange('idVehiculo', event.target.value)
-            }
-            disabled={isSubmitting || isLoadingVehiculos}
-          >
-            <option value="">
-              {isLoadingVehiculos
-                ? 'Cargando vehículos...'
-                : 'Seleccione un vehículo'}
-            </option>
-            {activeVehiculos.map((vehiculo) => (
-              <option key={vehiculo.idVehiculo} value={vehiculo.idVehiculo}>
-                {vehiculo.placa} · {vehiculo.marca ?? ''}{' '}
-                {vehiculo.modelo ?? ''}
-              </option>
-            ))}
-          </select>
-          {errors.idVehiculo && (
-            <p className="text-sm text-destructive">{errors.idVehiculo}</p>
-          )}
+          <VehiculoSelect
+            selectedId={values.idVehiculo === '' ? '' : Number(values.idVehiculo)}
+            onSelectId={(id) => {
+              setValues((prev) => ({ ...prev, idVehiculo: id }));
+              if (errors.idVehiculo) setFieldError('idVehiculo', undefined);
+            }}
+            onClear={() => {
+              setValues((prev) => ({ ...prev, idVehiculo: '' }));
+              if (errors.idVehiculo) setFieldError('idVehiculo', undefined);
+            }}
+            error={errors.idVehiculo}
+          />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="idCliente">
             Cliente <span className="text-destructive">*</span>
           </Label>
-          <select
-            id="idCliente"
-            className={selectClassName}
-            value={values.idCliente === '' ? '' : String(values.idCliente)}
-            onChange={(event) =>
-              handleSelectChange('idCliente', event.target.value)
-            }
-            disabled={isSubmitting || isLoadingClientes}
-          >
-            <option value="">
-              {isLoadingClientes
-                ? 'Cargando clientes...'
-                : 'Seleccione un cliente'}
-            </option>
-            {activeClientes.map((cliente) => (
-              <option key={cliente.idCliente} value={cliente.idCliente}>
-                {getClienteNombre(cliente)}
-              </option>
-            ))}
-          </select>
-          {errors.idCliente && (
-            <p className="text-sm text-destructive">{errors.idCliente}</p>
-          )}
+          <ClienteSelect
+            selectedId={values.idCliente === '' ? '' : Number(values.idCliente)}
+            onSelectId={(id) => {
+              setValues((prev) => ({ ...prev, idCliente: id }));
+              if (errors.idCliente) setFieldError('idCliente', undefined);
+            }}
+            onClear={() => {
+              setValues((prev) => ({ ...prev, idCliente: '' }));
+              if (errors.idCliente) setFieldError('idCliente', undefined);
+            }}
+            error={errors.idCliente}
+          />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="idAseguradora">
             Aseguradora <span className="text-destructive">*</span>
           </Label>
-          <select
-            id="idAseguradora"
-            className={selectClassName}
-            value={
-              values.idAseguradora === '' ? '' : String(values.idAseguradora)
-            }
-            onChange={(event) =>
-              handleSelectChange('idAseguradora', event.target.value)
-            }
-            disabled={isSubmitting || isLoadingAseguradoras}
-          >
-            <option value="">
-              {isLoadingAseguradoras
-                ? 'Cargando aseguradoras...'
-                : 'Seleccione una aseguradora'}
-            </option>
-            {activeAseguradoras.map((aseguradora) => (
-              <option
-                key={aseguradora.idAseguradora}
-                value={aseguradora.idAseguradora}
-              >
-                {aseguradora.descripcion}
-              </option>
-            ))}
-          </select>
-          {errors.idAseguradora && (
-            <p className="text-sm text-destructive">{errors.idAseguradora}</p>
-          )}
+          <AseguradoraSelect
+            selectedId={values.idAseguradora === '' ? '' : Number(values.idAseguradora)}
+            onSelectId={(id) => {
+              setValues((prev) => ({ ...prev, idAseguradora: id }));
+              if (errors.idAseguradora) setFieldError('idAseguradora', undefined);
+            }}
+            onClear={() => {
+              setValues((prev) => ({ ...prev, idAseguradora: '' }));
+              if (errors.idAseguradora) setFieldError('idAseguradora', undefined);
+            }}
+            error={errors.idAseguradora}
+          />
         </div>
 
         <div className="space-y-2">
@@ -296,24 +222,24 @@ export function TramiteSeguroForm({
 
         <div className="space-y-2">
           <Label htmlFor="estado">Estado</Label>
-          <select
-            id="estado"
-            className={selectClassName}
+          <Select
             value={values.estado}
-            onChange={(event) =>
-              handleInputChange(
-                'estado',
-                event.target.value as TramiteSeguroEstado
-              )
+            onValueChange={(value) =>
+              handleInputChange('estado', value as TramiteSeguroEstado)
             }
             disabled={isSubmitting}
           >
-            {estadoOptions.map((estado) => (
-              <option key={estado} value={estado}>
-                {estado}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger id="estado">
+              <SelectValue placeholder="Seleccionar estado" />
+            </SelectTrigger>
+            <SelectContent>
+              {estadoOptions.map((estado) => (
+                <SelectItem key={estado} value={estado}>
+                  {estado}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="space-y-2">

@@ -44,11 +44,13 @@ export default function NuevoTramiteSeguroPage() {
       await queryClient.invalidateQueries({ queryKey: ['tramiteSeguros'] });
       toast.success('Trámite de seguro creado');
       navigate('/tramites-seguros');
-    } catch (error) {
+    } catch (error: any) {
+      const raw = error?.response?.data;
       const message =
-        error instanceof Error
-          ? error.message
-          : 'No se pudo crear el trámite de seguro';
+        raw?.message ||
+        (typeof raw === 'string' ? raw : undefined) ||
+        (error instanceof Error ? error.message : undefined) ||
+        'No se pudo crear el trámite de seguro';
       toast.error(message);
     } finally {
       setIsSubmitting(false);
