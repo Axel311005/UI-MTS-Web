@@ -16,7 +16,6 @@ import type {
   ClienteFormErrors,
   ClienteFormValues,
 } from '../ui/cliente-form.types';
-import { getClienteNombre } from '../utils/cliente.utils';
 
 export default function NuevoClientePage() {
   const navigate = useNavigate();

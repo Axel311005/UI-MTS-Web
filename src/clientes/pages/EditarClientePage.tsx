@@ -17,7 +17,6 @@ import type {
 import { getClienteById } from '../actions/get-cliente-by-id';
 import { patchCliente } from '../actions/patch-cliente';
 import { EstadoActivo } from '@/shared/types/status';
-import { getClienteNombre } from '../utils/cliente.utils';
 
 export default function EditarClientePage() {
   const navigate = useNavigate();
@@ -100,7 +99,8 @@ export default function EditarClientePage() {
     const newErrors: ClienteFormErrors = {};
 
     // Al menos uno de los nombres o el RUC debe estar presente
-    const hasNombre = formValues.primerNombre.trim() || formValues.primerApellido.trim();
+    const hasNombre =
+      formValues.primerNombre.trim() || formValues.primerApellido.trim();
     if (!hasNombre && !formValues.ruc.trim()) {
       newErrors.primerNombre = 'Debe proporcionar al menos un nombre o RUC';
     }
@@ -150,7 +150,10 @@ export default function EditarClientePage() {
     try {
       const payload = buildPayload();
       await patchCliente(clienteId, payload);
-      const nombreCompleto = [payload.primerNombre, payload.primerApellido].filter(Boolean).join(' ') || payload.ruc;
+      const nombreCompleto =
+        [payload.primerNombre, payload.primerApellido]
+          .filter(Boolean)
+          .join(' ') || payload.ruc;
       toast.success(`Cliente ${nombreCompleto} actualizado`);
 
       await queryClient.invalidateQueries({

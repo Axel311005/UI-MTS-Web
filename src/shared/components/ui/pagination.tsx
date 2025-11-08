@@ -1,4 +1,9 @@
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from 'lucide-react';
 import { Button } from './button';
 import {
   Select,
@@ -30,17 +35,17 @@ export function Pagination({
   const canGoPrevious = currentPage > 1;
   const canGoNext = currentPage < totalPages;
 
-  const startItem = totalItems !== undefined ? (currentPage - 1) * pageSize + 1 : undefined;
-  const endItem = totalItems !== undefined 
-    ? Math.min(currentPage * pageSize, totalItems) 
-    : undefined;
+  const startItem =
+    totalItems !== undefined ? (currentPage - 1) * pageSize + 1 : undefined;
+  const endItem =
+    totalItems !== undefined
+      ? Math.min(currentPage * pageSize, totalItems)
+      : undefined;
 
   return (
     <div className="flex items-center justify-between px-2 py-4">
       <div className="flex items-center gap-2">
-        <p className="text-sm text-muted-foreground">
-          Mostrar
-        </p>
+        <p className="text-sm text-muted-foreground">Mostrar</p>
         <Select
           value={pageSize.toString()}
           onValueChange={(value) => onPageSizeChange(Number(value))}
@@ -57,8 +62,8 @@ export function Pagination({
           </SelectContent>
         </Select>
         <p className="text-sm text-muted-foreground">
-          {totalItems !== undefined 
-            ? `de ${totalItems} registros` 
+          {totalItems !== undefined
+            ? `de ${totalItems} registros`
             : 'registros por página'}
         </p>
       </div>
@@ -71,7 +76,7 @@ export function Pagination({
               : ''}
           </p>
         )}
-        
+
         <div className="flex items-center gap-1">
           <Button
             variant="outline"
@@ -93,7 +98,7 @@ export function Pagination({
             <span className="sr-only">Página anterior</span>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          
+
           <div className="flex items-center gap-1 px-2">
             <p className="text-sm font-medium">
               Página {currentPage} de {totalPages || 1}
@@ -125,4 +130,3 @@ export function Pagination({
     </div>
   );
 }
-
