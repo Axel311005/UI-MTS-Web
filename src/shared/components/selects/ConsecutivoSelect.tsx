@@ -11,14 +11,14 @@ import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { X } from '@/shared/icons';
 import useConsecutivo from '@/consecutivo/hooks/useConsecutivo';
 
-type ConsecutivoType = 'FACTURA' | 'PROFORMA' | 'RECEPCION';
+type ConsecutivoType = 'FACTURA' | 'PROFORMA' | 'RECEPCION' | 'COTIZACION';
 
 type Props = {
   selectedId?: number | '';
   onSelectId: (id: number) => void;
   onClear: () => void;
   error?: string;
-  tipo: ConsecutivoType; // 'FACTURA' para id 1, 'PROFORMA' para id 3, 'RECEPCION' para id 5
+  tipo: ConsecutivoType; // 'FACTURA' para id 1, 'PROFORMA' para id 3, 'RECEPCION' para id 5, 'COTIZACION' para id 4
 };
 
 export const ConsecutivoSelect: React.FC<Props> = ({
@@ -43,6 +43,9 @@ export const ConsecutivoSelect: React.FC<Props> = ({
     } else if (tipo === 'RECEPCION') {
       // Solo mostrar consecutivo con id 5 (para recepciones)
       return consecutivos.filter((c) => c.idConsecutivo === 5);
+    } else if (tipo === 'COTIZACION') {
+      // Solo mostrar consecutivo con id 4 (para cotizaciones)
+      return consecutivos.filter((c) => c.idConsecutivo === 4);
     }
     return consecutivos;
   }, [consecutivos, tipo]);
