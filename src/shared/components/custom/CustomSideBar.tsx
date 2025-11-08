@@ -53,9 +53,9 @@ export const CustomSideBar = ({
           </div>
           <div className="flex flex-col">
             <span className="font-semibold text-sidebar-foreground">
-              Sistema
+              Taller
             </span>
-            <span className="text-xs text-sidebar-foreground/70">Taller</span>
+            <span className="text-xs text-sidebar-foreground/70">MTS</span>
           </div>
         </div>
 

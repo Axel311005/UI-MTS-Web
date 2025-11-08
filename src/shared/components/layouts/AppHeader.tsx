@@ -1,6 +1,6 @@
 // src/shared/components/layouts/AppHeader.tsx
 
-import { Search, Bell, User, Sun, Moon, Menu, LogOut } from '@/shared/icons';
+import { Search, User, Sun, Moon, Menu, LogOut } from '@/shared/icons';
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 import { SidebarTrigger } from '@/shared/components/ui/sidebar';
 import { Button } from '../ui/button';
@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import { Badge } from '../ui/badge';
+
 import { useAuthStore } from '@/auth/store/auth.store';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
@@ -26,7 +26,7 @@ export const AppHeader = () => {
   const navigate = useNavigate();
   const {
     notifications,
-    unreadCount,
+
     markAsRead,
     markAllAsRead,
   } = useNotifications();

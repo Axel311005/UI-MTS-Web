@@ -61,7 +61,7 @@ const mapNotificationType = (
 const mapNotificationContent = (
   tipo: AdminNotification['tipo'],
   idRegistro: number | string,
-  data: AdminNotification['data'],
+  _data: AdminNotification['data'],
   nombreCliente?: string
 ): { title: string; message: string; link?: string } => {
   const cliente = nombreCliente || 'Cliente';
@@ -127,30 +127,57 @@ const saveNotificationsToStorage = (notifications: Notification[]) => {
 
 export const useNotificationStore = create<NotificationState>((set, get) => {
   let socketInstance: Socket | null = null;
-  let audioInstance: HTMLAudioElement | null = null;
 
   // Cargar notificaciones iniciales desde localStorage
   const initialNotifications = loadNotificationsFromStorage();
   const initialUnreadCount = initialNotifications.filter((n) => !n.read).length;
 
-  // Inicializar audio para sonido de notificación
-  const initAudio = () => {
-    if (!audioInstance) {
-      audioInstance = new Audio('/sounds/notification.mp3');
-      audioInstance.volume = 0.5;
-    }
-    return audioInstance;
-  };
-
-  const playNotificationSound = () => {
+  // Reproducir un beep usando Web Audio API
+  const playNotificationSound = async () => {
     try {
-      const audio = initAudio();
-      audio.currentTime = 0;
-      audio.play().catch((error) => {
-        console.warn('No se pudo reproducir el sonido de notificación:', error);
-      });
+      // Crear contexto de audio (puede requerir interacción del usuario primero)
+      const AudioContextClass =
+        window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContextClass) {
+        return; // El navegador no soporta Web Audio API
+      }
+
+      const audioContext = new AudioContextClass();
+
+      // Si el contexto está suspendido (requiere interacción del usuario), intentar reanudarlo
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume();
+      }
+
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      // Configurar el sonido: frecuencia 800Hz, tipo sine
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+
+      // Configurar el volumen: empieza en 0.3 y baja exponencialmente
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.01,
+        audioContext.currentTime + 0.2
+      );
+
+      // Reproducir el sonido por 200ms
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.2);
+
+      // Limpiar el contexto después de que termine el sonido
+      oscillator.onended = () => {
+        audioContext.close().catch(() => {
+          // Ignorar errores al cerrar el contexto
+        });
+      };
     } catch (error) {
-      console.warn('Error al inicializar audio:', error);
+      // Silenciar errores si el navegador no soporta Web Audio API o hay problemas de permisos
     }
   };
 
