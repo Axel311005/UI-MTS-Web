@@ -19,8 +19,10 @@ import {
 } from '@/shared/components/ui/table';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
 
 import { getCotizacionByIdAction } from '../actions/get-cotizacion-by-id';
+import { getDetalleCotizacionByCotizacionIdAction } from '../actions/get-detalle-cotizacion-by-cotizacion-id';
 import type { Cotizacion } from '../types/cotizacion.interface';
 import { getClienteNombre } from '@/clientes/utils/cliente.utils';
 import type { DetalleCotizacion } from '../types/detalle-cotizacion.interface';
@@ -35,30 +37,49 @@ export default function VerDetallesCotizacionPage() {
   const [loading, setLoading] = useState(true);
   const [cotizacion, setCotizacion] = useState<CotizacionDetalle | null>(null);
 
+  const numericId = id ? Number(id) : null;
+  const isValidId =
+    numericId !== null && Number.isFinite(numericId) && numericId > 0;
+
+  // Query para obtener la cotización
+  const cotizacionQuery = useQuery({
+    queryKey: ['cotizacion', numericId],
+    enabled: isValidId,
+    queryFn: () => getCotizacionByIdAction(numericId!),
+  });
+
+  // Query para obtener los detalles de la cotización
+  const detallesQuery = useQuery({
+    queryKey: ['detalle-cotizacion', 'by-cotizacion', numericId],
+    enabled: isValidId,
+    queryFn: () => getDetalleCotizacionByCotizacionIdAction(numericId!),
+  });
+
   useEffect(() => {
-    const loadCotizacion = async () => {
-      try {
-        setLoading(true);
-        const numericId = Number(id);
-        if (!Number.isFinite(numericId)) {
-          throw new Error('ID de cotización inválido');
-        }
-
-        const fetchedCotizacion = await getCotizacionByIdAction(numericId);
-        setCotizacion(fetchedCotizacion as CotizacionDetalle);
-      } catch (error) {
-        console.error('Error loading cotizacion:', error);
-        toast.error('No se pudo cargar la cotización');
-        navigate('/cotizaciones');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (id) {
-      loadCotizacion();
+    if (cotizacionQuery.isError) {
+      toast.error('No se pudo cargar la cotización');
+      navigate('/cotizaciones');
+      return;
     }
-  }, [id, navigate]);
+
+    if (cotizacionQuery.data) {
+      setCotizacion({
+        ...cotizacionQuery.data,
+        detalles: detallesQuery.data || [],
+      } as CotizacionDetalle);
+      setLoading(false);
+    } else if (cotizacionQuery.isLoading || detallesQuery.isLoading) {
+      setLoading(true);
+    }
+  }, [
+    cotizacionQuery.data,
+    cotizacionQuery.isLoading,
+    cotizacionQuery.isError,
+    cotizacionQuery.error,
+    detallesQuery.data,
+    detallesQuery.isLoading,
+    navigate,
+  ]);
 
   const getEstadoBadgeVariant = (estado: string) => {
     const normalized = estado?.toUpperCase?.() ?? '';
@@ -307,7 +328,9 @@ export default function VerDetallesCotizacionPage() {
                     cotizacion.detalles.map((detalle) => (
                       <TableRow key={detalle.idDetalleCotizacion}>
                         <TableCell>
-                          {detalle.item?.descripcion ?? '—'}
+                          {detalle.item?.descripcion ??
+                            detalle.item?.codigoItem ??
+                            '—'}
                         </TableCell>
                         <TableCell className="text-right">
                           {detalle.cantidad}
@@ -323,10 +346,12 @@ export default function VerDetallesCotizacionPage() {
                   ) : (
                     <TableRow>
                       <TableCell
-                        colSpan={5}
+                        colSpan={4}
                         className="text-center text-muted-foreground"
                       >
-                        No hay detalles registrados.
+                        {detallesQuery.isLoading
+                          ? 'Cargando detalles...'
+                          : 'No hay detalles registrados.'}
                       </TableCell>
                     </TableRow>
                   )}

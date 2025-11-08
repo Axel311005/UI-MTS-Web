@@ -11,7 +11,6 @@ import {
   SidebarMenuButton,
 } from '../ui/sidebar';
 import type { MenuItem } from '@/shared/config/navigation';
-import { FileText } from '@/shared/icons';
 
 interface SidebarProps {
   navigationItems: MenuItem[];
@@ -45,10 +44,12 @@ export const CustomSideBar = ({
     >
       <SidebarHeader className="p-4 border-b border-sidebar-border">
         <div className="flex items-center gap-2 group-data-[state=collapsed]:hidden">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">
-              MTS
-            </span>
+          <div className="h-8 w-8 rounded-lg flex items-center justify-center overflow-hidden">
+            <img
+              src="/logo-mts-trans.png"
+              alt="MTS Logo"
+              className="h-full w-full object-contain"
+            />
           </div>
           <div className="flex flex-col">
             <span className="font-semibold text-sidebar-foreground">
@@ -58,8 +59,12 @@ export const CustomSideBar = ({
           </div>
         </div>
 
-        <div className="hidden group-data-[state=collapsed]:flex h-8 w-8 mx-auto rounded-lg bg-primary items-center justify-center">
-          <FileText className="h-4 w-4 text-primary-foreground" />
+        <div className="hidden group-data-[state=collapsed]:flex h-8 w-8 mx-auto rounded-lg items-center justify-center overflow-hidden">
+          <img
+            src="/logo-mts-trans.png"
+            alt="MTS"
+            className="h-full w-full object-contain"
+          />
         </div>
       </SidebarHeader>
 

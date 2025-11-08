@@ -2,7 +2,10 @@ import { create } from 'zustand';
 import { io, Socket } from 'socket.io-client';
 import { SOCKET_URL } from '../config/socket.config';
 import { useAuthStore } from '@/auth/store/auth.store';
-import type { Notification, NotificationType } from '../components/layouts/NotificationCenter';
+import type {
+  Notification,
+  NotificationType,
+} from '../components/layouts/NotificationCenter';
 
 // Tipos de notificaciones que vienen del backend
 interface AdminNotification {
@@ -62,7 +65,7 @@ const mapNotificationContent = (
   nombreCliente?: string
 ): { title: string; message: string; link?: string } => {
   const cliente = nombreCliente || 'Cliente';
-  
+
   switch (tipo) {
     case 'nueva_cita':
       return {
@@ -90,9 +93,45 @@ const mapNotificationContent = (
   }
 };
 
+// Clave para localStorage
+const NOTIFICATIONS_STORAGE_KEY = 'mts_notifications';
+
+// Cargar notificaciones desde localStorage
+const loadNotificationsFromStorage = (): Notification[] => {
+  try {
+    const stored = localStorage.getItem(NOTIFICATIONS_STORAGE_KEY);
+    if (!stored) return [];
+    const parsed = JSON.parse(stored);
+    // Convertir timestamps de string a Date
+    return parsed.map((n: any) => ({
+      ...n,
+      timestamp: new Date(n.timestamp),
+    }));
+  } catch (error) {
+    console.warn('Error al cargar notificaciones desde localStorage:', error);
+    return [];
+  }
+};
+
+// Guardar notificaciones en localStorage
+const saveNotificationsToStorage = (notifications: Notification[]) => {
+  try {
+    localStorage.setItem(
+      NOTIFICATIONS_STORAGE_KEY,
+      JSON.stringify(notifications)
+    );
+  } catch (error) {
+    console.warn('Error al guardar notificaciones en localStorage:', error);
+  }
+};
+
 export const useNotificationStore = create<NotificationState>((set, get) => {
   let socketInstance: Socket | null = null;
   let audioInstance: HTMLAudioElement | null = null;
+
+  // Cargar notificaciones iniciales desde localStorage
+  const initialNotifications = loadNotificationsFromStorage();
+  const initialUnreadCount = initialNotifications.filter((n) => !n.read).length;
 
   // Inicializar audio para sonido de notificación
   const initAudio = () => {
@@ -116,13 +155,13 @@ export const useNotificationStore = create<NotificationState>((set, get) => {
   };
 
   return {
-    // Estado inicial
+    // Estado inicial (cargado desde localStorage)
     socket: null,
     connected: false,
     socketId: null,
     connectionError: null,
-    notifications: [],
-    unreadCount: 0,
+    notifications: initialNotifications,
+    unreadCount: initialUnreadCount,
 
     // Conectar socket
     connect: () => {
@@ -155,7 +194,6 @@ export const useNotificationStore = create<NotificationState>((set, get) => {
 
       // Event listeners
       socket.on('connect', () => {
-        console.info('[Socket] Conectado:', socket.id);
         set({
           connected: true,
           socketId: socket.id ?? null,
@@ -164,8 +202,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => {
         });
       });
 
-      socket.on('disconnect', (reason) => {
-        console.warn('[Socket] Desconectado:', reason);
+      socket.on('disconnect', () => {
         set({
           connected: false,
           socketId: null,
@@ -174,14 +211,11 @@ export const useNotificationStore = create<NotificationState>((set, get) => {
 
       socket.on('connect_error', (error) => {
         const errorMessage = error?.message ?? String(error);
-        console.error('[Socket] Error de conexión:', errorMessage);
         set({ connectionError: errorMessage, connected: false });
       });
 
       // Escuchar notificaciones del admin
       socket.on('adminNotification', (payload: AdminNotification) => {
-        console.info('[Socket] Notificación recibida:', payload);
-
         const { title, message, link } = mapNotificationContent(
           payload.tipo,
           payload.id_registro,
@@ -199,8 +233,6 @@ export const useNotificationStore = create<NotificationState>((set, get) => {
 
       // Escuchar notificaciones de cliente (si se usa namespace /cliente)
       socket.on('clienteNotification', (payload: AdminNotification) => {
-        console.info('[Socket] Notificación de cliente recibida:', payload);
-
         const { title, message, link } = mapNotificationContent(
           payload.tipo,
           payload.id_registro,
@@ -245,6 +277,8 @@ export const useNotificationStore = create<NotificationState>((set, get) => {
 
       set((state) => {
         const updated = [newNotification, ...state.notifications].slice(0, 50); // Mantener solo las últimas 50
+        // Guardar en localStorage
+        saveNotificationsToStorage(updated);
         return {
           notifications: updated,
           unreadCount: updated.filter((n) => !n.read).length,
@@ -261,6 +295,8 @@ export const useNotificationStore = create<NotificationState>((set, get) => {
         const updated = state.notifications.map((n) =>
           n.id === id ? { ...n, read: true } : n
         );
+        // Guardar en localStorage
+        saveNotificationsToStorage(updated);
         return {
           notifications: updated,
           unreadCount: updated.filter((n) => !n.read).length,
@@ -272,6 +308,8 @@ export const useNotificationStore = create<NotificationState>((set, get) => {
     markAllAsRead: () => {
       set((state) => {
         const updated = state.notifications.map((n) => ({ ...n, read: true }));
+        // Guardar en localStorage
+        saveNotificationsToStorage(updated);
         return {
           notifications: updated,
           unreadCount: 0,
@@ -281,8 +319,11 @@ export const useNotificationStore = create<NotificationState>((set, get) => {
 
     // Limpiar todas
     clearAll: () => {
+      const empty: Notification[] = [];
+      // Limpiar localStorage
+      saveNotificationsToStorage(empty);
       set({
-        notifications: [],
+        notifications: empty,
         unreadCount: 0,
       });
     },
@@ -291,6 +332,8 @@ export const useNotificationStore = create<NotificationState>((set, get) => {
     removeNotification: (id) => {
       set((state) => {
         const updated = state.notifications.filter((n) => n.id !== id);
+        // Guardar en localStorage
+        saveNotificationsToStorage(updated);
         return {
           notifications: updated,
           unreadCount: updated.filter((n) => !n.read).length,
@@ -299,4 +342,3 @@ export const useNotificationStore = create<NotificationState>((set, get) => {
     },
   };
 });
-
