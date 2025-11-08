@@ -1,4 +1,5 @@
 import { tallerApi } from '@/shared/api/tallerApi';
+import { FacturaEstado } from '@/shared/types/status';
 
 export interface CreateFacturaPayload {
   clienteId: number;
@@ -8,7 +9,7 @@ export interface CreateFacturaPayload {
   bodegaId: number;
   consecutivoId: number;
   empleadoId: number;
-  estado: 'PENDIENTE' | 'PAGADO' | 'ANULADA';
+  estado: FacturaEstado;
   porcentajeDescuento: number;
   tipoCambioUsado: number;
   comentario: string;

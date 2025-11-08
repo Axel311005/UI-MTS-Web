@@ -36,8 +36,11 @@ const FacturaRowActions = lazy(() => import('../ui/FacturaRowActions'));
 export const FacturasPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+
+  // Leer parámetros de URL o usar valores por defecto
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
+
   const [useInfiniteScroll, setUseInfiniteScroll] = useState(false);
   const [loadedPages, setLoadedPages] = useState(1);
   const loadingRef = useRef(false);
@@ -93,50 +96,53 @@ export const FacturasPage = () => {
     offset: useInfiniteScroll ? undefined : offset,
   });
 
-  const { data: facturasFiltradasResponse, isLoading: isLoadingSearch } = useQuery<PaginatedResponse<Factura>>({
-    queryKey: [
-      'facturas.search',
-      codigoLike,
-      codigoFactura,
-      estado,
-      clienteNombre,
-      empleadoNombre,
-      bodegaNombre,
-      fechaInicio,
-      fechaFin,
-      minTotal,
-      maxTotal,
-      useInfiniteScroll ? currentLimit : limit,
-      offset,
-    ],
-    queryFn: () =>
-      SearchFacturaAction({
+  const { data: facturasFiltradasResponse, isLoading: isLoadingSearch } =
+    useQuery<PaginatedResponse<Factura>>({
+      queryKey: [
+        'facturas.search',
         codigoLike,
-        codigo_factura: codigoFactura,
+        codigoFactura,
         estado,
         clienteNombre,
         empleadoNombre,
         bodegaNombre,
-        dateFrom: fechaInicio,
-        dateTo: fechaFin,
+        fechaInicio,
+        fechaFin,
         minTotal,
         maxTotal,
-        limit: useInfiniteScroll ? currentLimit : limit,
+        useInfiniteScroll ? currentLimit : limit,
         offset,
-      }),
-    enabled: hasAnyFilter,
-    staleTime: 1000 * 60 * 5,
-  });
+      ],
+      queryFn: () =>
+        SearchFacturaAction({
+          codigoLike,
+          codigo_factura: codigoFactura,
+          estado,
+          clienteNombre,
+          empleadoNombre,
+          bodegaNombre,
+          dateFrom: fechaInicio,
+          dateTo: fechaFin,
+          minTotal,
+          maxTotal,
+          limit: useInfiniteScroll ? currentLimit : limit,
+          offset,
+        }),
+      enabled: hasAnyFilter,
+      staleTime: 1000 * 60 * 5,
+    });
 
   const facturasFiltradas = useMemo(() => {
     if (!facturasFiltradasResponse) return [];
-    if (Array.isArray(facturasFiltradasResponse)) return facturasFiltradasResponse;
+    if (Array.isArray(facturasFiltradasResponse))
+      return facturasFiltradasResponse;
     return facturasFiltradasResponse.data || [];
   }, [facturasFiltradasResponse]);
 
   const totalFiltradas = useMemo(() => {
     if (!facturasFiltradasResponse) return 0;
-    if (Array.isArray(facturasFiltradasResponse)) return facturasFiltradasResponse.length;
+    if (Array.isArray(facturasFiltradasResponse))
+      return facturasFiltradasResponse.length;
     return facturasFiltradasResponse.total ?? 0;
   }, [facturasFiltradasResponse]);
 
@@ -149,8 +155,11 @@ export const FacturasPage = () => {
         if (entries[0].isIntersecting && !loadingRef.current) {
           const currentTotal = facturasFiltradas.length;
           const totalAvailable = totalFiltradas;
-          
-          if (currentTotal < totalAvailable && currentTotal >= loadedPages * pageSize) {
+
+          if (
+            currentTotal < totalAvailable &&
+            currentTotal >= loadedPages * pageSize
+          ) {
             loadingRef.current = true;
             setLoadedPages((prev) => prev + 1);
           }
@@ -165,7 +174,14 @@ export const FacturasPage = () => {
     return () => {
       if (target) observer.unobserve(target);
     };
-  }, [useInfiniteScroll, hasAnyFilter, facturasFiltradas.length, totalFiltradas, loadedPages, pageSize]);
+  }, [
+    useInfiniteScroll,
+    hasAnyFilter,
+    facturasFiltradas.length,
+    totalFiltradas,
+    loadedPages,
+    pageSize,
+  ]);
 
   useEffect(() => {
     loadingRef.current = false;
@@ -174,14 +190,17 @@ export const FacturasPage = () => {
   // Para scroll infinito sin filtros
   useEffect(() => {
     if (!useInfiniteScroll || hasAnyFilter) return;
-    
+
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && !loadingRef.current) {
           const currentTotal = facturas.length;
           const totalAvailable = totalFacturas;
-          
-          if (currentTotal < totalAvailable && currentTotal >= loadedPages * pageSize) {
+
+          if (
+            currentTotal < totalAvailable &&
+            currentTotal >= loadedPages * pageSize
+          ) {
             loadingRef.current = true;
             setLoadedPages((prev) => prev + 1);
           }
@@ -196,7 +215,14 @@ export const FacturasPage = () => {
     return () => {
       if (target) observer.unobserve(target);
     };
-  }, [useInfiniteScroll, hasAnyFilter, facturas.length, totalFacturas, loadedPages, pageSize]);
+  }, [
+    useInfiniteScroll,
+    hasAnyFilter,
+    facturas.length,
+    totalFacturas,
+    loadedPages,
+    pageSize,
+  ]);
 
   const [showFilters, setShowFilters] = useState(false);
 
@@ -215,34 +241,61 @@ export const FacturasPage = () => {
   const getEstadoBadgeVariant = (estadoRaw: string) =>
     ESTADO_BADGE_VARIANTS[normalizeEstado(estadoRaw)] ?? 'default';
 
-  const isAnulada = (value: unknown) => {
-    if (typeof value === 'boolean') return value;
-    if (typeof value === 'string') return value.toLowerCase() === 'true';
-    return false;
-  };
-
-  const isEstadoAnulado = (estadoRaw: unknown) =>
-    typeof estadoRaw === 'string' && normalizeEstado(estadoRaw) === 'ANULADA';
-
   const rows = useMemo(() => {
     const data = hasAnyFilter ? facturasFiltradas : facturas;
     if (!Array.isArray(data)) return [];
-    const filtered = data.filter(
-      (factura) =>
-        !isAnulada(factura.anulada) && !isEstadoAnulado(factura.estado)
-    );
-    
-    // Para scroll infinito, limitar a lo cargado
+
+    // Las facturas ya vienen filtradas del action (sin anuladas)
+    // Solo aplicar el slice para scroll infinito si es necesario
     if (useInfiniteScroll) {
-      return filtered.slice(0, loadedPages * pageSize);
+      return data.slice(0, loadedPages * pageSize);
     }
-    
-    return filtered;
-  }, [hasAnyFilter, facturasFiltradas, facturas, useInfiniteScroll, loadedPages, pageSize]);
+
+    return data;
+  }, [
+    hasAnyFilter,
+    facturasFiltradas,
+    facturas,
+    useInfiniteScroll,
+    loadedPages,
+    pageSize,
+  ]);
 
   const totalRows = hasAnyFilter ? totalFiltradas : totalFacturas;
-  const totalPages = Math.ceil(totalRows / pageSize);
+  const totalPages = totalRows > 0 ? Math.ceil(totalRows / pageSize) : 1;
   const hasMore = useInfiniteScroll ? rows.length < totalRows : false;
+
+  // Sincronizar página con URL cuando cambian los datos
+  useEffect(() => {
+    if (useInfiniteScroll) return;
+    if (totalRows === 0) {
+      if (page !== 1) {
+        const params = new URLSearchParams(searchParams);
+        params.delete('page');
+        setSearchParams(params, { replace: true });
+      }
+      return;
+    }
+
+    const computedTotalPages = Math.ceil(totalRows / pageSize);
+    if (page > computedTotalPages) {
+      const lastPage = Math.max(1, computedTotalPages);
+      const params = new URLSearchParams(searchParams);
+      if (lastPage > 1) {
+        params.set('page', lastPage.toString());
+      } else {
+        params.delete('page');
+      }
+      setSearchParams(params, { replace: true });
+    }
+  }, [
+    totalRows,
+    page,
+    pageSize,
+    searchParams,
+    setSearchParams,
+    useInfiniteScroll,
+  ]);
 
   return (
     <div className="space-y-6">
@@ -279,7 +332,10 @@ export const FacturasPage = () => {
           onClick={() => {
             setUseInfiniteScroll(!useInfiniteScroll);
             setLoadedPages(1);
-            setPage(1);
+            // Reset a página 1 en la URL
+            const params = new URLSearchParams(searchParams);
+            params.delete('page');
+            setSearchParams(params, { replace: true });
           }}
           className="whitespace-nowrap"
           size="sm"
@@ -328,7 +384,9 @@ export const FacturasPage = () => {
                       <TableCell>
                         <div>
                           <div className="font-medium">
-                            {factura.cliente ? getClienteNombre(factura.cliente) : '—'}
+                            {factura.cliente
+                              ? getClienteNombre(factura.cliente)
+                              : '—'}
                           </div>
                           <div className="text-xs text-muted-foreground">
                             {factura.cliente?.ruc}
@@ -355,11 +413,16 @@ export const FacturasPage = () => {
                       </TableCell>
                       <TableCell>
                         {factura.proforma ? (
-                          <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                          <Badge
+                            variant="secondary"
+                            className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                          >
                             Desde Proforma
                           </Badge>
                         ) : (
-                          <span className="text-muted-foreground text-sm">Directa</span>
+                          <span className="text-muted-foreground text-sm">
+                            Directa
+                          </span>
                         )}
                       </TableCell>
                       <TableCell className="text-right">
@@ -386,12 +449,24 @@ export const FacturasPage = () => {
               pageSize={pageSize}
               totalItems={totalRows}
               onPageChange={(newPage) => {
-                setPage(newPage);
+                const params = new URLSearchParams(searchParams);
+                if (newPage > 1) {
+                  params.set('page', newPage.toString());
+                } else {
+                  params.delete('page');
+                }
+                setSearchParams(params, { replace: true });
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               onPageSizeChange={(newSize) => {
-                setPageSize(newSize);
-                setPage(1);
+                const params = new URLSearchParams(searchParams);
+                params.delete('page'); // Reset a página 1
+                if (newSize !== 10) {
+                  params.set('pageSize', newSize.toString());
+                } else {
+                  params.delete('pageSize');
+                }
+                setSearchParams(params, { replace: true });
               }}
             />
           )}

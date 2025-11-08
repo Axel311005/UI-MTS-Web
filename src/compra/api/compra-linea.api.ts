@@ -6,6 +6,13 @@ export const compraLineaApi = axios.create({
 });
 
 compraLineaApi.interceptors.request.use((config) => {
+  try {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers = config.headers ?? {};
+      (config.headers as any)['Authorization'] = `Bearer ${token}`;
+    }
+  } catch {}
   return config;
 });
 

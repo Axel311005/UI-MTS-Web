@@ -22,6 +22,7 @@ import { getFacturaReciboPdfAction } from '../actions/get-factura-recibo-pdf';
 import { getFacturaPdfAction } from '../actions/get-factura-pdf';
 import { downloadPdf } from '../utils/download-pdf';
 import type { Factura } from '../types/Factura.interface';
+import { FacturaEstado } from '@/shared/types/status';
 
 interface Props {
   factura: Factura;
@@ -70,7 +71,9 @@ export default function FacturaRowActions({ factura }: Props) {
     } catch (error: any) {
       const message =
         error?.response?.data?.message ||
-        (error instanceof Error ? error.message : 'No se pudo generar el PDF del recibo');
+        (error instanceof Error
+          ? error.message
+          : 'No se pudo generar el PDF del recibo');
       toast.error(message);
     } finally {
       toast.dismiss(dismiss);
@@ -93,7 +96,9 @@ export default function FacturaRowActions({ factura }: Props) {
     } catch (error: any) {
       const message =
         error?.response?.data?.message ||
-        (error instanceof Error ? error.message : 'No se pudo generar el PDF de la factura');
+        (error instanceof Error
+          ? error.message
+          : 'No se pudo generar el PDF de la factura');
       toast.error(message);
     } finally {
       toast.dismiss(dismiss);
@@ -130,7 +135,7 @@ export default function FacturaRowActions({ factura }: Props) {
           factura.consecutivo?.idConsecutivo
         ),
         empleadoId,
-        estado: 'ANULADA' as const,
+        estado: FacturaEstado.ANULADA,
         porcentajeDescuento: requireNumber(
           'porcentaje de descuento',
           factura.porcentajeDescuento ?? 0

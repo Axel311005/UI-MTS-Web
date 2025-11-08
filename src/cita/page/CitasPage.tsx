@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { Plus, Pencil, Eye } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
@@ -105,6 +105,34 @@ export default function CitasPage() {
 
   const totalPages = totalFiltered ? Math.ceil(totalFiltered / pageSize) : 1;
   const showEmpty = !isLoading && totalFiltered === 0;
+
+  // Sincronizar página con URL cuando cambian los datos
+  useEffect(() => {
+    if (isLoading) return;
+    const computedTotalPages = totalFiltered
+      ? Math.ceil(totalFiltered / pageSize)
+      : 1;
+
+    if (totalFiltered === 0) {
+      if (page !== 1) {
+        const params = new URLSearchParams(searchParams);
+        params.delete('page');
+        setSearchParams(params, { replace: true });
+      }
+      return;
+    }
+
+    if (page > computedTotalPages) {
+      const lastPage = Math.max(1, computedTotalPages);
+      const params = new URLSearchParams(searchParams);
+      if (lastPage > 1) {
+        params.set('page', lastPage.toString());
+      } else {
+        params.delete('page');
+      }
+      setSearchParams(params, { replace: true });
+    }
+  }, [isLoading, page, pageSize, searchParams, setSearchParams, totalFiltered]);
 
   return (
     <div className="space-y-6">

@@ -9,7 +9,12 @@ import type {
 
 // Tipos de notificaciones que vienen del backend
 interface AdminNotification {
-  tipo: 'nueva_cita' | 'nueva_cotizacion' | 'recepcion_seguimiento_actualizado';
+  tipo:
+    | 'nueva_cita'
+    | 'nueva_cotizacion'
+    | 'existencia_bodega_minima_warning'
+    | 'existencia_bodega_sin_existencias'
+    | 'existencia_bodega_reorden_warning';
   id_registro: number | string;
   nombre_cliente?: string;
   timestamp: string;
@@ -50,7 +55,11 @@ const mapNotificationType = (
       return 'info';
     case 'nueva_cotizacion':
       return 'success';
-    case 'recepcion_seguimiento_actualizado':
+    case 'existencia_bodega_minima_warning':
+      return 'warning';
+    case 'existencia_bodega_sin_existencias':
+      return 'error';
+    case 'existencia_bodega_reorden_warning':
       return 'warning';
     default:
       return 'info';
@@ -65,6 +74,14 @@ const mapNotificationContent = (
   nombreCliente?: string
 ): { title: string; message: string; link?: string } => {
   const cliente = nombreCliente || 'Cliente';
+  const itemNombre =
+    (_data as any)?.itemNombre || (_data as any)?.nombreItem || 'un ítem';
+  const bodegaNombre =
+    (_data as any)?.bodegaNombre ||
+    (_data as any)?.nombreBodega ||
+    'una bodega';
+  const cantidadActual = (_data as any)?.cantidadActual ?? 'N/A';
+  const cantidadMinima = (_data as any)?.cantidadMinima ?? 'N/A';
 
   switch (tipo) {
     case 'nueva_cita':
@@ -79,11 +96,29 @@ const mapNotificationContent = (
         message: `Se ha generado una nueva cotización para ${cliente}`,
         link: idRegistro ? `/cotizaciones/${idRegistro}` : '/cotizaciones',
       };
-    case 'recepcion_seguimiento_actualizado':
+    case 'existencia_bodega_minima_warning':
       return {
-        title: 'Seguimiento Actualizado',
-        message: `Se ha actualizado el seguimiento de recepción para ${cliente}`,
-        link: idRegistro ? `/recepciones/${idRegistro}` : '/recepciones',
+        title: 'Alerta de Stock Mínimo',
+        message: `${itemNombre} en ${bodegaNombre} está cerca del mínimo (${cantidadActual}/${cantidadMinima})`,
+        link: idRegistro
+          ? `/existencia-bodega?item=${idRegistro}`
+          : '/existencia-bodega',
+      };
+    case 'existencia_bodega_sin_existencias':
+      return {
+        title: 'Sin Existencias',
+        message: `${itemNombre} en ${bodegaNombre} se ha agotado (${cantidadActual} unidades)`,
+        link: idRegistro
+          ? `/existencia-bodega?item=${idRegistro}`
+          : '/existencia-bodega',
+      };
+    case 'existencia_bodega_reorden_warning':
+      return {
+        title: 'Alerta de Reorden',
+        message: `${itemNombre} en ${bodegaNombre} requiere reorden (${cantidadActual}/${cantidadMinima})`,
+        link: idRegistro
+          ? `/existencia-bodega?item=${idRegistro}`
+          : '/existencia-bodega',
       };
     default:
       return {
@@ -136,8 +171,9 @@ export const useNotificationStore = create<NotificationState>((set, get) => {
   // Inicializar audio para sonido de notificación
   const initAudio = () => {
     if (!audioInstance) {
-      audioInstance = new Audio('/public/sounds/notification.mp3');
+      audioInstance = new Audio('/sounds/notification.mp3');
       audioInstance.volume = 0.5;
+      audioInstance.loop = false;
       // Pre-cargar el audio
       audioInstance.load();
     }
@@ -219,25 +255,8 @@ export const useNotificationStore = create<NotificationState>((set, get) => {
         set({ connectionError: errorMessage, connected: false });
       });
 
-      // Escuchar notificaciones del admin
+      // Escuchar notificaciones del admin (namespace /admin)
       socket.on('adminNotification', (payload: AdminNotification) => {
-        const { title, message, link } = mapNotificationContent(
-          payload.tipo,
-          payload.id_registro,
-          payload.data,
-          payload.nombre_cliente
-        );
-
-        get().addNotification({
-          type: mapNotificationType(payload.tipo),
-          title,
-          message,
-          link,
-        });
-      });
-
-      // Escuchar notificaciones de cliente (si se usa namespace /cliente)
-      socket.on('clienteNotification', (payload: AdminNotification) => {
         const { title, message, link } = mapNotificationContent(
           payload.tipo,
           payload.id_registro,

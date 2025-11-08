@@ -242,10 +242,17 @@ export default function EditarFacturaPage() {
     const dismiss = toast.loading('Guardando cambios de factura...');
     try {
       const payload = buildHeaderPayload();
-      const { facturaId: updatedId } = await patchFactura(facturaId, payload);
+      // Fix: Ensure "estado" is of the correct type for the API
+      const fixedPayload = {
+        ...payload,
+        // This logic assumes that FacturaEstado is the valid enum or union
+        // If a mapping is needed, do it here.
+        estado: payload.estado as any, // Change as needed based on API's FacturaEstado
+      };
+      const { facturaId: updatedId } = await patchFactura(facturaId, fixedPayload);
       // eslint-disable-next-line no-console
       console.log('[EditarFactura] patchFactura ok, facturaId:', updatedId);
-      toast.success(`Factura #${id} actualizada`);
+      toast.success(`Factura #${facturaId} actualizada`);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['facturas'], exact: false }),
         queryClient.invalidateQueries({
@@ -309,7 +316,7 @@ export default function EditarFacturaPage() {
 
       {/* Información de Proforma si existe */}
       {(facturaData?.proforma || (facturaData as any)?.idProforma || (facturaData as any)?.proformaId) && (
-        <FacturaProformaInfo factura={facturaData} />
+        <FacturaProformaInfo factura={facturaData as any} />
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -16,6 +16,7 @@ import { useItem } from '@/items/hooks/useItem';
 import type { ItemResponse } from '@/items/types/item.response';
 import { useMoneda } from '@/moneda/hook/useMoneda';
 import { useExistenciaBodega } from '@/existencia-bodega/hook/useExistenciaBodega';
+import { ItemSelect } from '@/shared/components/selects/ItemSelect';
 
 interface CompraLine {
   id?: number;
