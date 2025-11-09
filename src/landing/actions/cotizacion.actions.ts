@@ -1,4 +1,4 @@
-import { landingCotizacionApi, landingItemApi } from '../api/landing.api';
+import { landingCotizacionApi, landingItemApi, landingDetalleCotizacionApi } from '../api/landing.api';
 import type {
   ItemCotizable,
   CreateCotizacionPayload,
@@ -20,8 +20,8 @@ export const createCotizacion = async (
 export const createDetalleCotizacion = async (
   payload: CreateDetalleCotizacionPayload
 ): Promise<{ idDetalleCotizacion: number }> => {
-  const { data } = await landingCotizacionApi.post<{ idDetalleCotizacion: number }>(
-    '/detalle-cotizacion',
+  const { data } = await landingDetalleCotizacionApi.post<{ idDetalleCotizacion: number }>(
+    '/',
     payload
   );
   return data;

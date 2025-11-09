@@ -115,21 +115,48 @@ export function SeguimientoForm() {
     // Escuchar notificaciones para clientes (namespace /cliente)
     const onClienteNotification = (payload: ClienteNotification) => {
       console.info('[socket] clienteNotification', payload);
+      console.info('[socket] Seguimiento actual:', seguimiento);
       
       // Solo procesar si es una actualización de seguimiento
       if (payload.tipo === 'recepcion_seguimiento_actualizado') {
-        // Verificar que el código coincida
-        const payloadCodigo = payload.data?.codigoRecepcion as string;
-        if (payloadCodigo === seguimiento.codigoRecepcion) {
-          // Recargar el seguimiento desde el servidor
+        // Verificar que el código coincida - puede venir en diferentes lugares
+        const payloadCodigo = 
+          payload.data?.codigoRecepcion as string ||
+          payload.data?.recepcion?.codigoRecepcion as string ||
+          (payload.data?.recepcion as any)?.codigoRecepcion as string;
+        
+        const payloadIdRecepcion = 
+          payload.id_registro ||
+          payload.data?.idRecepcion ||
+          payload.data?.recepcion?.idRecepcion;
+        
+        console.info('[socket] Verificando coincidencia:', {
+          payloadCodigo,
+          seguimientoCodigo: seguimiento.codigoRecepcion,
+          payloadIdRecepcion,
+          seguimientoIdRecepcion: seguimiento.recepcionId,
+        });
+        
+        // Verificar coincidencia por código o por ID de recepción
+        const codigoCoincide = payloadCodigo && payloadCodigo === seguimiento.codigoRecepcion;
+        const idCoincide = payloadIdRecepcion && 
+          (payloadIdRecepcion === seguimiento.recepcionId || 
+           String(payloadIdRecepcion) === String(seguimiento.recepcionId));
+        
+        if (codigoCoincide || idCoincide) {
+          console.info('[socket] Coincidencia encontrada, recargando seguimiento...');
+          // Recargar el seguimiento desde el servidor sin mostrar notificación
           getSeguimientoByCodigo(seguimiento.codigoRecepcion)
             .then((data) => {
+              console.info('[socket] Seguimiento recargado:', data);
               setSeguimiento(data);
-              toast.success('Estado actualizado en tiempo real');
+              // El estado se actualiza automáticamente en el componente
             })
             .catch((error) => {
-              console.error('Error al recargar seguimiento:', error);
+              console.error('[socket] Error al recargar seguimiento:', error);
             });
+        } else {
+          console.warn('[socket] Notificación recibida pero no coincide con el seguimiento actual');
         }
       }
     };
@@ -277,35 +304,18 @@ export function SeguimientoForm() {
               </motion.div>
             )}
 
-            {/* Estado actual destacado */}
+            {/* Código de recepción */}
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
               <Card className="bg-gradient-to-br from-white to-slate-50 border-2 border-slate-200 shadow-xl overflow-hidden">
-                <div className={`${estadoConfig[seguimiento.estadoActual]?.bg || 'bg-slate-100'} p-6 border-b-4 ${estadoConfig[seguimiento.estadoActual]?.color || 'text-slate-700'}`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      {estadoConfig[seguimiento.estadoActual]?.icon && (
-                        <motion.div
-                          animate={{ rotate: [0, 10, -10, 0] }}
-                          transition={{ duration: 0.5 }}
-                        >
-                          {(() => {
-                            const Icon = estadoConfig[seguimiento.estadoActual]?.icon || CheckCircle;
-                            return <Icon className="h-10 w-10" />;
-                          })()}
-                        </motion.div>
-                      )}
-                      <div>
-                        <p className="text-sm font-medium opacity-80">Estado Actual</p>
-                        <p className="text-2xl font-bold">{seguimiento.estadoActual}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium opacity-80">Código</p>
-                      <p className="text-xl font-bold font-mono">{seguimiento.codigoRecepcion}</p>
+                <div className="p-6 bg-gradient-to-br from-orange-100 to-pink-100 border-b-4 border-orange-300">
+                  <div className="flex items-center justify-center">
+                    <div className="text-center">
+                      <p className="text-sm font-medium opacity-80 mb-2">Código de Recepción</p>
+                      <p className="text-3xl font-bold font-mono text-slate-900">{seguimiento.codigoRecepcion}</p>
                     </div>
                   </div>
                 </div>

@@ -29,12 +29,18 @@ export const landingItemApi = axios.create({
   baseURL: `${BASE_URL}/api/item`,
 });
 
+// API para detalle de cotizaciones
+export const landingDetalleCotizacionApi = axios.create({
+  baseURL: `${BASE_URL}/api/detalle-cotizacion`,
+});
+
 // Interceptores para agregar token si existe
 [
   landingCotizacionApi,
   landingCitaApi,
   landingItemApi,
   landingSeguimientoApi,
+  landingDetalleCotizacionApi,
 ].forEach((api) => {
   api.interceptors.request.use((config) => {
     try {
