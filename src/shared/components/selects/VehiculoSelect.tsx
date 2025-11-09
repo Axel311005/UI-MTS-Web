@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import {
@@ -11,6 +12,10 @@ import { X } from '@/shared/icons';
 import { useVehiculo } from '@/vehiculo/hook/useVehiculo';
 import { EstadoActivo } from '@/shared/types/status';
 import { getClienteNombre } from '@/clientes/utils/cliente.utils';
+import type { PaginatedResponse } from '@/shared/types/pagination';
+import type { Vehiculo } from '@/vehiculo/types/vehiculo.interface';
+import { SearchVehiculosAction } from '@/vehiculo/actions/search-vehiculos-action';
+import { useDebounce } from '@/shared/hooks/use-debounce';
 
 type Props = {
   selectedId?: number | '';
@@ -25,36 +30,52 @@ export const VehiculoSelect: React.FC<Props> = ({
   onClear,
   error,
 }) => {
-  const { vehiculos } = useVehiculo({ usePagination: false });
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [displayLimit, setDisplayLimit] = useState(10);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  const allVehiculos = useMemo(
-    () => (Array.isArray(vehiculos) ? vehiculos : []),
-    [vehiculos]
-  );
+  const debouncedQuery = useDebounce(query.trim(), 300);
+  const hasQuery = debouncedQuery.length > 0;
 
-  const activeVehiculos = useMemo(
-    () => allVehiculos.filter((v) => v.activo === EstadoActivo.ACTIVO),
-    [allVehiculos]
-  );
+  // Cargar vehículos sin búsqueda (para cuando no hay query)
+  const { vehiculos: allVehiculosFromHook, isLoading: isLoadingAll } = useVehiculo({ 
+    usePagination: false 
+  });
 
+  // Filtrar solo activos cuando no hay búsqueda
+  const allVehiculos = useMemo(() => {
+    if (hasQuery) return [];
+    const vehiculos = Array.isArray(allVehiculosFromHook) ? allVehiculosFromHook : [];
+    return vehiculos.filter((v) => v.activo === EstadoActivo.ACTIVO);
+  }, [allVehiculosFromHook, hasQuery]);
+
+  // Búsqueda usando el backend cuando hay query
+  const { data: searchResponse, isLoading: isLoadingSearch } = useQuery<PaginatedResponse<Vehiculo>>({
+    queryKey: ['vehiculos.search.select', debouncedQuery, 30], // Cargar más para scroll
+    queryFn: () =>
+      SearchVehiculosAction({
+        q: debouncedQuery,
+        limit: 30, // Cargar más resultados inicialmente
+        offset: 0,
+      }),
+    enabled: hasQuery,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const searchVehiculos = useMemo(() => {
+    if (!searchResponse) return [];
+    if (Array.isArray(searchResponse)) return searchResponse;
+    return searchResponse.data || [];
+  }, [searchResponse]);
+
+  // Determinar qué vehículos mostrar
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const list = activeVehiculos;
-    if (!q) return list;
-    return list.filter((v) => {
-      const placa = v.placa?.toLowerCase() ?? '';
-      const marca = v.marca?.toLowerCase() ?? '';
-      const modelo = v.modelo?.toLowerCase() ?? '';
-      const color = v.color?.toLowerCase() ?? '';
-      const cliente = v.cliente ? getClienteNombre(v.cliente).toLowerCase() : '';
-      const searchText = `${placa} ${marca} ${modelo} ${color} ${cliente}`;
-      return searchText.includes(q);
-    });
-  }, [activeVehiculos, query]);
+    if (hasQuery) return searchVehiculos;
+    return allVehiculos;
+  }, [hasQuery, searchVehiculos, allVehiculos]);
+
+  const isLoading = hasQuery ? isLoadingSearch : isLoadingAll;
 
   // Resetear el límite cuando cambia la búsqueda o se abre el dropdown
   useEffect(() => {
@@ -83,10 +104,10 @@ export const VehiculoSelect: React.FC<Props> = ({
 
   const selected = useMemo(() => {
     if (selectedId !== undefined && selectedId !== '') {
-      return allVehiculos.find((v) => v.idVehiculo === selectedId);
+      return filtered.find((v) => v.idVehiculo === selectedId);
     }
     return undefined;
-  }, [allVehiculos, selectedId]);
+  }, [filtered, selectedId]);
 
   const getVehiculoDisplay = (v: typeof allVehiculos[0]) => {
     const cliente = v.cliente ? getClienteNombre(v.cliente) : '';
@@ -158,7 +179,11 @@ export const VehiculoSelect: React.FC<Props> = ({
               }}
             >
               <div className="py-1">
-                {displayedVehiculos.length > 0 ? (
+                {isLoading ? (
+                  <div className="px-3 py-6 text-sm text-muted-foreground">
+                    Cargando vehículos...
+                  </div>
+                ) : displayedVehiculos.length > 0 ? (
                   <>
                     {displayedVehiculos.map((v) => (
                       <DropdownMenuItem

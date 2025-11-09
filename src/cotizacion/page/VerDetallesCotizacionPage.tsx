@@ -20,6 +20,7 @@ import {
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
+import { tallerApi } from '@/shared/api/tallerApi';
 
 import { getCotizacionByIdAction } from '../actions/get-cotizacion-by-id';
 import { getDetalleCotizacionByCotizacionIdAction } from '../actions/get-detalle-cotizacion-by-cotizacion-id';
@@ -211,7 +212,38 @@ export default function VerDetallesCotizacionPage() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
+          <Button
+            variant="outline"
+            onClick={async () => {
+              if (!numericId) return;
+              try {
+                const dismiss = toast.loading('Generando PDF...');
+                const response = await tallerApi.get(
+                  `/cotizacion/${numericId}/cotizacion-pdf`,
+                  { responseType: 'blob' }
+                );
+                const blob = new Blob([response.data], {
+                  type: 'application/pdf',
+                });
+                const urlBlob = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = urlBlob;
+                link.download = `cotizacion-${
+                  cotizacion?.codigoCotizacion || numericId
+                }.pdf`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(urlBlob);
+                toast.dismiss(dismiss);
+                toast.success('PDF generado correctamente');
+              } catch (error: any) {
+                const message =
+                  error?.response?.data?.message || 'Error al generar PDF';
+                toast.error(message);
+              }
+            }}
+          >
             <FileText className="h-4 w-4 mr-2" />
             Generar PDF
           </Button>

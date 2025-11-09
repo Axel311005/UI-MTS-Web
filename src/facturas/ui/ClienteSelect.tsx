@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useRef, useEffect, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import {
@@ -9,10 +10,13 @@ import {
 } from '@/shared/components/ui/dropdown-menu';
 import { X } from '@/shared/icons';
 import { EstadoActivo } from '@/shared/types/status';
-import { getClienteNombre, getClienteSearchText } from '@/clientes/utils/cliente.utils';
+import { getClienteNombre } from '@/clientes/utils/cliente.utils';
 import { useCliente } from '@/clientes/hook/useCliente';
 import type { Cliente } from '@/clientes/types/cliente.interface';
+import type { PaginatedResponse } from '@/shared/types/pagination';
 import { Skeleton } from '@/shared/components/ui/skeleton';
+import { SearchClientesAction } from '@/clientes/actions/search-clientes-action';
+import { useDebounce } from '@/shared/hooks/use-debounce';
 
 type Props = {
   selectedId?: number | '';
@@ -39,39 +43,47 @@ export const ClienteSelect: React.FC<Props> = ({
   const [displayLimit, setDisplayLimit] = useState(ITEMS_PER_LOAD);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  // Cargar TODOS los clientes una sola vez (sin paginación)
-  const { clientes: allClientesFromHook, isLoading } = useCliente({ usePagination: false });
+  const debouncedQuery = useDebounce(query.trim(), 300);
+  const hasQuery = debouncedQuery.length > 0;
 
-  // Filtrar solo activos
+  // Cargar clientes sin búsqueda (para cuando no hay query)
+  const { clientes: allClientesFromHook, isLoading: isLoadingAll } = useCliente({ 
+    usePagination: false 
+  });
+
+  // Filtrar solo activos cuando no hay búsqueda
   const allClientes = useMemo(() => {
+    if (hasQuery) return [];
     const clientes = Array.isArray(allClientesFromHook) ? allClientesFromHook : [];
     return clientes.filter((c) => c.activo === EstadoActivo.ACTIVO);
-  }, [allClientesFromHook]);
+  }, [allClientesFromHook, hasQuery]);
 
-  // Filtrar por búsqueda
+  // Búsqueda usando el backend cuando hay query
+  const { data: searchResponse, isLoading: isLoadingSearch } = useQuery<PaginatedResponse<Cliente>>({
+    queryKey: ['clientes.search.select', debouncedQuery, ITEMS_PER_LOAD * 3], // Cargar más para scroll
+    queryFn: () =>
+      SearchClientesAction({
+        q: debouncedQuery,
+        limit: ITEMS_PER_LOAD * 3, // Cargar más resultados inicialmente
+        offset: 0,
+      }),
+    enabled: hasQuery,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const searchClientes = useMemo(() => {
+    if (!searchResponse) return [];
+    if (Array.isArray(searchResponse)) return searchResponse;
+    return searchResponse.data || [];
+  }, [searchResponse]);
+
+  // Determinar qué clientes mostrar
   const filtered = useMemo(() => {
-    if (!query.trim()) return allClientes;
-    
-    const q = query.trim().toLowerCase();
-    const searchWords = q.split(/\s+/).filter(Boolean);
-    
-    return allClientes.filter((c) => {
-      const nombre = (c.primerNombre || '').toLowerCase();
-      const apellido = (c.primerApellido || '').toLowerCase();
-      const ruc = (c.ruc || '').toLowerCase();
-      
-      // Si hay una sola palabra, buscar en nombre, apellido o RUC
-      if (searchWords.length === 1) {
-        const word = searchWords[0];
-        return nombre.includes(word) || apellido.includes(word) || ruc.includes(word);
-      }
-      
-      // Si hay múltiples palabras, buscar que todas estén presentes
-      return searchWords.every((word) => 
-        nombre.includes(word) || apellido.includes(word) || ruc.includes(word)
-      );
-    });
-  }, [allClientes, query]);
+    if (hasQuery) return searchClientes;
+    return allClientes;
+  }, [hasQuery, searchClientes, allClientes]);
+
+  const isLoading = hasQuery ? isLoadingSearch : isLoadingAll;
 
   // Resetear el límite cuando cambia la búsqueda o se abre el dropdown
   useEffect(() => {
@@ -124,13 +136,13 @@ export const ClienteSelect: React.FC<Props> = ({
 
   const selected = useMemo(() => {
     if (selectedId !== undefined && selectedId !== '') {
-      return allClientes.find((c) => c.idCliente === selectedId);
+      return filtered.find((c) => c.idCliente === selectedId);
     }
     if (value) {
-      return allClientes.find((c) => getClienteNombre(c) === value);
+      return filtered.find((c) => getClienteNombre(c) === value);
     }
     return undefined;
-  }, [allClientes, selectedId, value]);
+  }, [filtered, selectedId, value]);
 
   return (
     <div className="space-y-2">

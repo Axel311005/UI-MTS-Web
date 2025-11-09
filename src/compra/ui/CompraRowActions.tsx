@@ -10,10 +10,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
-import { Edit, Eye, Trash2 } from '@/shared/icons';
+import { Edit, Eye, Trash2, FileText } from '@/shared/icons';
 import type { Compra } from '../types/Compra.interface';
 import { patchCompra } from '../actions/patch-compra';
 import { useAuthStore } from '@/auth/store/auth.store';
+import { getCompraPdfAction } from '../actions/get-compra-pdf';
+import { downloadPdf } from '@/facturas/utils/download-pdf';
 
 interface Props {
   compra: Compra;
@@ -23,7 +25,11 @@ export default function CompraRowActions({ compra }: Props) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const empleadoId = useAuthStore((state) => state.user?.empleado?.id ?? 1);
+  const hasPdfAccess = useAuthStore((state) =>
+    state.hasAnyRole(['gerente', 'vendedor', 'superuser'])
+  );
 
   const resolveCompraId = () =>
     (compra as any)?.id_compra ??
@@ -46,6 +52,31 @@ export default function CompraRowActions({ compra }: Props) {
   const onEdit = () => {
     const id = resolveCompraId();
     if (id) navigate(`/admin/compras/${id}/editar`);
+  };
+
+  const handleDownloadCompraPdf = async () => {
+    if (isDownloadingPdf) return;
+    const id = resolveCompraId();
+    if (!id) return;
+
+    setIsDownloadingPdf(true);
+    const dismiss = toast.loading('Generando PDF de la compra...');
+    try {
+      const blob = await getCompraPdfAction(Number(id));
+      const filename = `compra-${compra.codigoCompra || `COMP-${id}`}.pdf`;
+      downloadPdf(blob, filename);
+      toast.success('PDF de la compra descargado exitosamente');
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        (error instanceof Error
+          ? error.message
+          : 'No se pudo generar el PDF de la compra');
+      toast.error(message);
+    } finally {
+      toast.dismiss(dismiss);
+      setIsDownloadingPdf(false);
+    }
   };
 
   const onDelete = async () => {
@@ -126,6 +157,15 @@ export default function CompraRowActions({ compra }: Props) {
           <Eye className="mr-2 h-4 w-4" />
           Ver detalles
         </DropdownMenuItem>
+        {hasPdfAccess && (
+          <DropdownMenuItem
+            onClick={handleDownloadCompraPdf}
+            disabled={isDownloadingPdf}
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            Generar PDF
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onClick={onEdit}>
           <Edit className="mr-2 h-4 w-4" />
           Editar

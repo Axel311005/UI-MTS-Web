@@ -374,6 +374,22 @@ const EditarExistenciaPage = lazy(() =>
     default: m.default,
   }))
 );
+// Admin
+const AdministracionPage = lazy(() =>
+  import('@/admin/pages/AdministracionPage').then((m) => ({
+    default: m.default,
+  }))
+);
+const ReportesPage = lazy(() =>
+  import('@/admin/pages/ReportesPage').then((m) => ({
+    default: m.ReportesPage,
+  }))
+);
+const DashboardPage = lazy(() =>
+  import('@/dashboard/pages/DashboardPage').then((m) => ({
+    default: m.default,
+  }))
+);
 
 export const appRouter = createBrowserRouter([
   // Main routes - Landing Page
@@ -520,7 +536,7 @@ export const appRouter = createBrowserRouter([
           { index: true, element: <Navigate to="/admin/dashboard" replace /> },
           {
             path: 'dashboard',
-            element: <FacturasPage />,
+            element: <DashboardPage />,
             handle: { crumb: 'Dashboard' },
           },
           {
@@ -910,6 +926,16 @@ export const appRouter = createBrowserRouter([
                 path: 'existencia-bodega/:id',
                 element: <Navigate to="/admin/existencia-bodega" replace />,
                 handle: { crumb: 'Existencia' },
+              },
+              {
+                path: 'administracion',
+                element: <AdministracionPage />,
+                handle: { crumb: 'Administración' },
+              },
+              {
+                path: 'reportes',
+                element: <ReportesPage />,
+                handle: { crumb: 'Reportes' },
               },
             ],
           },

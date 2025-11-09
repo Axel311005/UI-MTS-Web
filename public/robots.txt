@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Allow: /seguimiento
+Allow: /cotizacion
+Allow: /cita
+
+# Disallow admin and private routes
+Disallow: /admin/
+Disallow: /api/
+Disallow: /login
+Disallow: /register
+
+# Sitemap
+Sitemap: https://mts.com/sitemap.xml
+

@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import {
@@ -10,6 +11,10 @@ import {
 import { X } from '@/shared/icons';
 import { useAseguradora } from '@/aseguradora/hook/useAseguradora';
 import { EstadoActivo } from '@/shared/types/status';
+import type { PaginatedResponse } from '@/shared/types/pagination';
+import type { Aseguradora } from '@/aseguradora/types/aseguradora.interface';
+import { SearchAseguradorasAction } from '@/aseguradora/actions/search-aseguradoras-action';
+import { useDebounce } from '@/shared/hooks/use-debounce';
 
 type Props = {
   selectedId?: number | '';
@@ -24,35 +29,52 @@ export const AseguradoraSelect: React.FC<Props> = ({
   onClear,
   error,
 }) => {
-  const { aseguradoras } = useAseguradora({ usePagination: false });
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [displayLimit, setDisplayLimit] = useState(10);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  const allAseguradoras = useMemo(
-    () => (Array.isArray(aseguradoras) ? aseguradoras : []),
-    [aseguradoras]
-  );
+  const debouncedQuery = useDebounce(query.trim(), 300);
+  const hasQuery = debouncedQuery.length > 0;
 
-  const activeAseguradoras = useMemo(
-    () => allAseguradoras.filter((a) => a.activo === EstadoActivo.ACTIVO),
-    [allAseguradoras]
-  );
+  // Cargar aseguradoras sin búsqueda (para cuando no hay query)
+  const { aseguradoras: allAseguradorasFromHook, isLoading: isLoadingAll } = useAseguradora({ 
+    usePagination: false 
+  });
 
+  // Filtrar solo activas cuando no hay búsqueda
+  const allAseguradoras = useMemo(() => {
+    if (hasQuery) return [];
+    const aseguradoras = Array.isArray(allAseguradorasFromHook) ? allAseguradorasFromHook : [];
+    return aseguradoras.filter((a) => a.activo === EstadoActivo.ACTIVO);
+  }, [allAseguradorasFromHook, hasQuery]);
+
+  // Búsqueda usando el backend cuando hay query
+  const { data: searchResponse, isLoading: isLoadingSearch } = useQuery<PaginatedResponse<Aseguradora>>({
+    queryKey: ['aseguradoras.search.select', debouncedQuery, 30], // Cargar más para scroll
+    queryFn: () =>
+      SearchAseguradorasAction({
+        q: debouncedQuery,
+        limit: 30, // Cargar más resultados inicialmente
+        offset: 0,
+      }),
+    enabled: hasQuery,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const searchAseguradoras = useMemo(() => {
+    if (!searchResponse) return [];
+    if (Array.isArray(searchResponse)) return searchResponse;
+    return searchResponse.data || [];
+  }, [searchResponse]);
+
+  // Determinar qué aseguradoras mostrar
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const list = activeAseguradoras;
-    if (!q) return list;
-    return list.filter((a) => {
-      const descripcion = a.descripcion?.toLowerCase() ?? '';
-      const telefono = a.telefono?.toLowerCase() ?? '';
-      const direccion = a.direccion?.toLowerCase() ?? '';
-      const contacto = a.contacto?.toLowerCase() ?? '';
-      const searchText = `${descripcion} ${telefono} ${direccion} ${contacto}`;
-      return searchText.includes(q);
-    });
-  }, [activeAseguradoras, query]);
+    if (hasQuery) return searchAseguradoras;
+    return allAseguradoras;
+  }, [hasQuery, searchAseguradoras, allAseguradoras]);
+
+  const isLoading = hasQuery ? isLoadingSearch : isLoadingAll;
 
   // Resetear el límite cuando cambia la búsqueda o se abre el dropdown
   useEffect(() => {
@@ -81,10 +103,10 @@ export const AseguradoraSelect: React.FC<Props> = ({
 
   const selected = useMemo(() => {
     if (selectedId !== undefined && selectedId !== '') {
-      return allAseguradoras.find((a) => a.idAseguradora === selectedId);
+      return filtered.find((a) => a.idAseguradora === selectedId);
     }
     return undefined;
-  }, [allAseguradoras, selectedId]);
+  }, [filtered, selectedId]);
 
   return (
     <div className="space-y-2">
@@ -156,7 +178,11 @@ export const AseguradoraSelect: React.FC<Props> = ({
               }}
             >
               <div className="py-1">
-                {displayedAseguradoras.length > 0 ? (
+                {isLoading ? (
+                  <div className="px-3 py-6 text-sm text-muted-foreground">
+                    Cargando aseguradoras...
+                  </div>
+                ) : displayedAseguradoras.length > 0 ? (
                   <>
                     {displayedAseguradoras.map((a) => (
                       <DropdownMenuItem

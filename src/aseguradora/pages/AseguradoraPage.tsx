@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
+import { useQuery } from '@tanstack/react-query';
 import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 import {
@@ -21,9 +22,11 @@ import { useDebounce } from '@/shared/hooks/use-debounce';
 import { AseguradoraSearch } from '../ui/AseguradoraSearch';
 import { useAseguradora } from '../hook/useAseguradora';
 import type { Aseguradora } from '../types/aseguradora.interface';
+import type { PaginatedResponse } from '@/shared/types/pagination';
 import { toast } from 'sonner';
 import { patchAseguradoraAction } from '../actions/patch-aseguradora';
 import { EstadoActivo } from '@/shared/types/status';
+import { SearchAseguradorasAction } from '../actions/search-aseguradoras-action';
 
 export default function AseguradorasPage() {
   const navigate = useNavigate();
@@ -35,9 +38,8 @@ export default function AseguradorasPage() {
   const limit = pageSize;
   const offset = (page - 1) * pageSize;
   const searchValue = searchParams.get('q') || '';
-  const normalizedQuery = searchValue.trim().toLowerCase();
-  const debouncedQuery = useDebounce(normalizedQuery, 300);
-  const shouldUsePagination = debouncedQuery.length === 0;
+  const debouncedQuery = useDebounce(searchValue.trim(), 300);
+  const hasSearch = debouncedQuery.length > 0;
 
   const {
     aseguradoras = [],
@@ -45,47 +47,55 @@ export default function AseguradorasPage() {
     isLoading,
     refetch,
   } = useAseguradora({
-    usePagination: shouldUsePagination,
-    limit: shouldUsePagination ? limit : undefined,
-    offset: shouldUsePagination ? offset : undefined,
+    usePagination: !hasSearch,
+    limit: !hasSearch ? limit : undefined,
+    offset: !hasSearch ? offset : undefined,
   });
 
-  const filteredAseguradoras = useMemo<Aseguradora[]>(() => {
-    const items = aseguradoras ?? [];
-    if (!debouncedQuery) return items;
-
-    return items.filter((aseguradora) => {
-      const descripcion = aseguradora.descripcion?.toLowerCase?.() ?? '';
-      const telefono = aseguradora.telefono?.toLowerCase?.() ?? '';
-      const direccion = aseguradora.direccion?.toLowerCase?.() ?? '';
-      const contacto = aseguradora.contacto?.toLowerCase?.() ?? '';
-      return (
-        descripcion.includes(debouncedQuery) ||
-        telefono.includes(debouncedQuery) ||
-        direccion.includes(debouncedQuery) ||
-        contacto.includes(debouncedQuery)
-      );
+  // Búsqueda usando el backend cuando hay término de búsqueda
+  const { data: aseguradorasFiltradasResponse, isLoading: isLoadingSearch } =
+    useQuery<PaginatedResponse<Aseguradora>>({
+      queryKey: ['aseguradoras.search', debouncedQuery, limit, offset],
+      queryFn: () =>
+        SearchAseguradorasAction({
+          q: debouncedQuery,
+          limit,
+          offset,
+        }),
+      enabled: hasSearch,
+      staleTime: 1000 * 60 * 5,
     });
-  }, [aseguradoras, debouncedQuery]);
 
-  const totalFiltered = shouldUsePagination
-    ? totalItems
-    : filteredAseguradoras.length;
+  const aseguradorasFiltradas = useMemo(() => {
+    if (!aseguradorasFiltradasResponse) return [];
+    if (Array.isArray(aseguradorasFiltradasResponse))
+      return aseguradorasFiltradasResponse;
+    return aseguradorasFiltradasResponse.data || [];
+  }, [aseguradorasFiltradasResponse]);
 
-  const paginatedAseguradoras = useMemo(() => {
-    if (shouldUsePagination) return filteredAseguradoras;
-    const startIndex = (page - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    return filteredAseguradoras.slice(startIndex, endIndex);
-  }, [filteredAseguradoras, page, pageSize, shouldUsePagination]);
+  const totalFiltradas = useMemo(() => {
+    if (!hasSearch) return totalItems;
+    if (!aseguradorasFiltradasResponse) return 0;
+    if (Array.isArray(aseguradorasFiltradasResponse))
+      return aseguradorasFiltradasResponse.length;
+    return aseguradorasFiltradasResponse.total ?? 0;
+  }, [hasSearch, totalItems, aseguradorasFiltradasResponse]);
+
+  // Determinar qué aseguradoras mostrar
+  const displayedAseguradoras = useMemo(() => {
+    if (hasSearch) return aseguradorasFiltradas;
+    return aseguradoras;
+  }, [hasSearch, aseguradorasFiltradas, aseguradoras]);
+
+  const isLoadingData = hasSearch ? isLoadingSearch : isLoading;
 
   useEffect(() => {
-    if (isLoading) return;
-    const computedTotalPages = totalFiltered
-      ? Math.ceil(totalFiltered / pageSize)
+    if (isLoadingData) return;
+    const computedTotalPages = totalFiltradas
+      ? Math.ceil(totalFiltradas / pageSize)
       : 1;
 
-    if (totalFiltered === 0) {
+    if (totalFiltradas === 0) {
       if (page !== 1) {
         const params = new URLSearchParams(searchParams);
         params.delete('page');
@@ -104,10 +114,10 @@ export default function AseguradorasPage() {
       }
       setSearchParams(params, { replace: true });
     }
-  }, [isLoading, page, pageSize, searchParams, setSearchParams, totalFiltered]);
+  }, [isLoadingData, page, pageSize, searchParams, setSearchParams, totalFiltradas]);
 
-  const totalPages = totalFiltered ? Math.ceil(totalFiltered / pageSize) : 1;
-  const showEmptyState = !isLoading && totalFiltered === 0;
+  const totalPages = totalFiltradas ? Math.ceil(totalFiltradas / pageSize) : 1;
+  const showEmptyState = !isLoadingData && totalFiltradas === 0;
 
   const handleDelete = async (idAseguradora: number, descripcion: string) => {
     if (deletingId) return;
@@ -175,8 +185,8 @@ export default function AseguradorasPage() {
                   </TableCell>
                 </TableRow>
               )}
-              {!isLoading &&
-                paginatedAseguradoras.map((aseguradora) => (
+              {!isLoadingData &&
+                displayedAseguradoras.map((aseguradora) => (
                   <TableRow
                     key={aseguradora.idAseguradora}
                     className="table-row-hover"
@@ -231,12 +241,12 @@ export default function AseguradorasPage() {
             </TableBody>
           </Table>
         </CardContent>
-        {totalFiltered > 0 && (
+        {totalFiltradas > 0 && (
           <Pagination
             currentPage={page}
             totalPages={totalPages}
             pageSize={pageSize}
-            totalItems={totalFiltered}
+            totalItems={totalFiltradas}
             onPageChange={(newPage) => {
               const params = new URLSearchParams(searchParams);
               if (newPage > 1) {

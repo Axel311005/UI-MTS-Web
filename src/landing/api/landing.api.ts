@@ -45,17 +45,12 @@ export const landingDetalleCotizacionApi = axios.create({
   api.interceptors.request.use((config) => {
     try {
       const token = localStorage.getItem('token');
-      console.log('🔑 Token en interceptor:', token ? 'Token encontrado' : 'Token NO encontrado');
-      console.log('🔑 URL de la petición:', config.url);
       if (token) {
         config.headers = config.headers ?? {};
         config.headers['Authorization'] = `Bearer ${token}`;
-        console.log('🔑 Header Authorization agregado');
-      } else {
-        console.warn('⚠️ No hay token disponible para la petición');
       }
     } catch (error) {
-      console.error('❌ Error en interceptor:', error);
+      // Error silencioso en interceptor
     }
     return config;
   });

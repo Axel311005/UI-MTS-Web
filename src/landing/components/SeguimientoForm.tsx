@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
@@ -9,7 +9,19 @@ import {
   CardHeader,
   CardTitle,
 } from '@/shared/components/ui/card';
-import { Search, Clock, CheckCircle, Package, Car, User, Calendar, MapPin, TrendingUp, Wifi, WifiOff } from 'lucide-react';
+import {
+  Search,
+  Clock,
+  CheckCircle,
+  Package,
+  Car,
+  User,
+  Calendar,
+  MapPin,
+  TrendingUp,
+  Wifi,
+  WifiOff,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { getSeguimientoByCodigo } from '../actions/seguimiento.actions';
 import type { SeguimientoRecepcion } from '../types/seguimiento.types';
@@ -19,15 +31,18 @@ import { io, Socket } from 'socket.io-client';
 import { SOCKET_URL_CLIENTE } from '@/shared/config/socket.config';
 import { useLandingAuthStore } from '../store/landing-auth.store';
 
-const estadoConfig: Record<string, { color: string; bg: string; icon: typeof CheckCircle }> = {
+const estadoConfig: Record<
+  string,
+  { color: string; bg: string; icon: typeof CheckCircle }
+> = {
   PENDIENTE: {
-    color: 'text-yellow-700',
-    bg: 'bg-gradient-to-br from-yellow-100 to-yellow-200 border-yellow-300',
+    color: 'text-orange-700',
+    bg: 'bg-gradient-to-br from-orange-100 to-orange-200 border-orange-300',
     icon: Clock,
   },
   'EN PROCESO': {
-    color: 'text-blue-700',
-    bg: 'bg-gradient-to-br from-blue-100 to-blue-200 border-blue-300',
+    color: 'text-orange-700',
+    bg: 'bg-gradient-to-br from-orange-100 to-orange-200 border-orange-300',
     icon: TrendingUp,
   },
   FINALIZADO: {
@@ -59,6 +74,7 @@ export function SeguimientoForm() {
   const [socketConnected, setSocketConnected] = useState(false);
   const [socketId, setSocketId] = useState<string | null>(null);
   const socketRef = useRef<Socket | null>(null);
+  const isSearchingRef = useRef(false);
   const { token } = useLandingAuthStore();
 
   // Conectar WebSocket cuando hay un seguimiento cargado
@@ -77,7 +93,9 @@ export function SeguimientoForm() {
 
     // Construir URL con codigoRecepcion como query parameter
     const codigoRecepcion = seguimiento.codigoRecepcion;
-    const urlWithQuery = `${SOCKET_URL_CLIENTE}?codigoRecepcion=${encodeURIComponent(codigoRecepcion)}`;
+    const urlWithQuery = `${SOCKET_URL_CLIENTE}?codigoRecepcion=${encodeURIComponent(
+      codigoRecepcion
+    )}`;
 
     // Obtener token
     const authToken = token || localStorage.getItem('token');
@@ -95,68 +113,74 @@ export function SeguimientoForm() {
     socketRef.current = socket;
 
     const onConnect = () => {
-      console.info('[socket] connected', socket.id);
       setSocketConnected(true);
       setSocketId(socket.id ?? null);
     };
 
-    const onDisconnect = (reason: any) => {
-      console.warn('[socket] disconnected', reason);
+    const onDisconnect = () => {
       setSocketConnected(false);
       setSocketId(null);
     };
 
-    const onConnectError = (err: any) => {
-      const msg = err?.message ?? String(err);
-      console.error('[socket] connect_error', msg);
+    const onConnectError = () => {
       setSocketConnected(false);
     };
 
     // Escuchar notificaciones para clientes (namespace /cliente)
     const onClienteNotification = (payload: ClienteNotification) => {
-      console.info('[socket] clienteNotification', payload);
-      console.info('[socket] Seguimiento actual:', seguimiento);
-      
       // Solo procesar si es una actualización de seguimiento
       if (payload.tipo === 'recepcion_seguimiento_actualizado') {
         // Verificar que el código coincida - puede venir en diferentes lugares
-        const payloadCodigo = 
-          payload.data?.codigoRecepcion as string ||
-          payload.data?.recepcion?.codigoRecepcion as string ||
-          (payload.data?.recepcion as any)?.codigoRecepcion as string;
-        
-        const payloadIdRecepcion = 
+        const payloadCodigo =
+          (payload.data &&
+          typeof payload.data === 'object' &&
+          'codigoRecepcion' in payload.data
+            ? (payload.data.codigoRecepcion as string)
+            : null) ||
+          (payload.data &&
+          typeof payload.data === 'object' &&
+          'recepcion' in payload.data &&
+          payload.data.recepcion &&
+          typeof payload.data.recepcion === 'object' &&
+          'codigoRecepcion' in payload.data.recepcion
+            ? (payload.data.recepcion.codigoRecepcion as string)
+            : null) ||
+          null;
+
+        const payloadIdRecepcion =
           payload.id_registro ||
-          payload.data?.idRecepcion ||
-          payload.data?.recepcion?.idRecepcion;
-        
-        console.info('[socket] Verificando coincidencia:', {
-          payloadCodigo,
-          seguimientoCodigo: seguimiento.codigoRecepcion,
-          payloadIdRecepcion,
-          seguimientoIdRecepcion: seguimiento.recepcionId,
-        });
-        
+          (payload.data &&
+          typeof payload.data === 'object' &&
+          'idRecepcion' in payload.data
+            ? (payload.data.idRecepcion as number)
+            : null) ||
+          (payload.data &&
+          typeof payload.data === 'object' &&
+          'recepcion' in payload.data &&
+          payload.data.recepcion &&
+          typeof payload.data.recepcion === 'object' &&
+          'idRecepcion' in payload.data.recepcion
+            ? (payload.data.recepcion.idRecepcion as number)
+            : null);
+
         // Verificar coincidencia por código o por ID de recepción
-        const codigoCoincide = payloadCodigo && payloadCodigo === seguimiento.codigoRecepcion;
-        const idCoincide = payloadIdRecepcion && 
-          (payloadIdRecepcion === seguimiento.recepcionId || 
-           String(payloadIdRecepcion) === String(seguimiento.recepcionId));
-        
+        const codigoCoincide =
+          payloadCodigo && payloadCodigo === seguimiento.codigoRecepcion;
+        const idCoincide =
+          payloadIdRecepcion &&
+          (payloadIdRecepcion === seguimiento.recepcionId ||
+            String(payloadIdRecepcion) === String(seguimiento.recepcionId));
+
         if (codigoCoincide || idCoincide) {
-          console.info('[socket] Coincidencia encontrada, recargando seguimiento...');
           // Recargar el seguimiento desde el servidor sin mostrar notificación
           getSeguimientoByCodigo(seguimiento.codigoRecepcion)
             .then((data) => {
-              console.info('[socket] Seguimiento recargado:', data);
               setSeguimiento(data);
               // El estado se actualiza automáticamente en el componente
             })
-            .catch((error) => {
-              console.error('[socket] Error al recargar seguimiento:', error);
+            .catch(() => {
+              // Error silencioso al recargar seguimiento
             });
-        } else {
-          console.warn('[socket] Notificación recibida pero no coincide con el seguimiento actual');
         }
       }
     };
@@ -181,11 +205,23 @@ export function SeguimientoForm() {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Prevenir múltiples requests simultáneos
+    if (isSearchingRef.current || loading) {
+      return;
+    }
+
     if (!codigo.trim()) {
       toast.error('Ingresa un código de recepción');
       return;
     }
 
+    // Si ya hay un seguimiento con el mismo código, no buscar de nuevo
+    if (seguimiento?.codigoRecepcion === codigo.trim().toUpperCase()) {
+      return;
+    }
+
+    isSearchingRef.current = true;
     setLoading(true);
     try {
       const data = await getSeguimientoByCodigo(codigo.trim());
@@ -196,203 +232,170 @@ export function SeguimientoForm() {
       setSeguimiento(null);
     } finally {
       setLoading(false);
+      isSearchingRef.current = false;
     }
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <Card className="bg-gradient-to-br from-white via-orange-50/30 to-pink-50/30 backdrop-blur-sm border-2 border-orange-200 shadow-xl">
-          <CardHeader className="text-center pb-4">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-              className="inline-block mb-4"
-            >
-              <div className="p-4 bg-gradient-to-br from-orange-400 to-pink-500 rounded-full shadow-lg">
-                <Search className="h-10 w-10 text-white" />
-              </div>
-            </motion.div>
-            <CardTitle className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent">
+    <div className="max-w-6xl mx-auto space-y-8 bg-gradient-to-b from-white via-white to-orange-50/10 py-8 px-6 sm:px-8 md:px-10 lg:px-12 rounded-3xl">
+      <div>
+        <Card className="bg-white border-2 border-orange-500/20 shadow-2xl overflow-hidden rounded-2xl">
+          <CardHeader className="text-center pb-6 pt-8 md:pt-10 px-4 sm:px-6 md:px-8 bg-gradient-to-br from-white via-orange-50/5 to-white">
+            <CardTitle className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-black font-montserrat mb-3 md:mb-4 tracking-tight">
               Seguimiento de Reparación
             </CardTitle>
-            <p className="text-slate-600 mt-2">
+            <div className="w-20 md:w-24 h-0.5 md:h-1 bg-gradient-to-r from-orange-500 via-orange-400 to-orange-500 mx-auto mb-3 md:mb-4 rounded-full"></div>
+            <p className="text-black/70 text-base sm:text-lg font-montserrat max-w-2xl mx-auto leading-relaxed">
               Ingresa tu código de recepción para ver el estado de tu reparación
             </p>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSearch} className="space-y-4">
+          <CardContent className="p-4 sm:p-6 md:p-8 lg:p-10">
+            <form onSubmit={handleSearch} className="space-y-4 sm:space-y-6">
               <div className="space-y-2">
-                <Label className="text-slate-700 font-semibold text-lg">
+                <Label className="text-black font-bold text-sm sm:text-base md:text-lg flex items-center gap-2 font-montserrat tracking-wide">
                   Código de Recepción
                 </Label>
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <Input
                     placeholder="Ej: REC-20250115-AB12CD"
                     value={codigo}
                     onChange={(e) => setCodigo(e.target.value.toUpperCase())}
-                    className="text-lg py-6 border-2 border-orange-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-300 rounded-xl"
+                    className="text-base sm:text-lg py-4 sm:py-6 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat transition-all"
                     disabled={loading}
                   />
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button
-                      type="submit"
-                      disabled={loading}
-                      className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white px-8 py-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-                    >
-                      {loading ? (
-                        <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                        >
-                          <Search className="h-5 w-5" />
-                        </motion.div>
-                      ) : (
-                        <>
-                          <Search className="h-5 w-5 mr-2" />
-                          Buscar
-                        </>
-                      )}
-                    </Button>
-                  </motion.div>
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="bg-orange-500 hover:bg-orange-600 text-white px-6 sm:px-8 py-4 sm:py-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-montserrat font-semibold text-sm sm:text-base"
+                  >
+                    {loading ? (
+                      <div className="animate-spin">
+                        <Search className="h-5 w-5" />
+                      </div>
+                    ) : (
+                      <>
+                        <Search className="h-5 w-5 mr-2" />
+                        Buscar
+                      </>
+                    )}
+                  </Button>
                 </div>
               </div>
             </form>
           </CardContent>
         </Card>
-      </motion.div>
+      </div>
 
       <AnimatePresence>
         {seguimiento && (
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -30 }}
-            transition={{ duration: 0.5 }}
-            className="space-y-6"
-          >
+          <div className="space-y-6">
             {/* Indicador de conexión WebSocket */}
             {socketConnected ? (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-center justify-center gap-2 p-3 bg-green-50 border border-green-200 rounded-xl"
-              >
+              <div className="flex items-center justify-center gap-2 p-3 bg-green-50 border border-green-200 rounded-xl">
                 <Wifi className="h-5 w-5 text-green-600" />
                 <span className="text-sm font-medium text-green-700">
                   Actualización en tiempo real activa
                 </span>
                 {socketId && (
-                  <span className="text-xs text-green-600">({socketId.slice(0, 8)}...)</span>
+                  <span className="text-xs text-green-600">
+                    ({socketId.slice(0, 8)}...)
+                  </span>
                 )}
-              </motion.div>
+              </div>
             ) : (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-center justify-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-xl"
-              >
+              <div className="flex items-center justify-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
                 <WifiOff className="h-5 w-5 text-yellow-600" />
                 <span className="text-sm font-medium text-yellow-700">
                   Conectando a actualizaciones en tiempo real...
                 </span>
-              </motion.div>
+              </div>
             )}
 
             {/* Código de recepción */}
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-              <Card className="bg-gradient-to-br from-white to-slate-50 border-2 border-slate-200 shadow-xl overflow-hidden">
-                <div className="p-6 bg-gradient-to-br from-orange-100 to-pink-100 border-b-4 border-orange-300">
+            <div>
+              <Card className="bg-gradient-to-br from-white to-white border-2 border-orange-500/20 shadow-xl overflow-hidden">
+                <div className="p-4 sm:p-6 bg-orange-500/10 border-b-4 border-orange-500">
                   <div className="flex items-center justify-center">
                     <div className="text-center">
-                      <p className="text-sm font-medium opacity-80 mb-2">Código de Recepción</p>
-                      <p className="text-3xl font-bold font-mono text-slate-900">{seguimiento.codigoRecepcion}</p>
+                      <p className="text-sm font-medium opacity-80 mb-2">
+                        Código de Recepción
+                      </p>
+                      <p className="text-xl sm:text-2xl md:text-3xl font-bold text-black font-montserrat tracking-wider break-all">
+                        {seguimiento.codigoRecepcion}
+                      </p>
                     </div>
                   </div>
                 </div>
               </Card>
-            </motion.div>
+            </div>
 
             {/* Información de la recepción */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <Card className="bg-white/95 backdrop-blur-sm border-2 border-slate-200 shadow-lg">
+            <div>
+              <Card className="bg-white/95 backdrop-blur-sm border-2 border-orange-500/20 shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-2xl text-slate-900 flex items-center gap-2">
-                    <MapPin className="h-6 w-6 text-orange-500" />
+                  <CardTitle className="text-xl sm:text-2xl text-black flex items-center gap-2 font-montserrat">
+                    <MapPin className="h-5 w-5 sm:h-6 sm:w-6 text-orange-500" />
                     Información de la Recepción
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.4 }}
-                      className="flex items-start gap-3 p-4 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl"
-                    >
-                      <Car className="h-6 w-6 text-blue-600 mt-1 flex-shrink-0" />
-                      <div>
-                        <Label className="text-blue-600 font-semibold">Vehículo</Label>
-                        <p className="font-bold text-slate-900 text-lg">
+                <CardContent className="p-6 sm:p-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
+                    <div className="flex items-start gap-4 sm:gap-5 p-6 sm:p-7 bg-gradient-to-br from-white to-orange-50/30 border-2 border-orange-500/20 rounded-xl shadow-sm hover:shadow-md transition-all">
+                      <div className="p-3 bg-orange-500 rounded-lg flex-shrink-0">
+                        <Car className="h-6 w-6 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <Label className="text-orange-600 font-semibold font-montserrat text-sm sm:text-base block mb-2">
+                          Vehículo
+                        </Label>
+                        <p className="font-bold text-black text-base sm:text-lg font-montserrat leading-relaxed">
                           {seguimiento.vehiculo.descripcion}
                         </p>
                       </div>
-                    </motion.div>
+                    </div>
 
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.5 }}
-                      className="flex items-start gap-3 p-4 bg-gradient-to-br from-pink-50 to-pink-100/50 rounded-xl"
-                    >
-                      <User className="h-6 w-6 text-pink-600 mt-1 flex-shrink-0" />
-                      <div>
-                        <Label className="text-pink-600 font-semibold">Cliente</Label>
-                        <p className="font-bold text-slate-900 text-lg">
+                    <div className="flex items-start gap-4 sm:gap-5 p-6 sm:p-7 bg-gradient-to-br from-white to-orange-50/30 border-2 border-orange-500/20 rounded-xl shadow-sm hover:shadow-md transition-all">
+                      <div className="p-3 bg-orange-500 rounded-lg flex-shrink-0">
+                        <User className="h-6 w-6 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <Label className="text-orange-600 font-semibold font-montserrat text-sm sm:text-base block mb-2">
+                          Cliente
+                        </Label>
+                        <p className="font-bold text-black text-base sm:text-lg font-montserrat leading-relaxed">
                           {seguimiento.cliente.nombre}
                         </p>
                       </div>
-                    </motion.div>
+                    </div>
 
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.6 }}
-                      className="flex items-start gap-3 p-4 bg-gradient-to-br from-orange-50 to-orange-100/50 rounded-xl"
-                    >
-                      <Calendar className="h-6 w-6 text-orange-600 mt-1 flex-shrink-0" />
-                      <div>
-                        <Label className="text-orange-600 font-semibold">Fecha de Recepción</Label>
-                        <p className="font-bold text-slate-900 text-lg">
-                          {format(new Date(seguimiento.fechaRecepcion), "d 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es })}
+                    <div className="flex items-start gap-4 sm:gap-5 p-6 sm:p-7 bg-gradient-to-br from-white to-orange-50/30 border-2 border-orange-500/20 rounded-xl shadow-sm hover:shadow-md transition-all">
+                      <div className="p-3 bg-orange-500 rounded-lg flex-shrink-0">
+                        <Calendar className="h-6 w-6 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <Label className="text-orange-600 font-semibold text-sm sm:text-base font-montserrat block mb-2">
+                          Fecha de Recepción
+                        </Label>
+                        <p className="font-bold text-black text-base sm:text-lg font-montserrat leading-relaxed">
+                          {format(
+                            new Date(seguimiento.fechaRecepcion),
+                            "d 'de' MMMM 'de' yyyy 'a las' HH:mm",
+                            { locale: es }
+                          )}
                         </p>
                       </div>
-                    </motion.div>
+                    </div>
 
                     {seguimiento.fechaEntregaEstimada && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.7 }}
-                        className="flex items-start gap-3 p-4 bg-gradient-to-br from-green-50 to-green-100/50 rounded-xl"
-                      >
-                        <Calendar className="h-6 w-6 text-green-600 mt-1 flex-shrink-0" />
-                        <div>
-                          <Label className="text-green-600 font-semibold">Fecha Estimada de Entrega</Label>
-                          <p className="font-bold text-slate-900 text-lg">
+                      <div className="flex items-start gap-4 sm:gap-5 p-6 sm:p-7 bg-gradient-to-br from-white to-orange-50/30 border-2 border-orange-500/20 rounded-xl shadow-sm hover:shadow-md transition-all">
+                        <div className="p-3 bg-orange-500 rounded-lg flex-shrink-0">
+                          <Calendar className="h-6 w-6 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <Label className="text-orange-600 font-semibold text-sm sm:text-base font-montserrat block mb-2">
+                            Fecha Estimada de Entrega
+                          </Label>
+                          <p className="font-bold text-black text-base sm:text-lg font-montserrat leading-relaxed">
                             {format(
                               new Date(seguimiento.fechaEntregaEstimada),
                               "d 'de' MMMM 'de' yyyy 'a las' HH:mm",
@@ -400,22 +403,18 @@ export function SeguimientoForm() {
                             )}
                           </p>
                         </div>
-                      </motion.div>
+                      </div>
                     )}
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
+            </div>
 
             {/* Línea de tiempo mejorada */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              <Card className="bg-white/95 backdrop-blur-sm border-2 border-slate-200 shadow-lg">
+            <div>
+              <Card className="bg-white/95 backdrop-blur-sm border-2 border-orange-500/20 shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-2xl text-slate-900 flex items-center gap-2">
+                  <CardTitle className="text-2xl text-black flex items-center gap-2 font-montserrat">
                     <TrendingUp className="h-6 w-6 text-orange-500" />
                     Línea de Tiempo
                   </CardTitle>
@@ -423,57 +422,61 @@ export function SeguimientoForm() {
                 <CardContent>
                   <div className="relative">
                     {/* Línea vertical decorativa */}
-                    <div className="absolute left-6 top-0 bottom-0 w-1 bg-gradient-to-b from-orange-200 via-pink-200 to-orange-200 rounded-full"></div>
+                    <div className="absolute left-6 top-0 bottom-0 w-1.5 bg-gradient-to-b from-orange-500 via-orange-400 to-orange-500 rounded-full"></div>
 
-                    <div className="space-y-8">
+                    <div className="space-y-6">
                       {seguimiento.seguimientos.map((seg, index) => {
-                        const config = estadoConfig[seg.estado] || estadoConfig.PENDIENTE;
+                        const config =
+                          estadoConfig[seg.estado] || estadoConfig.PENDIENTE;
                         const Icon = config.icon;
-                        const isLast = index === seguimiento.seguimientos.length - 1;
+                        const isLast =
+                          index === seguimiento.seguimientos.length - 1;
 
                         return (
-                          <motion.div
+                          <div
                             key={seg.id}
-                            initial={{ opacity: 0, x: -30 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.5 + index * 0.1 }}
-                            className="flex gap-6 relative"
+                            className="flex gap-4 md:gap-6 relative"
                           >
                             <div className="flex flex-col items-center relative z-10">
-                              <motion.div
-                                className={`w-14 h-14 rounded-full flex items-center justify-center shadow-xl border-4 border-white ${config.bg}`}
-                                whileHover={{ scale: 1.1 }}
-                                transition={{ duration: 0.2 }}
+                              <div
+                                className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-lg border-4 border-white ${config.bg}`}
                               >
-                                <Icon className={`h-7 w-7 ${config.color}`} />
-                              </motion.div>
+                                <Icon
+                                  className={`h-6 w-6 md:h-7 md:w-7 ${config.color}`}
+                                />
+                              </div>
                               {!isLast && (
-                                <div className="w-1 h-full bg-gradient-to-b from-slate-300 to-slate-200 my-2"></div>
+                                <div className="w-1.5 h-full bg-gradient-to-b from-orange-500/40 via-orange-400/30 to-orange-500/20 my-2 rounded-full"></div>
                               )}
                             </div>
-                            <motion.div
-                              className="flex-1 pb-8 bg-gradient-to-br from-slate-50 to-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300"
-                              whileHover={{ x: 5 }}
-                            >
-                              <div className="flex items-center gap-3 mb-2">
-                                <span className={`font-bold text-lg ${config.color}`}>
+                            <div className="flex-1 pb-6 bg-gradient-to-br from-white to-orange-50/20 p-5 md:p-6 rounded-xl border-2 border-orange-500/20 shadow-sm hover:shadow-md hover:border-orange-500/40 transition-all duration-300">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">
+                                <span
+                                  className={`font-bold text-base md:text-lg ${config.color}`}
+                                >
                                   {seg.estado}
                                 </span>
-                                <span className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-                                  {format(new Date(seg.fecha), "d MMM yyyy 'a las' HH:mm", { locale: es })}
+                                <span className="text-xs md:text-sm text-black/70 bg-orange-500/10 px-3 py-1 rounded-full font-montserrat w-fit">
+                                  {format(
+                                    new Date(seg.fecha),
+                                    "d MMM yyyy 'a las' HH:mm",
+                                    { locale: es }
+                                  )}
                                 </span>
                               </div>
-                              <p className="text-slate-700 leading-relaxed">{seg.descripcion}</p>
-                            </motion.div>
-                          </motion.div>
+                              <p className="text-black/80 leading-relaxed font-montserrat text-sm md:text-base">
+                                {seg.descripcion}
+                              </p>
+                            </div>
+                          </div>
                         );
                       })}
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         )}
       </AnimatePresence>
     </div>

@@ -12,7 +12,6 @@ export const getMotivosCita = async (): Promise<MotivoCita[]> => {
   } catch (error: any) {
     // Si el endpoint requiere permisos de admin y el usuario es cliente,
     // simplemente retornar un array vacío. El cliente puede crear su propio motivo.
-    console.warn('⚠️ No se pudieron cargar los motivos de cita (puede requerir permisos de admin):', error?.response?.status);
     return [];
   }
 };

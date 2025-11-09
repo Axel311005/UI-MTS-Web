@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
 import { ArrowLeft, Edit, FileText, Loader2 } from 'lucide-react';
+import { useAuthStore } from '@/auth/store/auth.store';
+import { getCompraPdfAction } from '../actions/get-compra-pdf';
+import { downloadPdf } from '@/facturas/utils/download-pdf';
 
 import {
   Card,
@@ -114,6 +117,10 @@ export default function VerDetallesCompraPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [compra, setCompra] = useState<CompraDetalle | null>(null);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const hasPdfAccess = useAuthStore((state) =>
+    state.hasAnyRole(['gerente', 'vendedor', 'superuser'])
+  );
 
   useEffect(() => {
     const loadCompra = async () => {
@@ -235,10 +242,36 @@ export default function VerDetallesCompraPage() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
-            <FileText className="h-4 w-4 mr-2" />
-            Generar PDF
-          </Button>
+          {hasPdfAccess && (
+            <Button
+              variant="outline"
+              onClick={async () => {
+                if (isDownloadingPdf || !id) return;
+                setIsDownloadingPdf(true);
+                const dismiss = toast.loading('Generando PDF de la compra...');
+                try {
+                  const blob = await getCompraPdfAction(Number(id));
+                  const filename = `compra-${compra?.codigoCompra || `COMP-${id}`}.pdf`;
+                  downloadPdf(blob, filename);
+                  toast.success('PDF de la compra descargado exitosamente');
+                } catch (error: any) {
+                  const message =
+                    error?.response?.data?.message ||
+                    (error instanceof Error
+                      ? error.message
+                      : 'No se pudo generar el PDF de la compra');
+                  toast.error(message);
+                } finally {
+                  toast.dismiss(dismiss);
+                  setIsDownloadingPdf(false);
+                }
+              }}
+              disabled={isDownloadingPdf}
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Generar PDF
+            </Button>
+          )}
           <Button onClick={() => navigate(`/admin/compras/${id}/editar`)}>
             <Edit className="h-4 w-4 mr-2" />
             Editar

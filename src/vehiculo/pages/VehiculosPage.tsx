@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
+import { useQuery } from '@tanstack/react-query';
 import {
   Card,
   CardContent,
@@ -18,13 +19,15 @@ import { Button } from '@/shared/components/ui/button';
 import { Pagination } from '@/shared/components/ui/pagination';
 import { useVehiculo } from '../hook/useVehiculo';
 import type { Vehiculo } from '../types/vehiculo.interface';
+import type { PaginatedResponse } from '@/shared/types/pagination';
 import { VehiculoSearch } from '../ui/VehiculoSearch';
 import { Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { patchVehiculoAction } from '../actions/patch-vehiculo';
 import { EstadoActivo } from '@/shared/types/status';
 import { useDebounce } from '@/shared/hooks/use-debounce';
-import { getClienteNombre, getClienteSearchText } from '@/clientes/utils/cliente.utils';
+import { getClienteNombre } from '@/clientes/utils/cliente.utils';
+import { SearchVehiculosAction } from '../actions/search-vehiculos-action';
 
 export const VehiculosPage = () => {
   const navigate = useNavigate();
@@ -37,9 +40,9 @@ export const VehiculosPage = () => {
 
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  const query = (searchParams.get('q') || '').trim().toLowerCase();
+  const query = (searchParams.get('q') || '').trim();
   const debouncedQuery = useDebounce(query, 300);
-  const shouldUsePagination = debouncedQuery.length === 0;
+  const hasSearch = debouncedQuery.length > 0;
 
   const {
     vehiculos = [],
@@ -47,53 +50,55 @@ export const VehiculosPage = () => {
     isLoading,
     refetch,
   } = useVehiculo({
-    usePagination: shouldUsePagination,
-    limit: shouldUsePagination ? limit : undefined,
-    offset: shouldUsePagination ? offset : undefined,
+    usePagination: !hasSearch,
+    limit: !hasSearch ? limit : undefined,
+    offset: !hasSearch ? offset : undefined,
   });
 
-  const filteredVehiculos = useMemo<Vehiculo[]>(() => {
-    const items = vehiculos ?? [];
-    if (!debouncedQuery) return items;
-    return items.filter((v) => {
-      const placa = v.placa?.toLowerCase?.() ?? '';
-      const marca = v.marca?.toLowerCase?.() ?? '';
-      const modelo = v.modelo?.toLowerCase?.() ?? '';
-      const color = v.color?.toLowerCase?.() ?? '';
-      const anio =
-        v.anio !== undefined && v.anio !== null
-          ? String(v.anio).toLowerCase()
-          : '';
-      const cliente = v.cliente ? getClienteSearchText(v.cliente) : '';
-      return (
-        placa.includes(debouncedQuery) ||
-        marca.includes(debouncedQuery) ||
-        modelo.includes(debouncedQuery) ||
-        color.includes(debouncedQuery) ||
-        anio.includes(debouncedQuery) ||
-        cliente.includes(debouncedQuery)
-      );
+  // Búsqueda usando el backend cuando hay término de búsqueda
+  const { data: vehiculosFiltradosResponse, isLoading: isLoadingSearch } =
+    useQuery<PaginatedResponse<Vehiculo>>({
+      queryKey: ['vehiculos.search', debouncedQuery, limit, offset],
+      queryFn: () =>
+        SearchVehiculosAction({
+          q: debouncedQuery,
+          limit,
+          offset,
+        }),
+      enabled: hasSearch,
+      staleTime: 1000 * 60 * 5,
     });
-  }, [vehiculos, debouncedQuery]);
 
-  const totalFiltered = shouldUsePagination
-    ? totalItems
-    : filteredVehiculos.length;
+  const vehiculosFiltrados = useMemo(() => {
+    if (!vehiculosFiltradosResponse) return [];
+    if (Array.isArray(vehiculosFiltradosResponse))
+      return vehiculosFiltradosResponse;
+    return vehiculosFiltradosResponse.data || [];
+  }, [vehiculosFiltradosResponse]);
 
-  const paginatedVehiculos = useMemo(() => {
-    if (shouldUsePagination) return filteredVehiculos;
-    const startIndex = (page - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    return filteredVehiculos.slice(startIndex, endIndex);
-  }, [filteredVehiculos, page, pageSize, shouldUsePagination]);
+  const totalFiltrados = useMemo(() => {
+    if (!hasSearch) return totalItems;
+    if (!vehiculosFiltradosResponse) return 0;
+    if (Array.isArray(vehiculosFiltradosResponse))
+      return vehiculosFiltradosResponse.length;
+    return vehiculosFiltradosResponse.total ?? 0;
+  }, [hasSearch, totalItems, vehiculosFiltradosResponse]);
+
+  // Determinar qué vehículos mostrar
+  const displayedVehiculos = useMemo(() => {
+    if (hasSearch) return vehiculosFiltrados;
+    return vehiculos;
+  }, [hasSearch, vehiculosFiltrados, vehiculos]);
+
+  const isLoadingData = hasSearch ? isLoadingSearch : isLoading;
 
   useEffect(() => {
-    if (isLoading) return;
-    const computedTotalPages = totalFiltered
-      ? Math.ceil(totalFiltered / pageSize)
+    if (isLoadingData) return;
+    const computedTotalPages = totalFiltrados
+      ? Math.ceil(totalFiltrados / pageSize)
       : 1;
 
-    if (totalFiltered === 0) {
+    if (totalFiltrados === 0) {
       if (page !== 1) {
         const params = new URLSearchParams(searchParams);
         params.delete('page');
@@ -111,7 +116,7 @@ export const VehiculosPage = () => {
       }
       setSearchParams(params, { replace: true });
     }
-  }, [isLoading, page, pageSize, searchParams, setSearchParams, totalFiltered]);
+  }, [isLoadingData, page, pageSize, searchParams, setSearchParams, totalFiltrados]);
 
   const handleDelete = async (idVehiculo: number, placa: string) => {
     if (deletingId) return;
@@ -173,7 +178,7 @@ export const VehiculosPage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedVehiculos.map((v) => (
+              {displayedVehiculos.map((v) => (
                 <TableRow key={v.idVehiculo} className="table-row-hover">
                   <TableCell className="font-medium">{v.placa}</TableCell>
                   <TableCell>{v.marca || '—'}</TableCell>
@@ -229,12 +234,12 @@ export const VehiculosPage = () => {
             </TableBody>
           </Table>
         </CardContent>
-        {totalFiltered > 0 && (
+        {totalFiltrados > 0 && (
           <Pagination
             currentPage={page}
             totalPages={totalPages}
             pageSize={pageSize}
-            totalItems={totalFiltered}
+            totalItems={totalFiltrados}
             onPageChange={(newPage) => {
               const params = new URLSearchParams(searchParams);
               if (newPage > 1) params.set('page', newPage.toString());

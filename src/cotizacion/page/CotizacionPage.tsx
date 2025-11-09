@@ -1,7 +1,9 @@
 import { useMemo, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { Pencil, Eye } from 'lucide-react';
+import { Pencil, Eye, FileText } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
+import { toast } from 'sonner';
+import { tallerApi } from '@/shared/api/tallerApi';
 import {
   Card,
   CardContent,
@@ -198,8 +200,46 @@ export default function CotizacionesPage() {
                         <Button
                           variant="outline"
                           size="sm"
+                          onClick={async () => {
+                            try {
+                              const dismiss = toast.loading('Generando PDF...');
+                              const response = await tallerApi.get(
+                                `/cotizacion/${cotizacion.idCotizacion}/cotizacion-pdf`,
+                                { responseType: 'blob' }
+                              );
+                              const blob = new Blob([response.data], {
+                                type: 'application/pdf',
+                              });
+                              const urlBlob = window.URL.createObjectURL(blob);
+                              const link = document.createElement('a');
+                              link.href = urlBlob;
+                              link.download = `cotizacion-${
+                                cotizacion.codigoCotizacion ||
+                                cotizacion.idCotizacion
+                              }.pdf`;
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                              window.URL.revokeObjectURL(urlBlob);
+                              toast.dismiss(dismiss);
+                              toast.success('PDF generado correctamente');
+                            } catch (error: any) {
+                              const message =
+                                error?.response?.data?.message ||
+                                'Error al generar PDF';
+                              toast.error(message);
+                            }
+                          }}
+                        >
+                          <FileText className="mr-2 h-4 w-4" /> PDF
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() =>
-                            navigate(`/admin/cotizaciones/${cotizacion.idCotizacion}`)
+                            navigate(
+                              `/admin/cotizaciones/${cotizacion.idCotizacion}`
+                            )
                           }
                         >
                           <Eye className="mr-2 h-4 w-4" /> Ver

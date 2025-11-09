@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
+import { useQuery } from '@tanstack/react-query';
 import { Phone } from 'lucide-react';
 import {
   Card,
@@ -24,8 +25,10 @@ import { ClienteRowActions } from '../ui/ClienteRowActions';
 import { useCliente } from '../hook/useCliente';
 import { EstadoActivo } from '@/shared/types/status';
 import type { Cliente } from '../types/cliente.interface';
+import type { PaginatedResponse } from '@/shared/types/pagination';
 import { useDebounce } from '@/shared/hooks/use-debounce';
-import { getClienteNombre, getClienteSearchText } from '../utils/cliente.utils';
+import { getClienteNombre } from '../utils/cliente.utils';
+import { SearchClientesAction } from '../actions/search-clientes-action';
 
 export const ClientesPage = () => {
   const navigate = useNavigate();
@@ -41,55 +44,69 @@ export const ClientesPage = () => {
     }
   }, [searchParams, searchTerm]);
 
-  const debouncedSearch = useDebounce(searchTerm.trim().toLowerCase(), 300);
+  const debouncedSearch = useDebounce(searchTerm.trim(), 300);
 
   // Leer parámetros de URL o usar valores por defecto
   const page = parseInt(searchParams.get('page') || '1', 10);
   const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
   const limit = pageSize;
   const offset = (page - 1) * pageSize;
-  const shouldUsePagination = debouncedSearch.length === 0;
+  const hasSearch = debouncedSearch.length > 0;
 
   const {
     clientes = [],
     totalItems = 0,
     isLoading,
   } = useCliente({
-    usePagination: shouldUsePagination,
-    limit: shouldUsePagination ? limit : undefined,
-    offset: shouldUsePagination ? offset : undefined,
+    usePagination: !hasSearch,
+    limit: !hasSearch ? limit : undefined,
+    offset: !hasSearch ? offset : undefined,
   });
 
-  // Para búsqueda, usamos los datos de la página actual (ya paginados del backend o frontend)
-  const filteredClientes = useMemo<Cliente[]>(() => {
-    const items = clientes ?? [];
-    if (!debouncedSearch) return items;
-
-    return items.filter((cliente) => {
-      const searchText = getClienteSearchText(cliente);
-      return searchText.includes(debouncedSearch);
+  // Búsqueda usando el backend cuando hay término de búsqueda
+  const { data: clientesFiltradosResponse, isLoading: isLoadingSearch } =
+    useQuery<PaginatedResponse<Cliente>>({
+      queryKey: ['clientes.search', debouncedSearch, limit, offset],
+      queryFn: () =>
+        SearchClientesAction({
+          q: debouncedSearch,
+          limit,
+          offset,
+        }),
+      enabled: hasSearch,
+      staleTime: 1000 * 60 * 5,
     });
-  }, [clientes, debouncedSearch]);
 
-  const totalFiltered = useMemo(() => {
-    if (shouldUsePagination) return totalItems;
-    return filteredClientes.length;
-  }, [filteredClientes, totalItems, shouldUsePagination]);
+  const clientesFiltrados = useMemo(() => {
+    if (!clientesFiltradosResponse) return [];
+    if (Array.isArray(clientesFiltradosResponse))
+      return clientesFiltradosResponse;
+    return clientesFiltradosResponse.data || [];
+  }, [clientesFiltradosResponse]);
 
-  const paginatedClientes = useMemo(() => {
-    if (shouldUsePagination) return filteredClientes;
-    const startIndex = (page - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    return filteredClientes.slice(startIndex, endIndex);
-  }, [filteredClientes, page, pageSize, shouldUsePagination]);
+  const totalFiltrados = useMemo(() => {
+    if (!hasSearch) return totalItems;
+    if (!clientesFiltradosResponse) return 0;
+    if (Array.isArray(clientesFiltradosResponse))
+      return clientesFiltradosResponse.length;
+    return clientesFiltradosResponse.total ?? 0;
+  }, [hasSearch, totalItems, clientesFiltradosResponse]);
+
+  // Determinar qué clientes mostrar
+  const displayedClientes = useMemo(() => {
+    if (hasSearch) return clientesFiltrados;
+    return clientes;
+  }, [hasSearch, clientesFiltrados, clientes]);
+
+  const isLoadingData = hasSearch ? isLoadingSearch : isLoading;
 
   useEffect(() => {
-    if (isLoading) return;
-    const computedTotalPages = totalFiltered
-      ? Math.ceil(totalFiltered / pageSize)
+    if (isLoadingData) return;
+    const computedTotalPages = totalFiltrados
+      ? Math.ceil(totalFiltrados / pageSize)
       : 1;
 
-    if (totalFiltered === 0) {
+    if (totalFiltrados === 0) {
       if (page !== 1) {
         const params = new URLSearchParams(searchParams);
         params.delete('page');
@@ -108,10 +125,10 @@ export const ClientesPage = () => {
       }
       setSearchParams(params, { replace: true });
     }
-  }, [isLoading, page, pageSize, searchParams, setSearchParams, totalFiltered]);
+  }, [isLoadingData, page, pageSize, searchParams, setSearchParams, totalFiltrados]);
 
-  const totalPages = totalFiltered ? Math.ceil(totalFiltered / pageSize) : 1;
-  const showEmptyState = !isLoading && totalFiltered === 0;
+  const totalPages = totalFiltrados ? Math.ceil(totalFiltrados / pageSize) : 1;
+  const showEmptyState = !isLoadingData && totalFiltrados === 0;
 
   return (
     <div className="space-y-6">
@@ -157,7 +174,7 @@ export const ClientesPage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedClientes.map((cliente) => {
+              {displayedClientes.map((cliente) => {
                 const isActivo = cliente.activo === EstadoActivo.ACTIVO;
                 const estadoLabel = isActivo ? 'Activo' : 'Inactivo';
                 const exoneradoLabel = cliente.esExonerado
@@ -207,12 +224,12 @@ export const ClientesPage = () => {
             </TableBody>
           </Table>
         </CardContent>
-        {totalFiltered > 0 && (
+        {totalFiltrados > 0 && (
           <Pagination
             currentPage={page}
             totalPages={totalPages}
             pageSize={pageSize}
-            totalItems={totalFiltered}
+            totalItems={totalFiltrados}
             onPageChange={(newPage) => {
               const params = new URLSearchParams(searchParams);
               if (newPage > 1) {

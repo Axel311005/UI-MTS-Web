@@ -25,7 +25,6 @@ import {
 } from '../actions/cotizacion.actions';
 import type { ItemCotizable } from '../types/cotizacion.types';
 import { useLandingAuthStore } from '../store/landing-auth.store';
-import { landingConsecutivoApi } from '../api/consecutivo.api';
 
 interface DetalleLinea {
   idItem: number;
@@ -40,7 +39,8 @@ export function CotizacionForm() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [lineas, setLineas] = useState<DetalleLinea[]>([]);
-  const [consecutivoId, setConsecutivoId] = useState<number | null>(null);
+  // ID 4 es el consecutivo de cotizaciones (fijo, no necesita estado)
+  const consecutivoId = 4;
 
   useEffect(() => {
     const loadData = async () => {
@@ -49,37 +49,9 @@ export function CotizacionForm() {
         const itemsData = await getItemsCotizables();
         setItems(itemsData);
 
-        // Intentar obtener consecutivo, pero si falla (403), usar valor por defecto
-        try {
-          const consecutivosResponse = await landingConsecutivoApi.get('/');
-          const consecutivos = Array.isArray(consecutivosResponse.data)
-            ? consecutivosResponse.data
-            : [];
-          const cotizacionConsecutivo = consecutivos.find(
-            (c: any) =>
-              c.idConsecutivo === 4 ||
-              c.descripcion?.toLowerCase().includes('cotizacion')
-          );
-          if (cotizacionConsecutivo) {
-            setConsecutivoId(cotizacionConsecutivo.idConsecutivo);
-          } else if (consecutivos.length > 0) {
-            // Fallback: usar el primero disponible
-            setConsecutivoId(consecutivos[0].idConsecutivo);
-          } else {
-            // Si no hay consecutivos, usar el ID 4 por defecto (consecutivo de cotización)
-            setConsecutivoId(4);
-          }
-        } catch (consecError: any) {
-          // Si el consecutivo falla (403 Forbidden o cualquier error), usar valor por defecto
-          console.warn(
-            'No se pudo obtener consecutivo, usando valor por defecto:',
-            consecError?.response?.status
-          );
-          setConsecutivoId(4); // ID por defecto para cotizaciones
-        }
+        // El consecutivoId ya está inicializado con el valor 4 (consecutivo de cotizaciones)
       } catch (error: any) {
         toast.error('Error al cargar items cotizables');
-        console.error(error);
       } finally {
         setLoading(false);
       }
@@ -123,25 +95,33 @@ export function CotizacionForm() {
           (selected as any)?.precioUnitario ??
           0
       );
-      const cantidad = 1;
+      const cantidad = Number(updated[index].cantidad) || 1;
       updated[index] = {
         ...updated[index],
         idItem: value,
-        precioUnitario: precio,
-        cantidad,
-        totalLinea: cantidad * precio,
+        precioUnitario: Math.max(0, precio), // Asegurar que sea positivo
+        cantidad: Math.max(1, cantidad), // Asegurar que sea al menos 1
+        totalLinea: Math.max(0, cantidad * precio), // Asegurar que sea positivo
       };
     } else {
-      // Asegurar que siempre guardamos números
-      const numeric = Number(value) || 0;
+      // Asegurar que siempre guardamos números válidos
+      let numeric = Number(value);
+      if (!Number.isFinite(numeric) || numeric < 0) {
+        numeric = field === 'cantidad' ? 1 : 0; // Cantidad mínimo 1, otros mínimo 0
+      }
+      
+      if (field === 'cantidad' && numeric < 1) {
+        numeric = 1; // Cantidad debe ser al menos 1
+      }
+      
       updated[index] = { ...updated[index], [field]: numeric } as DetalleLinea;
     }
 
     // Recalcular total solo si cambia cantidad (precioUnitario no se puede cambiar)
     if (field === 'cantidad' || field === 'idItem') {
-      const cantidad = Number(updated[index].cantidad) || 0;
-      const precio = Number(updated[index].precioUnitario) || 0;
-      updated[index].totalLinea = cantidad * precio;
+      const cantidad = Math.max(1, Number(updated[index].cantidad) || 1);
+      const precio = Math.max(0, Number(updated[index].precioUnitario) || 0);
+      updated[index].totalLinea = Math.max(0, cantidad * precio);
     }
 
     setLineas(updated);
@@ -164,8 +144,26 @@ export function CotizacionForm() {
       return;
     }
 
-    if (!consecutivoId) {
-      toast.error('No se pudo obtener el consecutivo de cotización');
+    // El consecutivoId siempre es 4 (consecutivo de cotizaciones)
+
+    // Validar que todas las líneas tengan valores válidos
+    const lineasInvalidas = lineas.some((linea) => {
+      const precioUnitario = Number(linea.precioUnitario);
+      const totalLinea = Number(linea.totalLinea);
+      const cantidad = Number(linea.cantidad);
+      
+      return (
+        !Number.isFinite(precioUnitario) ||
+        precioUnitario <= 0 ||
+        !Number.isFinite(totalLinea) ||
+        totalLinea < 0 ||
+        !Number.isFinite(cantidad) ||
+        cantidad <= 0
+      );
+    });
+
+    if (lineasInvalidas) {
+      toast.error('Por favor, verifica que todos los items tengan valores válidos');
       return;
     }
 
@@ -179,14 +177,22 @@ export function CotizacionForm() {
         nombreCliente: user.nombre || 'Cliente',
       });
 
-      // Crear detalles
+      // Crear detalles - asegurar que todos los valores sean números válidos
       for (const linea of lineas) {
+        const precioUnitario = Number(linea.precioUnitario) || 0;
+        const totalLineas = Number(linea.totalLinea) || 0;
+        const cantidad = Number(linea.cantidad) || 0;
+
+        if (precioUnitario <= 0 || totalLineas < 0 || cantidad <= 0) {
+          throw new Error(`Item con valores inválidos: precioUnitario=${precioUnitario}, totalLineas=${totalLineas}, cantidad=${cantidad}`);
+        }
+
         await createDetalleCotizacion({
           idItem: linea.idItem,
           idCotizacion: cotizacion.idCotizacion,
-          cantidad: linea.cantidad,
-          precioUnitario: linea.precioUnitario,
-          totalLineas: linea.totalLinea,
+          cantidad: cantidad,
+          precioUnitario: precioUnitario,
+          totalLineas: totalLineas,
         });
       }
 
@@ -212,7 +218,7 @@ export function CotizacionForm() {
             transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
             className="rounded-full h-16 w-16 border-4 border-orange-200 border-t-orange-500 mx-auto mb-4"
           />
-          <p className="text-slate-600 text-lg">Cargando items...</p>
+          <p className="text-black/70 text-lg font-montserrat">Cargando items...</p>
         </div>
       </div>
     );
@@ -224,22 +230,18 @@ export function CotizacionForm() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
-      <Card className="max-w-5xl mx-auto bg-gradient-to-br from-white via-orange-50/30 to-pink-50/30 backdrop-blur-sm border-2 border-orange-200 shadow-xl">
-        <CardHeader className="text-center pb-6">
-          <div className="inline-block mb-4">
-            <div className="p-4 bg-gradient-to-br from-orange-400 to-pink-500 rounded-full shadow-lg">
-              <DollarSign className="h-10 w-10 text-white" />
-            </div>
-          </div>
-          <CardTitle className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent">
+      <Card className="max-w-6xl mx-auto bg-white border-2 border-orange-500/20 shadow-2xl overflow-hidden rounded-2xl">
+        <CardHeader className="text-center pb-6 pt-8 md:pt-10 px-4 sm:px-6 md:px-8 bg-gradient-to-br from-white via-orange-50/5 to-white">
+          <CardTitle className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-black font-montserrat mb-3 md:mb-4 tracking-tight">
             Cotización en Línea
           </CardTitle>
-          <p className="text-slate-600 mt-2">
+          <div className="w-20 md:w-24 h-0.5 md:h-1 bg-gradient-to-r from-orange-500 via-orange-400 to-orange-500 mx-auto mb-3 md:mb-4 rounded-full"></div>
+          <p className="text-black/70 text-base sm:text-lg font-montserrat max-w-2xl mx-auto leading-relaxed">
             Agrega los items que necesitas y obtén una cotización instantánea
           </p>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <CardContent className="p-4 sm:p-6 md:p-8 lg:p-10">
+          <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
             {lineas.length > 0 && (
               <div className="space-y-4">
                 {lineas.map((linea, index) => {
@@ -249,10 +251,10 @@ export function CotizacionForm() {
                   return (
                     <div
                       key={index}
-                      className="grid grid-cols-12 gap-4 items-end p-6 bg-gradient-to-br from-white to-slate-50 rounded-2xl border-2 border-slate-200 shadow-lg hover:shadow-xl transition-all duration-300"
+                      className="grid grid-cols-12 gap-3 sm:gap-4 items-end p-4 sm:p-6 bg-gradient-to-br from-white via-orange-50/10 to-white rounded-xl sm:rounded-2xl border-2 border-orange-500/20 shadow-lg hover:shadow-orange-500/30 transition-all duration-300"
                     >
-                      <div className="col-span-12 md:col-span-5">
-                        <Label className="text-slate-700 font-semibold mb-2 block">
+                      <div className="col-span-12 sm:col-span-6 md:col-span-5">
+                        <Label className="text-black font-bold text-xs sm:text-sm mb-2 block font-montserrat tracking-wide">
                           Item
                         </Label>
                         <Select
@@ -266,7 +268,7 @@ export function CotizacionForm() {
                             }
                           }}
                         >
-                          <SelectTrigger className="h-12 border-2 border-orange-200 focus:border-orange-400 rounded-xl">
+                          <SelectTrigger className="h-11 sm:h-12 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -286,8 +288,8 @@ export function CotizacionForm() {
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="col-span-6 md:col-span-2">
-                        <Label className="text-slate-700 font-semibold mb-2 block">
+                      <div className="col-span-6 sm:col-span-3 md:col-span-2">
+                        <Label className="text-black font-bold text-xs sm:text-sm mb-2 block font-montserrat tracking-wide">
                           Cantidad
                         </Label>
                         <Input
@@ -301,40 +303,40 @@ export function CotizacionForm() {
                               Number(e.target.value)
                             )
                           }
-                          className="h-12 border-2 border-orange-200 focus:border-orange-400 rounded-xl"
+                          className="h-11 sm:h-12 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all"
                         />
                       </div>
-                      <div className="col-span-6 md:col-span-2">
-                        <Label className="text-slate-700 font-semibold mb-2 block">
+                      <div className="col-span-6 sm:col-span-3 md:col-span-2">
+                        <Label className="text-black font-bold text-xs sm:text-sm mb-2 block font-montserrat tracking-wide">
                           Precio Unit.
                         </Label>
                         <Input
                           type="text"
                           value={toMoney(linea.precioUnitario)}
                           disabled
-                          className="h-12 border-2 border-orange-200 bg-slate-50 rounded-xl cursor-not-allowed"
+                          className="h-11 sm:h-12 border-2 border-orange-500/20 bg-white text-black rounded-xl cursor-not-allowed font-montserrat font-semibold text-sm sm:text-base"
                         />
                       </div>
-                      <div className="col-span-10 md:col-span-2">
-                        <Label className="text-slate-700 font-semibold mb-2 block">
+                      <div className="col-span-12 sm:col-span-6 md:col-span-2">
+                        <Label className="text-black font-bold text-xs sm:text-sm mb-2 block font-montserrat tracking-wide">
                           Total
                         </Label>
                         <Input
                           type="text"
                           value={`C$ ${totalLineaValue.toFixed(2)}`}
                           disabled
-                          className="h-12 font-bold text-lg bg-gradient-to-r from-orange-50 to-pink-50 border-2 border-orange-200 rounded-xl"
+                          className="h-11 sm:h-12 font-bold text-base sm:text-lg bg-white text-black border-2 border-orange-500/20 rounded-xl font-montserrat"
                         />
                       </div>
-                      <div className="col-span-2 md:col-span-1">
+                      <div className="col-span-12 sm:col-span-6 md:col-span-1 flex justify-center sm:justify-end">
                         <Button
                           type="button"
                           variant="destructive"
                           size="icon"
                           onClick={() => removeLinea(index)}
-                          className="h-12 w-12 rounded-xl shadow-lg"
+                          className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl shadow-lg"
                         >
-                          <Trash2 className="h-5 w-5" />
+                          <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
                         </Button>
                       </div>
                     </div>
@@ -348,11 +350,11 @@ export function CotizacionForm() {
                 type="button"
                 variant="outline"
                 onClick={addLinea}
-                className="w-full border-2 border-orange-300 text-orange-600 hover:bg-gradient-to-r hover:from-orange-50 hover:to-pink-50 hover:border-orange-400 h-14 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300"
+                className="w-full border-2 border-orange-500/30 text-orange-600 hover:bg-orange-500/10 hover:border-orange-500 h-12 sm:h-14 rounded-xl font-semibold text-base sm:text-lg shadow-lg transition-all duration-300 font-montserrat"
                 disabled={items.length === 0}
               >
-                <Plus className="h-5 w-5 mr-2" />
-                Agregar Item
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                <span className="text-sm sm:text-base">Agregar Item</span>
               </Button>
             </motion.div>
 
@@ -362,14 +364,14 @@ export function CotizacionForm() {
                 animate={{ opacity: 1, y: 0 }}
                 className="border-t-2 border-orange-200 pt-6 mt-6"
               >
-                <div className="flex justify-between items-center p-6 bg-gradient-to-r from-orange-50 via-pink-50 to-orange-50 rounded-2xl shadow-lg">
+                <div className="flex justify-between items-center p-6 bg-orange-500/10 rounded-2xl shadow-lg border border-orange-500/20">
                   <div className="flex items-center gap-3">
                     <Sparkles className="h-6 w-6 text-orange-500" />
-                    <span className="text-2xl font-bold text-slate-800">
+                    <span className="text-xl sm:text-2xl font-bold text-black font-montserrat">
                       Total:
                     </span>
                   </div>
-                  <span className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent">
+                  <span className="text-2xl sm:text-3xl font-bold text-orange-500 font-montserrat">
                     C$ {Number(total || 0).toFixed(2)}
                   </span>
                 </div>
@@ -379,7 +381,7 @@ export function CotizacionForm() {
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-orange-500 via-orange-600 to-pink-500 hover:from-orange-600 hover:via-orange-700 hover:to-pink-600 text-white h-14 rounded-xl font-bold text-lg shadow-2xl hover:shadow-orange-500/50 transition-all duration-300 relative overflow-hidden"
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white h-12 sm:h-14 rounded-xl font-bold text-base sm:text-lg shadow-2xl hover:shadow-orange-500/50 transition-all duration-300 relative overflow-hidden font-montserrat"
                 disabled={submitting || lineas.length === 0}
               >
                 <span className="relative z-10 flex items-center justify-center">

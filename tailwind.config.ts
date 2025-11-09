@@ -13,6 +13,11 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        azonix: ['Azonix', 'Orbitron', 'sans-serif'],
+        montserrat: ['Montserrat', 'sans-serif'],
+        sans: ['Montserrat', 'system-ui', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

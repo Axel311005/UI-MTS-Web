@@ -172,7 +172,7 @@ export const navigationConfig: MenuItem[] = [
   },
   {
     title: 'Administración',
-    url: '/admin',
+    url: '/admin/administracion',
     icon: Shield,
     userTypes: ['gerente', 'superuser'],
   },

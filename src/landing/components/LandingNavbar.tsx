@@ -29,55 +29,68 @@ export function LandingNavbar() {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-200">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-sm border-b border-orange-500/20">
+      {/* Top bar */}
+      <div className="bg-black border-b border-orange-500/10">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-end h-8">
+          </div>
+        </div>
+      </div>
+      
+      {/* Main nav */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center space-x-2">
-            <motion.div
+        <div className="flex items-center justify-between h-20">
+          <Link to="/" className="flex items-center">
+            <motion.img
+              src="/logo-mts-trans.png"
+              alt="MTS - Taller de Motos - Logo"
+              className="h-12 w-auto"
               whileHover={{ scale: 1.05 }}
-              className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent"
-            >
-              MST MTS
-            </motion.div>
+            />
           </Link>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-6">
+          <div className="hidden md:flex items-center space-x-8">
             <Link
               to="/"
-              className="text-slate-700 hover:text-orange-500 transition-colors"
+              className="text-white hover:text-orange-500 transition-colors font-medium text-sm uppercase tracking-wide relative group font-montserrat"
             >
               Inicio
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300"></span>
             </Link>
             {isAuthenticated ? (
               <>
                 <Link
                   to="/seguimiento"
-                  className="text-slate-700 hover:text-orange-500 transition-colors"
+                  className="text-white hover:text-orange-500 transition-colors font-medium text-sm uppercase tracking-wide relative group font-montserrat"
                 >
                   Seguimiento
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300"></span>
                 </Link>
                 <Link
                   to="/cotizacion"
-                  className="text-slate-700 hover:text-orange-500 transition-colors"
+                  className="text-white hover:text-orange-500 transition-colors font-medium text-sm uppercase tracking-wide relative group font-montserrat"
                 >
                   Cotización
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300"></span>
                 </Link>
                 <Link
                   to="/cita"
-                  className="text-slate-700 hover:text-orange-500 transition-colors"
+                  className="text-white hover:text-orange-500 transition-colors font-medium text-sm uppercase tracking-wide relative group font-montserrat"
                 >
                   Cita
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300"></span>
                 </Link>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="flex items-center gap-2 px-3 py-1 bg-slate-100 hover:bg-slate-200 rounded-full"
+                      className="flex items-center gap-2 px-3 py-1 bg-white/10 hover:bg-white/20 rounded-full border border-white/20"
                     >
-                      <User className="h-4 w-4 text-slate-600" />
-                      <span className="text-sm text-slate-700">
+                      <User className="h-4 w-4 text-white" />
+                      <span className="text-sm text-white">
                         {user?.nombre || user?.email}
                       </span>
                     </Button>
@@ -85,11 +98,11 @@ export function LandingNavbar() {
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuLabel>
                       <div className="flex flex-col">
-                        <span className="text-sm font-medium text-slate-900">
+                        <span className="text-sm font-medium text-black font-montserrat">
                           {user?.nombre || 'Cliente'}
                         </span>
                         {user?.email && (
-                          <span className="text-xs text-slate-500">
+                          <span className="text-xs text-black/60 font-montserrat">
                             {user.email}
                           </span>
                         )}
@@ -98,7 +111,7 @@ export function LandingNavbar() {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={handleLogout}
-                      className="text-slate-700 focus:bg-gradient-to-r focus:from-orange-50 focus:to-pink-50 focus:text-orange-600 cursor-pointer transition-all duration-200 hover:bg-gradient-to-r hover:from-orange-50 hover:to-pink-50"
+                      className="text-black focus:bg-orange-500/10 focus:text-orange-600 cursor-pointer transition-all duration-200 hover:bg-orange-500/10 font-montserrat"
                     >
                       <LogOut className="mr-2 h-4 w-4" />
                       <span className="font-medium">Cerrar sesión</span>
@@ -112,12 +125,13 @@ export function LandingNavbar() {
                   variant="outline"
                   size="sm"
                   onClick={() => navigate('/login')}
+                  className="border-white/40 text-white hover:bg-white/10"
                 >
                   Iniciar Sesión
                 </Button>
                 <Button
                   size="sm"
-                  className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600"
+                  className="bg-orange-500 hover:bg-orange-600 text-white"
                   onClick={() => navigate('/register')}
                 >
                   Registrarse
@@ -128,7 +142,7 @@ export function LandingNavbar() {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2"
+            className="md:hidden p-2 text-white"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? (
@@ -145,11 +159,11 @@ export function LandingNavbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden py-4 space-y-4 border-t border-slate-200"
+            className="md:hidden py-4 space-y-4 border-t border-orange-500/20 bg-black"
           >
             <Link
               to="/"
-              className="block text-slate-700 hover:text-orange-500 transition-colors"
+              className="block text-white hover:text-orange-500 transition-colors uppercase text-sm font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               Inicio
@@ -158,29 +172,29 @@ export function LandingNavbar() {
               <>
                 <Link
                   to="/seguimiento"
-                  className="block text-slate-700 hover:text-orange-500 transition-colors"
+                  className="block text-white hover:text-orange-500 transition-colors uppercase text-sm font-medium"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Seguimiento
                 </Link>
                 <Link
                   to="/cotizacion"
-                  className="block text-slate-700 hover:text-orange-500 transition-colors"
+                  className="block text-white hover:text-orange-500 transition-colors uppercase text-sm font-medium"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Cotización
                 </Link>
                 <Link
                   to="/cita"
-                  className="block text-slate-700 hover:text-orange-500 transition-colors"
+                  className="block text-white hover:text-orange-500 transition-colors uppercase text-sm font-medium"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Cita
                 </Link>
-                <div className="pt-4 border-t border-slate-200">
+                <div className="pt-4 border-t border-orange-500/20">
                   <div className="flex items-center gap-2 mb-2">
-                    <User className="h-4 w-4 text-slate-600" />
-                    <span className="text-sm text-slate-700">
+                    <User className="h-4 w-4 text-white" />
+                    <span className="text-sm text-white">
                       {user?.nombre || user?.email}
                     </span>
                   </div>
@@ -196,11 +210,11 @@ export function LandingNavbar() {
                 </div>
               </>
             ) : (
-              <div className="pt-4 border-t border-slate-200 space-y-2">
+              <div className="pt-4 border-t border-orange-500/20 space-y-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full"
+                  className="w-full border-white/40 text-white hover:bg-white/10"
                   onClick={() => {
                     navigate('/login');
                     setMobileMenuOpen(false);
@@ -210,7 +224,7 @@ export function LandingNavbar() {
                 </Button>
                 <Button
                   size="sm"
-                  className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600"
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white"
                   onClick={() => {
                     navigate('/register');
                     setMobileMenuOpen(false);

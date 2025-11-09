@@ -1,12 +1,43 @@
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/shared/components/ui/button';
-import { Calendar, DollarSign, ArrowRight, Sparkles } from 'lucide-react';
+import {
+  Calendar,
+  DollarSign,
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { useLandingAuthStore } from '../store/landing-auth.store';
+
+const heroSlides = [
+  {
+    id: 1,
+    title: 'ALINEACION DE CHASIS',
+    subtitle: 'Servicio Profesional de Alineación',
+    description:
+      'Especialistas en alineación de chasis y mantenimiento profesional para tu moto',
+    price: 'Servicio Premium',
+    priceSubtext: 'Consulta nuestros servicios y seguimiento en tiempo real',
+    image: '/Moto Hero.png',
+  },
+  {
+    id: 2,
+    title: 'TECNOLOGÍA HIDRÁULICA',
+    subtitle: 'Alineación de Precisión',
+    description:
+      'Equipos profesionales para recuperar la geometría original de tu moto',
+    price: 'Servicio Garantizado',
+    priceSubtext: 'Tecnología de última generación para tu moto',
+    image: '/fotografia-del-taller.jpg',
+  },
+];
 
 export function HeroSection() {
   const navigate = useNavigate();
   const { isAuthenticated } = useLandingAuthStore();
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   const handleCita = () => {
     if (!isAuthenticated) {
@@ -24,148 +55,272 @@ export function HeroSection() {
     }
   };
 
+  // Auto-rotate slides
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide(
+      (prev) => (prev - 1 + heroSlides.length) % heroSlides.length
+    );
+  };
+
+  const goToSlide = (index: number) => {
+    setCurrentSlide(index);
+  };
+
+  const currentHero = heroSlides[currentSlide];
+
+  // Preload images solo cuando el componente está visible
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            heroSlides.forEach((slide) => {
+              const img = new Image();
+              img.src = slide.image;
+            });
+            observer.disconnect();
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    const section = document.querySelector('[data-hero-section]');
+    if (section) {
+      observer.observe(section);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          className="absolute top-20 left-20 w-72 h-72 bg-orange-500/20 rounded-full blur-3xl"
-          animate={{
-            x: [0, 100, 0],
-            y: [0, 50, 0],
-            scale: [1, 1.2, 1],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-        <motion.div
-          className="absolute bottom-20 right-20 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl"
-          animate={{
-            x: [0, -100, 0],
-            y: [0, -50, 0],
-            scale: [1, 1.3, 1],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-        <motion.div
-          className="absolute top-1/2 left-1/2 w-64 h-64 bg-blue-500/10 rounded-full blur-2xl"
-          animate={{
-            rotate: [0, 360],
-            scale: [1, 1.5, 1],
-          }}
-          transition={{
-            duration: 30,
-            repeat: Infinity,
-            ease: 'linear',
-          }}
-        />
+    <section
+      data-hero-section
+      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black"
+    >
+      {/* Carousel Container */}
+      <div className="absolute inset-0">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentSlide}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="absolute inset-0"
+          >
+            {/* Background Image */}
+            <div
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+              style={{
+                backgroundImage: `url(${currentHero.image})`,
+              }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/70"></div>
+            </div>
+
+            {/* Orange accent shapes */}
+            <motion.div
+              className="absolute top-20 right-20 w-96 h-96 bg-orange-500/20 rounded-full blur-3xl"
+              animate={{
+                scale: [1, 1.2, 1],
+                opacity: [0.2, 0.4, 0.2],
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+            />
+            <motion.div
+              className="absolute bottom-20 left-20 w-72 h-72 bg-orange-500/15 rounded-full blur-3xl"
+              animate={{
+                scale: [1, 1.3, 1],
+                opacity: [0.15, 0.3, 0.15],
+              }}
+              transition={{
+                duration: 10,
+                repeat: Infinity,
+                ease: 'easeInOut',
+                delay: 2,
+              }}
+            />
+          </motion.div>
+        </AnimatePresence>
       </div>
 
-      {/* Background overlay con efecto de moto */}
-      <div className="absolute inset-0 bg-[url('/hero-image.jfif')] bg-cover bg-center opacity-30"></div>
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/95 via-slate-900/60 to-transparent"></div>
-
-      {/* Floating particles - reducido */}
-      {[...Array(8)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-1.5 h-1.5 bg-orange-400/20 rounded-full"
-          style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-          }}
-          animate={{
-            y: [0, -20, 0],
-            opacity: [0.2, 0.5, 0.2],
-          }}
-          transition={{
-            duration: 4 + Math.random() * 2,
-            repeat: Infinity,
-            delay: Math.random() * 2,
-            ease: 'easeInOut',
-          }}
-        />
-      ))}
-
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
+      {/* Content */}
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center min-h-screen py-20 md:py-32">
+          {/* Left Side - Text Content */}
           <motion.div
-            className="inline-block mb-6"
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.6, type: 'spring' }}
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-white"
           >
-            <Sparkles className="h-12 w-12 text-orange-400 animate-pulse" />
-          </motion.div>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-sm uppercase tracking-wider text-orange-500 mb-4 font-montserrat font-semibold"
+            >
+              {currentHero.title}
+            </motion.p>
 
-          <motion.h1
-            className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-6 leading-tight"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
-          >
-            ¡TU MOTO COMO{' '}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-pink-400 to-orange-400">
-            NUEVA!
-          </span>
-          </motion.h1>
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 md:mb-6 leading-tight font-azonix"
+            >
+              {currentHero.subtitle}
+            </motion.h1>
 
-          <motion.p
-            className="text-xl md:text-2xl lg:text-3xl text-slate-300 mb-12 max-w-3xl mx-auto leading-relaxed"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
-          >
-            Especialistas en alineación de chasis y mantenimiento profesional
-          </motion.p>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/80 mb-6 md:mb-8 font-montserrat"
+            >
+              {currentHero.description}
+            </motion.p>
 
-          <motion.div
-            className="flex flex-col sm:flex-row gap-6 justify-center items-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7, duration: 0.8 }}
-          >
-            <div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="mb-6 md:mb-8"
+            >
+              <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-orange-500 mb-2 font-azonix">
+                {currentHero.price}
+              </p>
+              {currentHero.priceSubtext && (
+                <p className="text-xs sm:text-sm md:text-base text-white/70 font-montserrat">
+                  {currentHero.priceSubtext}
+                </p>
+              )}
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="flex flex-col sm:flex-row gap-3 md:gap-4"
+            >
               <Button
                 size="lg"
-                className="bg-gradient-to-r from-orange-500 via-orange-600 to-pink-500 hover:from-orange-600 hover:via-orange-700 hover:to-pink-600 text-white text-lg px-10 py-7 rounded-2xl shadow-2xl hover:shadow-orange-500/50 transition-all duration-300 group"
+                className="bg-orange-500 hover:bg-orange-600 text-white text-lg px-8 py-6 rounded-lg shadow-lg hover:shadow-orange-500/50 transition-all duration-300 group font-montserrat font-semibold"
                 onClick={handleCita}
               >
                 <span className="flex items-center">
                   <Calendar className="mr-3 h-6 w-6" />
-                  Agenda tu revisión hoy mismo
+                  Agenda tu revisión
                   <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform" />
                 </span>
               </Button>
-            </div>
 
-            <div>
               <Button
                 size="lg"
                 variant="outline"
-                className="border-2 border-white/40 text-white hover:bg-white/20 hover:border-white/60 text-lg px-10 py-7 rounded-2xl backdrop-blur-md transition-all duration-300 group shadow-lg hover:shadow-xl"
+                className="border-2 border-white/40 text-white hover:bg-white/10 hover:border-white/60 text-lg px-8 py-6 rounded-lg backdrop-blur-md transition-all duration-300 group font-montserrat font-semibold"
                 onClick={handleCotizacion}
               >
                 <DollarSign className="mr-3 h-6 w-6 group-hover:rotate-12 transition-transform" />
                 Cotiza en línea
               </Button>
-            </div>
+            </motion.div>
           </motion.div>
-        </motion.div>
+
+          {/* Right Side - Image */}
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="relative"
+          >
+            <motion.div
+              animate={{
+                y: [0, -20, 0],
+              }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+              className="relative z-10"
+            >
+              <img
+                src={currentHero.image}
+                alt={`${currentHero.subtitle} - ${currentHero.description}`}
+                className="w-full h-auto max-w-2xl mx-auto drop-shadow-2xl"
+                loading="eager"
+                fetchPriority="high"
+              />
+            </motion.div>
+
+            {/* Decorative orange shape behind image */}
+            <motion.div
+              className="absolute inset-0 bg-orange-500/20 rounded-full blur-3xl -z-10"
+              animate={{
+                scale: [1, 1.1, 1],
+                opacity: [0.2, 0.3, 0.2],
+              }}
+              transition={{
+                duration: 6,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+            />
+          </motion.div>
+        </div>
       </div>
 
-      {/* Enhanced scroll indicator */}
+      {/* Navigation Arrows */}
+      <button
+        onClick={prevSlide}
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-md transition-all duration-300 group"
+        aria-label="Previous slide"
+      >
+        <ChevronLeft className="h-6 w-6 text-white group-hover:text-orange-500" />
+      </button>
+
+      <button
+        onClick={nextSlide}
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-md transition-all duration-300 group"
+        aria-label="Next slide"
+      >
+        <ChevronRight className="h-6 w-6 text-white group-hover:text-orange-500" />
+      </button>
+
+      {/* Pagination Dots */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+        {heroSlides.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => goToSlide(index)}
+            className={`h-2 rounded-full transition-all duration-300 ${
+              index === currentSlide
+                ? 'w-8 bg-orange-500'
+                : 'w-2 bg-white/40 hover:bg-white/60'
+            }`}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
+      </div>
+
+      {/* Scroll Indicator */}
       <motion.div
         className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10"
         initial={{ opacity: 0 }}

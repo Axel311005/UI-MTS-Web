@@ -11,7 +11,7 @@ import {
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 import { Label } from '@/shared/components/ui/label';
 import { useState, type FormEvent } from 'react';
-import { useLocation, useNavigate } from 'react-router';
+import { useLocation, useNavigate, Link } from 'react-router';
 import { useAuthStore } from '../store/auth.store';
 import { useLandingAuthStore } from '@/landing/store/landing-auth.store';
 
@@ -52,7 +52,6 @@ export default function LoginPage() {
           : 'Usuario';
 
         if (hasPanelAccess) {
-          // Usuario con acceso al panel (gerente, vendedor, superuser)
           const userName = user || 'Usuario';
           toast.success(`Inicio de sesión exitoso. Bienvenido ${userName}`, {
             position: 'top-right',
@@ -60,8 +59,6 @@ export default function LoginPage() {
           const from = (location.state as any)?.from?.pathname || '/admin/facturas';
           navigate(from, { replace: true });
         } else if (cliente && token) {
-          // Usuario cliente - redirigir a landing y actualizar landing auth
-          // El API puede devolver cliente.id o cliente.idCliente
           const clienteId = (cliente as any).id || cliente.idCliente;
           const clienteNombre = 
             (cliente as any).nombreCompleto ||
@@ -70,27 +67,18 @@ export default function LoginPage() {
               .join(' ') || 
             cliente.ruc || 
             'Cliente';
-          console.log('🔐 Login - Cliente objeto:', cliente);
-          console.log('🔐 Login - ClienteId extraído:', clienteId);
-          console.log('🔐 Login - Token recibido:', token ? 'Token presente' : 'Token ausente');
-          console.log('🔐 Login - Token completo:', token);
           setLandingAuth(token, {
             id: Number(authStore.user?.id) || 0,
             email: email,
             clienteId: clienteId,
             nombre: clienteNombre,
           });
-          // Verificar que se guardó en localStorage
-          const savedToken = localStorage.getItem('token');
-          console.log('🔐 Login - Token guardado en localStorage:', savedToken ? 'Sí' : 'No');
-          console.log('🔐 Login - Token guardado completo:', savedToken);
           toast.success(`Bienvenido ${clienteNombre}`, {
             position: 'top-right',
           });
           const from = (location.state as any)?.from?.pathname || '/';
           navigate(from, { replace: true });
         } else {
-          // Usuario sin rol válido
           toast.error(
             'Tu cuenta no tiene permisos para acceder al sistema.',
             { position: 'top-right' }
@@ -117,15 +105,18 @@ export default function LoginPage() {
     }
   };
 
+  const searchParams = new URLSearchParams(location.search);
+  const redirect = searchParams.get('redirect') || '/';
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4 sm:p-6">
       <Card className="w-full max-w-md card-elegant">
         <CardHeader className="space-y-2 text-center">
-          <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-            <LogIn className="w-6 h-6 text-primary" />
+          <div className="mx-auto w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+            <LogIn className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
           </div>
-          <CardTitle className="text-3xl font-bold">Iniciar Sesión</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-2xl sm:text-3xl font-bold">Iniciar Sesión</CardTitle>
+          <CardDescription className="text-sm sm:text-base">
             Ingresa tus credenciales para acceder al sistema
           </CardDescription>
         </CardHeader>
@@ -138,6 +129,7 @@ export default function LoginPage() {
                 type="email"
                 name="email"
                 placeholder="usuario@ejemplo.com"
+                className="h-10 sm:h-11"
                 required
               />
             </div>
@@ -149,7 +141,7 @@ export default function LoginPage() {
                   name="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
-                  className="pr-10"
+                  className="pr-10 h-10 sm:h-11"
                   required
                 />
                 <Button
@@ -167,7 +159,7 @@ export default function LoginPage() {
                 </Button>
               </div>
             </div>
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center justify-between text-xs sm:text-sm">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" className="rounded border-input" />
                 <span className="text-muted-foreground">Recordarme</span>
@@ -186,6 +178,17 @@ export default function LoginPage() {
               Ingresar
             </Button>
           </form>
+          <div className="mt-6 text-center">
+            <p className="text-sm text-muted-foreground">
+              ¿No tienes cuenta?{' '}
+              <Link
+                to={`/register?redirect=${encodeURIComponent(redirect)}`}
+                className="text-primary hover:underline font-semibold"
+              >
+                Regístrate aquí
+              </Link>
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>
