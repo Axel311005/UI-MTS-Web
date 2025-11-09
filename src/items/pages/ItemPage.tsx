@@ -86,7 +86,7 @@ export const ItemPage = () => {
 
   return (
     <div className="space-y-6">
-      <ItemHeader onNewItem={() => navigate('/productos/nuevo')} />
+      <ItemHeader onNewItem={() => navigate('/admin/productos/nuevo')} />
 
       <ItemSearchBar
         value={searchTerm}
@@ -99,7 +99,7 @@ export const ItemPage = () => {
       />
 
       {showFilters && (
-        <div className="animate-in fade-in-50 slide-in-from-top-1">
+        <div>
           <ItemFilters
             clasificacion={clasificacionFilter}
             clasificacionOptions={clasificacionOptions}

@@ -57,7 +57,7 @@ export default function NuevaImpuestoPage() {
       });
       toast.success('Impuesto creado exitosamente');
       await queryClient.invalidateQueries({ queryKey: ['impuestos'] });
-      navigate('/impuestos');
+      navigate('/admin/impuestos');
     } catch (error: any) {
       const raw = error?.response?.data;
       const message =

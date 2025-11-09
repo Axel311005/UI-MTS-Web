@@ -359,7 +359,7 @@ export const FacturasPage = () => {
         </div>
         <Button
           className="button-hover"
-          onClick={() => navigate('/facturas/nueva')}
+          onClick={() => navigate('/admin/facturas/nueva')}
         >
           <Plus className="h-4 w-4 mr-2" />
           Nueva Factura
@@ -394,7 +394,7 @@ export const FacturasPage = () => {
       </div>
       {/* Los chips de filtros activos ahora se muestran dentro del panel de filtros */}
       {showFilters && (
-        <div className="animate-in fade-in-50 slide-in-from-top-1">
+        <div>
           <FacturaFilters onClose={() => setShowFilters(false)} />
         </div>
       )}

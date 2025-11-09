@@ -40,7 +40,7 @@ export default function VerDetallesCitaPage() {
       } catch (error) {
         console.error('Error loading cita:', error);
         toast.error('No se pudo cargar la cita');
-        navigate('/citas');
+        navigate('/admin/citas');
       } finally {
         setLoading(false);
       }
@@ -149,7 +149,7 @@ export default function VerDetallesCitaPage() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button onClick={() => navigate(`/citas/${id}/editar`)}>
+          <Button onClick={() => navigate(`/admin/citas/${id}/editar`)}>
             <Edit className="h-4 w-4 mr-2" />
             Editar
           </Button>

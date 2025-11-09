@@ -81,7 +81,7 @@ export function MonedaPage() {
         </div>
         <Button
           className="button-hover"
-          onClick={() => navigate('/monedas/nueva')}
+          onClick={() => navigate('/admin/monedas/nueva')}
         >
           <Plus className="h-4 w-4 mr-2" />
           Nueva Moneda
@@ -172,7 +172,9 @@ export function MonedaPage() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
                             onClick={() =>
-                              navigate(`/monedas/${moneda.idMoneda}/editar`)
+                              navigate(
+                                `/admin/monedas/${moneda.idMoneda}/editar`
+                              )
                             }
                           >
                             <Edit className="mr-2 h-4 w-4" />

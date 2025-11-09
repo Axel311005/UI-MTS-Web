@@ -38,7 +38,7 @@ export default function EditarUnidadMedidaPage() {
         });
       } catch (error) {
         toast.error('No se pudo cargar la unidad de medida');
-        navigate('/unidades-medida');
+        navigate('/admin/unidades-medida');
       } finally {
         setIsLoading(false);
       }
@@ -79,7 +79,7 @@ export default function EditarUnidadMedidaPage() {
       await patchUnidadMedida(numericId, { descripcion: formValues.descripcion });
       toast.success('Unidad de medida actualizada exitosamente');
       await queryClient.invalidateQueries({ queryKey: ['unidadMedidas'] });
-      navigate('/unidades-medida');
+      navigate('/admin/unidades-medida');
     } catch (error: any) {
       toast.error('No se pudo actualizar la unidad de medida');
     } finally {

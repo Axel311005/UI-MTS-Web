@@ -38,7 +38,7 @@ export default function EditarTipoPagoPage() {
         });
       } catch (error) {
         toast.error('No se pudo cargar el tipo de pago');
-        navigate('/tipos-pago');
+        navigate('/admin/tipos-pago');
       } finally {
         setIsLoading(false);
       }
@@ -79,7 +79,7 @@ export default function EditarTipoPagoPage() {
       await patchTipoPago(numericId, { descripcion: formValues.descripcion });
       toast.success('Tipo de pago actualizado exitosamente');
       await queryClient.invalidateQueries({ queryKey: ['tipoPagos'] });
-      navigate('/tipos-pago');
+      navigate('/admin/tipos-pago');
     } catch (error: any) {
       toast.error('No se pudo actualizar el tipo de pago');
     } finally {

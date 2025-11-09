@@ -29,7 +29,7 @@ export default function NuevaAseguradoraPage() {
       await postAseguradoraAction(data);
       await queryClient.invalidateQueries({ queryKey: ['aseguradoras'] });
       toast.success('Aseguradora creada');
-      navigate('/aseguradoras');
+      navigate('/admin/aseguradoras');
     } catch (error) {
       const message =
         error instanceof Error

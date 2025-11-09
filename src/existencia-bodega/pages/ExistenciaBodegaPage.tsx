@@ -93,7 +93,7 @@ export function ExistenciaBodegaPage() {
         </div>
         <Button
           className="button-hover"
-          onClick={() => navigate('/existencia-bodega/nueva')}
+          onClick={() => navigate('/admin/existencia-bodega/nueva')}
         >
           <Plus className="h-4 w-4 mr-2" />
           Nueva Existencia

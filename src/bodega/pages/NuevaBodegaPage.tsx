@@ -41,7 +41,7 @@ export default function NuevaBodegaPage() {
         queryKey: ['bodegas'],
         exact: false,
       });
-      navigate('/bodegas');
+      navigate('/admin/bodegas');
     } catch (error: any) {
       const raw = error?.response?.data;
       const message =

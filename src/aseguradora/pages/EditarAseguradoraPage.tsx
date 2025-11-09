@@ -45,7 +45,7 @@ export default function EditarAseguradoraPage() {
         queryKey: ['aseguradoras', aseguradoraId],
       });
       toast.success('Aseguradora actualizada');
-      navigate('/aseguradoras');
+      navigate('/admin/aseguradoras');
     } catch (err) {
       const message =
         err instanceof Error

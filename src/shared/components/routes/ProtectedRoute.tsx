@@ -1,19 +1,44 @@
 import { Navigate, Outlet, useLocation } from 'react-router';
 import { useAuthStore } from '@/auth/store/auth.store';
+import { useLandingAuthStore } from '@/landing/store/landing-auth.store';
 
 export function ProtectedRoute() {
   const authStatus = useAuthStore((s) => s.authStatus);
-  const hasPanelAccess = useAuthStore((s) => s.hasPanelAccess());
+  const hasPanelAccess = useAuthStore((s) => s.hasPanelAccess);
+  const user = useAuthStore((s) => s.user);
+  const { isAuthenticated: isLandingAuthenticated } = useLandingAuthStore();
   const location = useLocation();
+
+  // Si está verificando, mostrar loading mínimo (solo si realmente está checking)
+  if (authStatus === 'checking') {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Verificando autenticación...</p>
+        </div>
+      </div>
+    );
+  }
 
   const isAuthenticated = authStatus === 'authenticated';
 
-  if (authStatus === 'checking') {
-    return <div style={{ padding: 16 }} />;
+  // Verificar acceso al panel
+  const canAccessPanel = typeof hasPanelAccess === 'function' ? hasPanelAccess() : false;
+  const isCliente = user?.cliente !== undefined && user?.cliente !== null;
+
+  // Si está autenticado pero es cliente (no tiene acceso al panel), redirigir a landing
+  if (isAuthenticated && isCliente && !canAccessPanel) {
+    return <Navigate to="/" replace />;
   }
 
-  if (isAuthenticated && !hasPanelAccess) {
-    // Redirect to login with reason, NotAuthenticatedRoute will handle messaging/log-out
+  // Si está autenticado en landing pero intenta acceder al panel, redirigir a landing
+  if (isLandingAuthenticated && !canAccessPanel) {
+    return <Navigate to="/" replace />;
+  }
+
+  // Si está autenticado pero no tiene acceso al panel (y no es cliente), redirigir a login
+  if (isAuthenticated && !canAccessPanel) {
     return (
       <Navigate
         to="/auth/login"
@@ -23,6 +48,7 @@ export function ProtectedRoute() {
     );
   }
 
+  // Si no está autenticado, redirigir al login
   if (!isAuthenticated) {
     return <Navigate to="/auth/login" replace state={{ from: location }} />;
   }

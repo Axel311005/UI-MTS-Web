@@ -23,11 +23,11 @@ export function ItemRowActions({ item }: ItemRowActionsProps) {
   const queryClient = useQueryClient();
 
   const onView = () => {
-    navigate(`/productos/${item.idItem}`);
+    navigate(`/admin/productos/${item.idItem}`);
   };
 
   const onEdit = () => {
-    navigate(`/productos/${item.idItem}/editar`);
+    navigate(`/admin/productos/${item.idItem}/editar`);
   };
 
   const onDelete = async () => {

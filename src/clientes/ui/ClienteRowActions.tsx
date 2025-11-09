@@ -26,11 +26,11 @@ export function ClienteRowActions({ cliente }: ClienteRowActionsProps) {
   const [processing, setProcessing] = useState(false);
 
   const onViewProfile = () => {
-    navigate(`/clientes/${clienteId}`);
+    navigate(`/admin/clientes/${clienteId}`);
   };
 
   const onEdit = () => {
-    navigate(`/clientes/${clienteId}/editar`);
+    navigate(`/admin/clientes/${clienteId}/editar`);
   };
 
   const onDelete = async () => {

@@ -1,6 +1,6 @@
 import { SidebarProvider } from '@/shared/components/ui/sidebar';
 import { AppHeader } from './AppHeader';
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useMemo } from 'react';
 import { Outlet } from 'react-router';
 import { useAuthStore, type PanelRole } from '@/auth/store/auth.store';
 import { getGroupedNavigationItems } from '@/shared/config/navigation';
@@ -45,14 +45,18 @@ export const AppLayout = ({
 }: AppLayoutProps) => {
   const user = useAuthStore((s) => s.user);
 
-  // Generar navegación según roles (gerente, vendedor, superuser)
-  let finalNavigationItems: MenuItem[] = navigationItems ?? [];
-  let finalCatalogItems = catalogItems;
-  let finalSegurosItems = segurosItems;
-  let finalClientPortalItems = clientPortalItems;
-  let finalSystemItems = systemItems;
+  // Generar navegación según roles (gerente, vendedor, superuser) - memoizado para evitar recargas
+  const navigationConfig = useMemo(() => {
+    if (navigationItems) {
+      return {
+        finalNavigationItems: navigationItems,
+        finalCatalogItems: catalogItems,
+        finalSegurosItems: segurosItems,
+        finalClientPortalItems: clientPortalItems,
+        finalSystemItems: systemItems,
+      };
+    }
 
-  if (!navigationItems) {
     // Obtener todos los roles del usuario
     const rawRoles = user?.roles ?? [];
     const roles = Array.isArray(rawRoles)
@@ -63,7 +67,6 @@ export const AppLayout = ({
     // Priorizar superuser > gerente > vendedor para determinar el tipo principal
     let userType: PanelRole = 'vendedor';
     if (roles.includes('superuser')) {
-      // Superuser tiene acceso completo como gerente
       userType = 'superuser';
     } else if (roles.includes('gerente')) {
       userType = 'gerente';
@@ -71,14 +74,24 @@ export const AppLayout = ({
       userType = 'vendedor';
     }
     
-    // Obtener items para el tipo principal (superuser se mapea a gerente internamente)
+    // Obtener items para el tipo principal
     const grouped = getGroupedNavigationItems(userType);
-    finalNavigationItems = grouped.navigationItems;
-    finalCatalogItems = grouped.catalogItems;
-    finalSegurosItems = grouped.segurosItems;
-    finalClientPortalItems = grouped.clientPortalItems;
-    finalSystemItems = grouped.systemItems;
-  }
+    return {
+      finalNavigationItems: grouped.navigationItems,
+      finalCatalogItems: grouped.catalogItems,
+      finalSegurosItems: grouped.segurosItems,
+      finalClientPortalItems: grouped.clientPortalItems,
+      finalSystemItems: grouped.systemItems,
+    };
+  }, [user?.roles, navigationItems, catalogItems, segurosItems, clientPortalItems, systemItems]);
+
+  const {
+    finalNavigationItems,
+    finalCatalogItems,
+    finalSegurosItems,
+    finalClientPortalItems,
+    finalSystemItems,
+  } = navigationConfig;
 
   return (
     <SidebarProvider>
@@ -102,9 +115,7 @@ export const AppLayout = ({
             <Suspense fallback={<BreadcrumbsFallback />}>
               <Breadcrumbs />
             </Suspense>
-            <div className="animate-fade-in">
-              <Outlet />
-            </div>
+            <Outlet />
           </main>
         </div>
       </div>

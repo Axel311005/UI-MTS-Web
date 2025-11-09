@@ -15,6 +15,7 @@ import {
 } from '../ui/dropdown-menu';
 
 import { useAuthStore } from '@/auth/store/auth.store';
+import { useLandingAuthStore } from '@/landing/store/landing-auth.store';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { NotificationCenter } from './NotificationCenter';
@@ -23,14 +24,17 @@ import { useNotifications } from '@/shared/hooks/use-notification';
 export const AppHeader = () => {
   const { theme, setTheme } = useTheme();
   const { user, logout } = useAuthStore();
+  const logoutLanding = useLandingAuthStore((s) => s.logout);
   const navigate = useNavigate();
   const { notifications, markAsRead, markAllAsRead, removeNotification } =
     useNotifications();
 
   const handleLogout = () => {
     logout();
+    // También limpiar el auth store de landing si está activo
+    logoutLanding();
     toast.success('Sesión cerrada correctamente');
-    navigate('/auth/login');
+    navigate('/');
   };
 
   return (

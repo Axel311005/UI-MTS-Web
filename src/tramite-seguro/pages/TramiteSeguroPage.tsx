@@ -166,7 +166,7 @@ export default function TramitesSegurosPage() {
             Gestión y seguimiento de trámites de seguros
           </p>
         </div>
-        <Button onClick={() => navigate('/tramites-seguros/nuevo')}>
+        <Button onClick={() => navigate('/admin/tramites-seguros/nuevo')}>
           <Plus className="mr-2 h-4 w-4" />
           Nuevo trámite
         </Button>

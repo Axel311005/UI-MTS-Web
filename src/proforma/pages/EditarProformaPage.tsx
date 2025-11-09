@@ -127,7 +127,7 @@ export default function EditarProformaPage() {
         }),
         queryClient.invalidateQueries({ queryKey: ['proformas'] }),
       ]);
-      navigate('/proformas');
+      navigate('/admin/proformas');
     } catch (err: any) {
       console.error('Error guardando líneas:', err);
       toast.error(

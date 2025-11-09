@@ -199,7 +199,7 @@ export default function CotizacionesPage() {
                           variant="outline"
                           size="sm"
                           onClick={() =>
-                            navigate(`/cotizaciones/${cotizacion.idCotizacion}`)
+                            navigate(`/admin/cotizaciones/${cotizacion.idCotizacion}`)
                           }
                         >
                           <Eye className="mr-2 h-4 w-4" /> Ver
@@ -209,7 +209,7 @@ export default function CotizacionesPage() {
                           size="sm"
                           onClick={() =>
                             navigate(
-                              `/cotizaciones/${cotizacion.idCotizacion}/editar`
+                              `/admin/cotizaciones/${cotizacion.idCotizacion}/editar`
                             )
                           }
                         >

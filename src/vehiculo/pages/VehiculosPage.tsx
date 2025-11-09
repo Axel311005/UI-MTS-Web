@@ -145,7 +145,7 @@ export const VehiculosPage = () => {
             Listado de vehículos registrados
           </p>
         </div>
-        <Button onClick={() => navigate('/vehiculos/nuevo')}>
+        <Button onClick={() => navigate('/admin/vehiculos/nuevo')}>
           Nuevo vehículo
         </Button>
       </div>
@@ -198,7 +198,7 @@ export const VehiculosPage = () => {
                         variant="outline"
                         size="sm"
                         onClick={() =>
-                          navigate(`/vehiculos/${v.idVehiculo}/editar`)
+                          navigate(`/admin/vehiculos/${v.idVehiculo}/editar`)
                         }
                       >
                         Editar

@@ -30,7 +30,7 @@ export default function NuevoVehiculoPage() {
 
       toast.success('Vehículo creado exitosamente');
       await queryClient.invalidateQueries({ queryKey: ['vehiculos'] });
-      navigate('/vehiculos');
+      navigate('/admin/vehiculos');
     } catch (error) {
       toast.error('No se pudo crear el vehículo');
     }

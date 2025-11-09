@@ -57,7 +57,7 @@ export default function NuevaMonedaPage() {
       });
       toast.success('Moneda creada exitosamente');
       await queryClient.invalidateQueries({ queryKey: ['monedas'] });
-      navigate('/monedas');
+      navigate('/admin/monedas');
     } catch (error: any) {
       const raw = error?.response?.data;
       const message =

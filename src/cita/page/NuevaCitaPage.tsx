@@ -40,7 +40,7 @@ export default function NuevaCitaPage() {
 
       toast.success('Cita creada exitosamente');
 
-      navigate('/citas');
+      navigate('/admin/citas');
     } catch (error) {
       const message =
         (error as any)?.response?.data?.message ||

@@ -34,13 +34,13 @@ export default function EditarClientePage() {
   useEffect(() => {
     if (!params.id) {
       toast.error('ID de cliente no proporcionado');
-      navigate('/clientes');
+      navigate('/admin/clientes');
       return;
     }
 
     if (!Number.isFinite(clienteId)) {
       toast.error('ID de cliente inválido');
-      navigate('/clientes');
+      navigate('/admin/clientes');
       return;
     }
 
@@ -85,7 +85,7 @@ export default function EditarClientePage() {
           (error instanceof Error ? error.message : undefined) ||
           'No se pudo cargar el cliente';
         toast.error(message);
-        navigate('/clientes');
+        navigate('/admin/clientes');
       } finally {
         toast.dismiss(dismiss);
         setLoading(false);
@@ -161,7 +161,7 @@ export default function EditarClientePage() {
         exact: false,
       });
 
-      navigate('/clientes');
+      navigate('/admin/clientes');
     } catch (error: any) {
       const raw = error?.response?.data;
       const message =

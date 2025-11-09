@@ -76,7 +76,7 @@ export default function VerDetallesFacturaPage() {
       } catch (error) {
         console.error('Error loading factura:', error);
         toast.error('No se pudo cargar la factura');
-        navigate('/facturas');
+        navigate('/admin/facturas');
       } finally {
         setLoading(false);
       }
@@ -206,7 +206,7 @@ export default function VerDetallesFacturaPage() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate('/facturas')}
+            onClick={() => navigate('/admin/facturas')}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -292,7 +292,7 @@ export default function VerDetallesFacturaPage() {
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-          <Button onClick={() => navigate(`/facturas/${id}/editar`)}>
+          <Button onClick={() => navigate(`/admin/facturas/${id}/editar`)}>
             <Edit className="h-4 w-4 mr-2" />
             Editar
           </Button>

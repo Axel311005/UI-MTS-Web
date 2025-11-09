@@ -37,7 +37,7 @@ tallerApi.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Para otros 401, limpiar sesión y redirigir
+    // Para otros 401, limpiar sesión (sin redirigir - ProtectedRoute lo maneja)
     if (error.response?.status === 401) {
       const isLoginPage = window.location.pathname.includes('/auth/login');
       if (!isLoginPage) {
@@ -48,9 +48,7 @@ tallerApi.interceptors.response.use(
           const { useAuthStore } = require('@/auth/store/auth.store');
           useAuthStore.getState().logout();
         } catch {}
-        if (!window.location.pathname.includes('/auth/login')) {
-          window.location.href = '/auth/login';
-        }
+        // NO redirigir aquí - ProtectedRoute manejará la redirección
       }
     }
 

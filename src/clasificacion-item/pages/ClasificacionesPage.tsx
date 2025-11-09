@@ -84,7 +84,7 @@ export function ClasificacionesPage() {
   return (
     <div className="space-y-6">
       <ClasificacionHeader
-        onNewClasificacion={() => navigate('/clasificaciones/nueva')}
+        onNewClasificacion={() => navigate('/admin/clasificaciones/nueva')}
       />
 
       <ClasificacionSearchBar
@@ -98,7 +98,7 @@ export function ClasificacionesPage() {
       />
 
       {showFilters && (
-        <div className="animate-in fade-in-50 slide-in-from-top-1">
+        <div>
           {/* ClasificacionFilters puede agregarse después si se necesita */}
         </div>
       )}
@@ -109,7 +109,7 @@ export function ClasificacionesPage() {
             key={clasificacion.idClasificacion}
             clasificacion={clasificacion}
             onView={(id) => navigate(`/clasificaciones/${id}`)}
-            onEdit={(id) => navigate(`/clasificaciones/${id}/editar`)}
+            onEdit={(id) => navigate(`/admin/clasificaciones/${id}/editar`)}
             onDelete={handleDelete}
             disableDelete={deletingId === clasificacion.idClasificacion}
           />

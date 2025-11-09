@@ -115,7 +115,7 @@ export const ClientesPage = () => {
 
   return (
     <div className="space-y-6">
-      <ClienteHeader onNewClient={() => navigate('/clientes/nuevo')} />
+      <ClienteHeader onNewClient={() => navigate('/admin/clientes/nuevo')} />
 
       <ClienteSearchBar
         value={searchTerm}
@@ -134,7 +134,7 @@ export const ClientesPage = () => {
       />
 
       {showFilters && (
-        <div className="animate-in fade-in-50 slide-in-from-top-1">
+        <div>
           <ClienteFilters onClose={() => setShowFilters(false)} />
         </div>
       )}

@@ -52,13 +52,13 @@ export default function VerDetallesClientePage() {
   useEffect(() => {
     if (!params.id) {
       toast.error('ID de cliente no proporcionado');
-      navigate('/clientes');
+      navigate('/admin/clientes');
       return;
     }
 
     if (!Number.isFinite(clienteId)) {
       toast.error('ID de cliente inválido');
-      navigate('/clientes');
+      navigate('/admin/clientes');
       return;
     }
 
@@ -76,7 +76,7 @@ export default function VerDetallesClientePage() {
           (error instanceof Error ? error.message : undefined) ||
           'No se pudo cargar el cliente';
         toast.error(message);
-        navigate('/clientes');
+        navigate('/admin/clientes');
       } finally {
         toast.dismiss(dismiss);
         setLoading(false);
@@ -159,7 +159,7 @@ export default function VerDetallesClientePage() {
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"
-            onClick={() => navigate(`/clientes/${clienteId}/editar`)}
+            onClick={() => navigate(`/admin/clientes/${clienteId}/editar`)}
           >
             <Edit className="h-4 w-4 mr-2" />
             Editar Cliente

@@ -30,7 +30,8 @@ export default function NuevoClientePage() {
     const newErrors: ClienteFormErrors = {};
 
     // Al menos uno de los nombres o el RUC debe estar presente
-    const hasNombre = formValues.primerNombre.trim() || formValues.primerApellido.trim();
+    const hasNombre =
+      formValues.primerNombre.trim() || formValues.primerApellido.trim();
     if (!hasNombre && !formValues.ruc.trim()) {
       newErrors.primerNombre = 'Debe proporcionar al menos un nombre o RUC';
     }
@@ -81,7 +82,10 @@ export default function NuevoClientePage() {
     try {
       const payload = buildPayload();
       const { clienteId } = await postCliente(payload);
-      const nombreCompleto = [payload.primerNombre, payload.primerApellido].filter(Boolean).join(' ') || payload.ruc;
+      const nombreCompleto =
+        [payload.primerNombre, payload.primerApellido]
+          .filter(Boolean)
+          .join(' ') || payload.ruc;
       toast.success(`Cliente ${nombreCompleto} creado (ID ${clienteId})`);
 
       await queryClient.invalidateQueries({
@@ -89,7 +93,7 @@ export default function NuevoClientePage() {
         exact: false,
       });
 
-      navigate('/clientes');
+      navigate('/admin/clientes');
     } catch (error: any) {
       const raw = error?.response?.data;
       const message =

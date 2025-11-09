@@ -143,7 +143,7 @@ export default function CitasPage() {
             Gestión de citas agendadas por clientes
           </p>
         </div>
-        <Button onClick={() => navigate('/citas/nueva')}>
+        <Button onClick={() => navigate('/admin/citas/nueva')}>
           <Plus className="mr-2 h-4 w-4" /> Nueva Cita
         </Button>
       </div>
@@ -213,7 +213,7 @@ export default function CitasPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => navigate(`/citas/${cita.idCita}`)}
+                          onClick={() => navigate(`/admin/citas/${cita.idCita}`)}
                         >
                           <Eye className="mr-2 h-4 w-4" /> Ver
                         </Button>
@@ -221,7 +221,7 @@ export default function CitasPage() {
                           variant="outline"
                           size="sm"
                           onClick={() =>
-                            navigate(`/citas/${cita.idCita}/editar`)
+                            navigate(`/admin/citas/${cita.idCita}/editar`)
                           }
                         >
                           <Pencil className="mr-2 h-4 w-4" /> Editar

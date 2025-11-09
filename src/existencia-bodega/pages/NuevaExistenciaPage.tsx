@@ -30,7 +30,7 @@ export default function NuevaExistenciaPage() {
         exact: false,
       });
       
-      navigate("/existencia-bodega");
+      navigate("/admin/existencia-bodega");
     } catch (error: any) {
       const raw = error?.response?.data;
       const message =

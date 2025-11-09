@@ -32,7 +32,7 @@ export default function EditarExistenciaPage() {
   useEffect(() => {
     if (!existenciaId) {
       toast.error('ID de existencia no proporcionado');
-      navigate('/existencia-bodega');
+      navigate('/admin/existencia-bodega');
       return;
     }
 
@@ -46,7 +46,7 @@ export default function EditarExistenciaPage() {
       });
     } else if (!isLoading && !existencia) {
       toast.error('Existencia no encontrada');
-      navigate('/existencia-bodega');
+      navigate('/admin/existencia-bodega');
     }
   }, [existencia, isLoading, existenciaId, navigate]);
 
@@ -70,7 +70,7 @@ export default function EditarExistenciaPage() {
         exact: false,
       });
 
-      navigate('/existencia-bodega');
+      navigate('/admin/existencia-bodega');
     } catch (error: any) {
       const raw = error?.response?.data;
       const message =

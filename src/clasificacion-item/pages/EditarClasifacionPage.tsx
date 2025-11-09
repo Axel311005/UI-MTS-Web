@@ -30,7 +30,7 @@ export default function EditarClasificacionPage() {
     const numericId = Number(id);
     if (!Number.isFinite(numericId)) {
       toast.error('No se pudo determinar la clasificación a editar');
-      navigate('/clasificaciones');
+      navigate('/admin/clasificaciones');
       return;
     }
 
@@ -47,7 +47,7 @@ export default function EditarClasificacionPage() {
           (error instanceof Error ? error.message : undefined) ||
           'No se pudo cargar la clasificación';
         toast.error(message);
-        navigate('/clasificaciones');
+        navigate('/admin/clasificaciones');
       } finally {
         setIsLoading(false);
       }
@@ -91,7 +91,7 @@ export default function EditarClasificacionPage() {
         queryKey: ['clasificacionItems'],
         exact: false,
       });
-      navigate('/clasificaciones');
+      navigate('/admin/clasificaciones');
     } catch (error: any) {
       const raw = error?.response?.data;
       const message =

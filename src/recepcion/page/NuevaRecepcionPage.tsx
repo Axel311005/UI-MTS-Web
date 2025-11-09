@@ -37,7 +37,7 @@ export default function NuevaRecepcionPage() {
 
       toast.success('Recepción creada');
 
-      navigate('/recepciones');
+      navigate('/admin/recepciones');
     } catch (error) {
       const message =
         (error as any)?.response?.data?.message ||

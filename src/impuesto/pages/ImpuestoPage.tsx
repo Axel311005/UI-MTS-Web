@@ -1,6 +1,14 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Plus, Search, Filter, Eye, Edit, Trash2, Receipt } from '@/shared/icons';
+import {
+  Plus,
+  Search,
+  Filter,
+  Eye,
+  Edit,
+  Trash2,
+  Receipt,
+} from '@/shared/icons';
 import {
   Card,
   CardContent,
@@ -72,14 +80,16 @@ export function ImpuestoPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-left">Impuestos</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-left">
+            Impuestos
+          </h1>
           <p className="text-muted-foreground text-left">
             Gestiona los impuestos para tus transacciones
           </p>
         </div>
         <Button
           className="button-hover"
-          onClick={() => navigate('/impuestos/nuevo')}
+          onClick={() => navigate('/admin/impuestos/nuevo')}
         >
           <Plus className="h-4 w-4 mr-2" />
           Nuevo Impuesto
@@ -123,7 +133,10 @@ export function ImpuestoPage() {
             <TableBody>
               {filteredImpuestos.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={5}
+                    className="text-center text-muted-foreground"
+                  >
                     No hay impuestos registrados
                   </TableCell>
                 </TableRow>
@@ -143,7 +156,8 @@ export function ImpuestoPage() {
                       {Number(impuesto.porcentaje).toLocaleString('es-PY', {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
-                      })}%
+                      })}
+                      %
                     </TableCell>
                     <TableCell>
                       <Badge
@@ -170,7 +184,9 @@ export function ImpuestoPage() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
                             onClick={() =>
-                              navigate(`/impuestos/${impuesto.idImpuesto}/editar`)
+                              navigate(
+                                `/admin/impuestos/${impuesto.idImpuesto}/editar`
+                              )
                             }
                           >
                             <Edit className="mr-2 h-4 w-4" />
@@ -212,4 +228,3 @@ export function ImpuestoPage() {
     </div>
   );
 }
-

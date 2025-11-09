@@ -98,7 +98,7 @@ export default function EditarCitasPage() {
 
       toast.success('Cita actualizada exitosamente');
 
-      navigate('/citas');
+      navigate('/admin/citas');
     } catch (error) {
       const message =
         (error as any)?.response?.data?.message ||

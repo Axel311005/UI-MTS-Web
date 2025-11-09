@@ -78,7 +78,7 @@ export default function NuevaFacturaFromProformaPage() {
         porcentajeDescuento: values.porcentajeDescuento,
       });
       toast.success('Factura generada desde proforma');
-      navigate('/facturas');
+      navigate('/admin/facturas');
     } catch (error) {
       const message =
         (error as any)?.response?.data?.message ||
@@ -216,7 +216,7 @@ export default function NuevaFacturaFromProformaPage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate('/proformas')}
+                onClick={() => navigate('/admin/proformas')}
               >
                 Cancelar
               </Button>

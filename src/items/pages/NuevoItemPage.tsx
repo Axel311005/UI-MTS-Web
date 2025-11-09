@@ -121,7 +121,7 @@ export default function NuevoItemPage() {
         queryKey: ['items'],
         exact: false,
       });
-      navigate('/productos');
+      navigate('/admin/productos');
     } catch (error: any) {
       const raw = error?.response?.data;
       const message =

@@ -83,7 +83,7 @@ export function TiposPagoPage() {
 
   return (
     <div className="space-y-6">
-      <TipoPagoHeader onNewTipoPago={() => navigate('/tipos-pago/nuevo')} />
+      <TipoPagoHeader onNewTipoPago={() => navigate('/admin/tipos-pago/nuevo')} />
 
       <TipoPagoSearchBar
         value={searchTerm}
@@ -96,7 +96,7 @@ export function TiposPagoPage() {
       />
 
       {showFilters && (
-        <div className="animate-in fade-in-50 slide-in-from-top-1">
+        <div>
           {/* TipoPagoFilters puede agregarse después si se necesita */}
         </div>
       )}
@@ -149,7 +149,7 @@ export function TiposPagoPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem
                           onClick={() =>
-                            navigate(`/tipos-pago/${tipo.idTipoPago}/editar`)
+                            navigate(`/admin/tipos-pago/${tipo.idTipoPago}/editar`)
                           }
                         >
                           <Edit className="mr-2 h-4 w-4" />

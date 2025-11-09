@@ -126,7 +126,7 @@ export default function RecepcionesPage() {
             Gestión de recepciones de vehículos
           </p>
         </div>
-        <Button onClick={() => navigate('/recepciones/nueva')}>
+        <Button onClick={() => navigate('/admin/recepciones/nueva')}>
           <Plus className="mr-2 h-4 w-4" /> Nueva recepción
         </Button>
       </div>

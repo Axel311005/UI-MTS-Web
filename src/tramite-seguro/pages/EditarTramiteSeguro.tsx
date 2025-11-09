@@ -61,15 +61,27 @@ export default function EditarTramiteSeguroPage() {
       });
 
       toast.success('Trámite de seguro actualizado');
-      navigate('/tramites-seguros');
+      navigate('/admin/tramites-seguros');
     } catch (err: any) {
-      const raw = err?.response?.data;
-      const message =
-        raw?.message ||
-        (typeof raw === 'string' ? raw : undefined) ||
+      // El backend devuelve: { message: "...", error: "Bad Request", statusCode: 400 }
+      const responseData = err?.response?.data;
+      
+      // Extraer el mensaje del backend - priorizar message que es el campo correcto
+      const message = 
+        responseData?.message || 
         (err instanceof Error ? err.message : undefined) ||
         'No se pudo actualizar el trámite de seguro';
-      toast.error(message);
+      
+      console.error('Error actualizando trámite de seguro:', {
+        error: err,
+        response: err?.response,
+        responseData,
+        extractedMessage: message,
+      });
+      
+      toast.error(message, {
+        duration: 5000,
+      });
     } finally {
       setIsSubmitting(false);
     }

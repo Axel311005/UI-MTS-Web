@@ -118,7 +118,7 @@ export function BodegasPage() {
         </div>
         <Button
           className="button-hover"
-          onClick={() => navigate('/bodegas/nueva')}
+          onClick={() => navigate('/admin/bodegas/nueva')}
         >
           <Plus className="h-4 w-4 mr-2" />
           Nueva Bodega

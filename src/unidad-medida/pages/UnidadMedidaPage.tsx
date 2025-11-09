@@ -81,7 +81,7 @@ export function UnidadesMedidaPage() {
         </div>
         <Button
           className="button-hover"
-          onClick={() => navigate('/unidades-medida/nueva')}
+          onClick={() => navigate('/admin/unidades-medida/nueva')}
         >
           <Plus className="h-4 w-4 mr-2" />
           Nueva Unidad
@@ -159,7 +159,7 @@ export function UnidadesMedidaPage() {
                         <DropdownMenuItem
                           onClick={() =>
                             navigate(
-                              `/unidades-medida/${unidad.idUnidadMedida}/editar`
+                              `/admin/unidades-medida/${unidad.idUnidadMedida}/editar`
                             )
                           }
                         >

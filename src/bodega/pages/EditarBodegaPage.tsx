@@ -29,7 +29,7 @@ export default function EditarBodegaPage() {
         const message =
           error?.message || 'No se pudo cargar la bodega seleccionada';
         toast.error(message);
-        navigate('/bodegas');
+        navigate('/admin/bodegas');
       } finally {
         setIsLoading(false);
       }
@@ -60,7 +60,7 @@ export default function EditarBodegaPage() {
         queryKey: ['bodegas'],
         exact: false,
       });
-      navigate('/bodegas');
+      navigate('/admin/bodegas');
     } catch (error: any) {
       const raw = error?.response?.data;
       const message =

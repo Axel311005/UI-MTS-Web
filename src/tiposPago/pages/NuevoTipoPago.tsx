@@ -46,7 +46,7 @@ export default function NuevoTipoPagoPage() {
       await postTipoPago({ descripcion: formValues.descripcion });
       toast.success('Tipo de pago creado exitosamente');
       await queryClient.invalidateQueries({ queryKey: ['tipoPagos'] });
-      navigate('/tipos-pago');
+      navigate('/admin/tipos-pago');
     } catch (error: any) {
       toast.error('No se pudo crear el tipo de pago');
     } finally {

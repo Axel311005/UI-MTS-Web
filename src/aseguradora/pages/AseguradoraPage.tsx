@@ -143,7 +143,7 @@ export default function AseguradorasPage() {
             Gestión de aseguradoras
           </p>
         </div>
-        <Button onClick={() => navigate('/aseguradoras/nueva')}>
+        <Button onClick={() => navigate('/admin/aseguradoras/nueva')}>
           <Plus className="mr-2 h-4 w-4" />
           Nueva aseguradora
         </Button>

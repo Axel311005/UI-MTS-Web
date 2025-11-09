@@ -53,7 +53,7 @@ export default function FacturaRowActions({ factura }: Props) {
 
   const onView = () => {
     const id = resolveFacturaId();
-    if (id) navigate(`/facturas/${id}`);
+    if (id) navigate(`/admin/facturas/${id}`);
   };
 
   const handleDownloadReciboPdf = async () => {
@@ -108,7 +108,7 @@ export default function FacturaRowActions({ factura }: Props) {
 
   const onEdit = () => {
     const id = resolveFacturaId();
-    if (id) navigate(`/facturas/${id}/editar`);
+    if (id) navigate(`/admin/facturas/${id}/editar`);
   };
   const onDelete = async () => {
     if (isProcessing) return;

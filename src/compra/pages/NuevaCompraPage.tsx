@@ -25,7 +25,7 @@ export default function NuevaCompraPage() {
   const { monedas } = useMoneda();
   const empleado = useAuthStore((s) => s.user?.empleado);
 
-  // Refrescar datos del servidor al entrar a esta página
+  // Refrescar datos del servidor solo una vez al montar
   useEffect(() => {
     queryClient.invalidateQueries({ queryKey: ['items'] });
     queryClient.invalidateQueries({ queryKey: ['monedas'] });
@@ -33,7 +33,8 @@ export default function NuevaCompraPage() {
     queryClient.invalidateQueries({ queryKey: ['tipoPagos'] });
     queryClient.invalidateQueries({ queryKey: ['bodegas'] });
     queryClient.invalidateQueries({ queryKey: ['consecutivos'] });
-  }, [queryClient]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   interface CompraFormValues {
     consecutivoId: number | '';
@@ -280,7 +281,7 @@ export default function NuevaCompraPage() {
   };
 
   const handleCancel = () => {
-    navigate('/compras');
+    navigate('/admin/compras');
   };
 
   return (

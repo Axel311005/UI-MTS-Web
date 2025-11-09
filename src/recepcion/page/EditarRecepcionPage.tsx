@@ -57,7 +57,7 @@ export default function EditarRecepcionPage() {
 
       toast.success('Recepción actualizada');
 
-      navigate('/recepciones');
+      navigate('/admin/recepciones');
     } catch (error) {
       const message =
         error instanceof Error

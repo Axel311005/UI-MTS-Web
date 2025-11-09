@@ -41,7 +41,7 @@ export default function EditarMonedaPage() {
         });
       } catch (error) {
         toast.error('No se pudo cargar la moneda');
-        navigate('/monedas');
+        navigate('/admin/monedas');
       } finally {
         setIsLoading(false);
       }
@@ -89,7 +89,7 @@ export default function EditarMonedaPage() {
       });
       toast.success('Moneda actualizada exitosamente');
       await queryClient.invalidateQueries({ queryKey: ['monedas'] });
-      navigate('/monedas');
+      navigate('/admin/monedas');
     } catch (error: any) {
       const raw = error?.response?.data;
       const message =

@@ -10,8 +10,14 @@ export const SOCKET_BASE_URL =
 // Namespace para admin
 export const SOCKET_NAMESPACE = '/admin';
 
+// Namespace para cliente
+export const SOCKET_NAMESPACE_CLIENTE = '/cliente';
+
 // URL completa para Socket.IO (Socket.IO maneja el namespace automáticamente)
 export const SOCKET_URL = `${SOCKET_BASE_URL}${SOCKET_NAMESPACE}`;
+
+// URL completa para Socket.IO del namespace cliente
+export const SOCKET_URL_CLIENTE = `${SOCKET_BASE_URL}${SOCKET_NAMESPACE_CLIENTE}`;
 
 // URL base del API (usar para POST de prueba u otros endpoints HTTP)
 export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';

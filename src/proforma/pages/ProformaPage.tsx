@@ -113,7 +113,7 @@ export default function ProformasPage() {
           <h1 className="text-3xl font-bold">Proformas</h1>
           <p className="text-muted-foreground">Gestión de proformas</p>
         </div>
-        <Button onClick={() => navigate('/proformas/nueva')}>
+        <Button onClick={() => navigate('/admin/proformas/nueva')}>
           <Plus className="mr-2 h-4 w-4" />
           Nueva Proforma
         </Button>

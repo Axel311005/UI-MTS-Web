@@ -41,7 +41,7 @@ export default function EditarImpuestoPage() {
         });
       } catch (error) {
         toast.error('No se pudo cargar el impuesto');
-        navigate('/impuestos');
+        navigate('/admin/impuestos');
       } finally {
         setIsLoading(false);
       }
@@ -89,7 +89,7 @@ export default function EditarImpuestoPage() {
       });
       toast.success('Impuesto actualizado exitosamente');
       await queryClient.invalidateQueries({ queryKey: ['impuestos'] });
-      navigate('/impuestos');
+      navigate('/admin/impuestos');
     } catch (error: any) {
       const raw = error?.response?.data;
       const message =

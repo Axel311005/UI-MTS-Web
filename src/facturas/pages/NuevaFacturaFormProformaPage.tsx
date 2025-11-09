@@ -2,12 +2,24 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { Label } from '@/shared/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/components/ui/select';
 import {
   Table,
   TableBody,
@@ -24,6 +36,14 @@ import { getProformaByIdAction } from '@/proforma/actions/get-proforma-by-id';
 import { getProformaLineasByProformaIdAction } from '@/proforma/actions/get-proforma-lineas-by-proforma-id';
 import { ConsecutivoSelect } from '@/shared/components/selects/ConsecutivoSelect';
 import { BodegaSelect } from '@/shared/components/selects/BodegaSelect';
+// Helper local para mostrar nombre del cliente (unifica estructuras posibles)
+function getClienteNombre(cliente: any): string {
+  if (!cliente) return '—';
+  const parts = [cliente?.nombres, cliente?.apellidos, cliente?.razonSocial]
+    .filter(Boolean)
+    .join(' ');
+  return parts || cliente?.nombre || '—';
+}
 
 export default function NuevaFacturaFromProformaPage() {
   const navigate = useNavigate();
@@ -74,7 +94,8 @@ export default function NuevaFacturaFromProformaPage() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const update = (patch: Partial<typeof values>) => setValues((v) => ({ ...v, ...patch }));
+  const update = (patch: Partial<typeof values>) =>
+    setValues((v) => ({ ...v, ...patch }));
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -106,9 +127,13 @@ export default function NuevaFacturaFromProformaPage() {
         porcentajeDescuento: values.porcentajeDescuento,
       });
       toast.success('Factura generada desde proforma');
-      navigate('/facturas');
+      navigate('/admin/facturas');
     } catch (error) {
-      const message = (error as any)?.response?.data?.message || (error instanceof Error ? error.message : 'No se pudo generar la factura');
+      const message =
+        (error as any)?.response?.data?.message ||
+        (error instanceof Error
+          ? error.message
+          : 'No se pudo generar la factura');
       toast.error(message);
     }
   };
@@ -118,7 +143,9 @@ export default function NuevaFacturaFromProformaPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Generar Factura desde Proforma</h1>
-          <p className="text-muted-foreground">Cargando información de la proforma...</p>
+          <p className="text-muted-foreground">
+            Cargando información de la proforma...
+          </p>
         </div>
       </div>
     );
@@ -129,11 +156,13 @@ export default function NuevaFacturaFromProformaPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Generar Factura desde Proforma</h1>
-          <p className="text-muted-foreground text-destructive">
+          <p className="text-destructive">
             No se pudo cargar la información de la proforma
           </p>
         </div>
-        <Button onClick={() => navigate('/proformas')}>Volver a Proformas</Button>
+        <Button onClick={() => navigate('/admin/proformas')}>
+          Volver a Proformas
+        </Button>
       </div>
     );
   }
@@ -142,7 +171,9 @@ export default function NuevaFacturaFromProformaPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Generar Factura desde Proforma</h1>
-        <p className="text-muted-foreground">Complete los datos para generar la factura</p>
+        <p className="text-muted-foreground">
+          Complete los datos para generar la factura
+        </p>
       </div>
 
       {/* Información de la Proforma */}
@@ -158,8 +189,12 @@ export default function NuevaFacturaFromProformaPage() {
             {/* Información Principal */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Código de Proforma</p>
-                <p className="font-semibold text-lg">{proforma.codigoProforma || '—'}</p>
+                <p className="text-sm text-muted-foreground mb-1">
+                  Código de Proforma
+                </p>
+                <p className="font-semibold text-lg">
+                  {proforma.codigoProforma || '—'}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Fecha</p>
@@ -179,7 +214,9 @@ export default function NuevaFacturaFromProformaPage() {
                           : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                       }`}
                     >
-                      {proforma.tramiteSeguro.estado.toString().replace(/_/g, ' ')}
+                      {proforma.tramiteSeguro.estado
+                        .toString()
+                        .replace(/_/g, ' ')}
                     </span>
                   )}
                 </div>
@@ -187,7 +224,9 @@ export default function NuevaFacturaFromProformaPage() {
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Cliente</p>
                 <p className="font-medium">
-                  {proforma.tramiteSeguro?.cliente ? getClienteNombre(proforma.tramiteSeguro.cliente) : '—'}
+                  {proforma.tramiteSeguro?.cliente
+                    ? getClienteNombre(proforma.tramiteSeguro.cliente)
+                    : '—'}
                 </p>
               </div>
               <div>
@@ -201,39 +240,52 @@ export default function NuevaFacturaFromProformaPage() {
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Moneda</p>
                 <p className="font-medium">
-                  {proforma.moneda?.descripcion || '—'} ({proforma.moneda?.simbolo || '—'})
+                  {proforma.moneda?.descripcion || '—'} (
+                  {proforma.moneda?.simbolo || '—'})
                 </p>
               </div>
               {proforma.impuesto && (
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Impuesto</p>
                   <p className="font-medium">
-                    {proforma.impuesto.descripcion} ({proforma.impuesto.porcentaje}%)
+                    {proforma.impuesto.descripcion} (
+                    {proforma.impuesto.porcentaje}%)
                   </p>
                 </div>
               )}
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Subtotal</p>
                 <p className="font-medium">
-                  {simboloMoneda} {Number(proforma.subtotal || 0).toLocaleString('es-PY')}
+                  {simboloMoneda}{' '}
+                  {Number(proforma.subtotal || 0).toLocaleString('es-PY')}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Total Impuesto</p>
+                <p className="text-sm text-muted-foreground mb-1">
+                  Total Impuesto
+                </p>
                 <p className="font-medium">
-                  {simboloMoneda} {Number(proforma.totalImpuesto || 0).toLocaleString('es-PY')}
+                  {simboloMoneda}{' '}
+                  {Number(proforma.totalImpuesto || 0).toLocaleString('es-PY')}
                 </p>
               </div>
               <div className="md:col-span-2 lg:col-span-3">
-                <p className="text-sm text-muted-foreground mb-1">Total Estimado</p>
+                <p className="text-sm text-muted-foreground mb-1">
+                  Total Estimado
+                </p>
                 <p className="font-bold text-xl text-primary">
-                  {simboloMoneda} {Number(proforma.totalEstimado || 0).toLocaleString('es-PY')}
+                  {simboloMoneda}{' '}
+                  {Number(proforma.totalEstimado || 0).toLocaleString('es-PY')}
                 </p>
               </div>
               {proforma.observaciones && (
                 <div className="md:col-span-2 lg:col-span-3">
-                  <p className="text-sm text-muted-foreground mb-1">Observaciones</p>
-                  <p className="font-medium text-sm">{proforma.observaciones}</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Observaciones
+                  </p>
+                  <p className="font-medium text-sm">
+                    {proforma.observaciones}
+                  </p>
                 </div>
               )}
             </div>
@@ -241,7 +293,9 @@ export default function NuevaFacturaFromProformaPage() {
             {/* Líneas de la Proforma */}
             {lineas.length > 0 && (
               <div>
-                <h3 className="text-lg font-semibold mb-3">Líneas de la Proforma</h3>
+                <h3 className="text-lg font-semibold mb-3">
+                  Líneas de la Proforma
+                </h3>
                 <div className="border rounded-lg overflow-hidden">
                   <Table>
                     <TableHeader>
@@ -249,8 +303,12 @@ export default function NuevaFacturaFromProformaPage() {
                         <TableHead>Item</TableHead>
                         <TableHead>Descripción</TableHead>
                         <TableHead className="text-right">Cantidad</TableHead>
-                        <TableHead className="text-right">Precio Unitario</TableHead>
-                        <TableHead className="text-right">Total Línea</TableHead>
+                        <TableHead className="text-right">
+                          Precio Unitario
+                        </TableHead>
+                        <TableHead className="text-right">
+                          Total Línea
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -259,15 +317,25 @@ export default function NuevaFacturaFromProformaPage() {
                           <TableCell className="font-medium">
                             {linea.item?.codigoItem || '—'}
                           </TableCell>
-                          <TableCell>{linea.item?.descripcion || '—'}</TableCell>
-                          <TableCell className="text-right">
-                            {Number(linea.cantidad || 0).toLocaleString('es-PY')}
+                          <TableCell>
+                            {linea.item?.descripcion || '—'}
                           </TableCell>
                           <TableCell className="text-right">
-                            {simboloMoneda} {Number(linea.precioUnitario || 0).toLocaleString('es-PY')}
+                            {Number(linea.cantidad || 0).toLocaleString(
+                              'es-PY'
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {simboloMoneda}{' '}
+                            {Number(linea.precioUnitario || 0).toLocaleString(
+                              'es-PY'
+                            )}
                           </TableCell>
                           <TableCell className="text-right font-medium">
-                            {simboloMoneda} {Number(linea.totalLinea || 0).toLocaleString('es-PY')}
+                            {simboloMoneda}{' '}
+                            {Number(linea.totalLinea || 0).toLocaleString(
+                              'es-PY'
+                            )}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -284,7 +352,9 @@ export default function NuevaFacturaFromProformaPage() {
       <Card>
         <CardHeader>
           <CardTitle>Datos para Generar Factura</CardTitle>
-          <CardDescription>Complete los datos necesarios para generar la factura</CardDescription>
+          <CardDescription>
+            Complete los datos necesarios para generar la factura
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -300,14 +370,19 @@ export default function NuevaFacturaFromProformaPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {(recepciones || []).map((r) => (
-                      <SelectItem key={r.idRecepcion} value={String(r.idRecepcion)}>
+                      <SelectItem
+                        key={r.idRecepcion}
+                        value={String(r.idRecepcion)}
+                      >
                         {r.codigoRecepcion} — {r.vehiculo?.placa}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
                 {errors.recepcionId && (
-                  <p className="text-sm text-destructive">{errors.recepcionId}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.recepcionId}
+                  </p>
                 )}
               </div>
 
@@ -322,14 +397,19 @@ export default function NuevaFacturaFromProformaPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {(tipoPagos || []).map((t) => (
-                      <SelectItem key={t.idTipoPago} value={String(t.idTipoPago)}>
+                      <SelectItem
+                        key={t.idTipoPago}
+                        value={String(t.idTipoPago)}
+                      >
                         {t.descripcion}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
                 {errors.tipoPagoId && (
-                  <p className="text-sm text-destructive">{errors.tipoPagoId}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.tipoPagoId}
+                  </p>
                 )}
               </div>
 
@@ -362,10 +442,14 @@ export default function NuevaFacturaFromProformaPage() {
                   max={100}
                   step={0.01}
                   value={values.porcentajeDescuento}
-                  onChange={(e) => update({ porcentajeDescuento: Number(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    update({ porcentajeDescuento: Number(e.target.value) || 0 })
+                  }
                 />
                 {errors.porcentajeDescuento && (
-                  <p className="text-sm text-destructive">{errors.porcentajeDescuento}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.porcentajeDescuento}
+                  </p>
                 )}
               </div>
             </div>
@@ -380,7 +464,11 @@ export default function NuevaFacturaFromProformaPage() {
             </div>
 
             <div className="flex gap-4 justify-end">
-              <Button type="button" variant="outline" onClick={() => navigate('/proformas')}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate('/proformas')}
+              >
                 Cancelar
               </Button>
               <Button type="submit">Generar Factura</Button>

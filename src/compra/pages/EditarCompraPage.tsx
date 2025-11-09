@@ -60,7 +60,7 @@ export default function EditarCompraPage() {
   const { monedas } = useMoneda();
   const { impuestos } = useImpuesto();
 
-  // Refrescar datos del servidor al entrar a esta página
+  // Refrescar datos del servidor solo una vez al montar
   useEffect(() => {
     queryClient.invalidateQueries({ queryKey: ['items'] });
     queryClient.invalidateQueries({ queryKey: ['monedas'] });
@@ -68,7 +68,8 @@ export default function EditarCompraPage() {
     queryClient.invalidateQueries({ queryKey: ['tipoPagos'] });
     queryClient.invalidateQueries({ queryKey: ['bodegas'] });
     queryClient.invalidateQueries({ queryKey: ['consecutivos'] });
-  }, [queryClient]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Guardar las IDs originales de las líneas para detectar las eliminadas
   const [originalLineIds, setOriginalLineIds] = useState<number[]>([]);
@@ -183,7 +184,7 @@ export default function EditarCompraPage() {
           err?.message ||
           'No se pudo cargar la compra';
         toast.error(message);
-        navigate('/compras');
+        navigate('/admin/compras');
       } finally {
         setIsLoading(false);
       }

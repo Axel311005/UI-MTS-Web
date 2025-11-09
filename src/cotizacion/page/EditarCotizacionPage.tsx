@@ -49,7 +49,7 @@ export default function EditarCotizacionPage() {
 
       toast.success('Cotización actualizada exitosamente');
 
-      navigate('/cotizaciones');
+      navigate('/admin/cotizaciones');
     } catch (error) {
       const message =
         (error as any)?.response?.data?.message ||

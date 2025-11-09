@@ -58,7 +58,7 @@ export default function VerDetallesCotizacionPage() {
   useEffect(() => {
     if (cotizacionQuery.isError) {
       toast.error('No se pudo cargar la cotización');
-      navigate('/cotizaciones');
+      navigate('/admin/cotizaciones');
       return;
     }
 
@@ -215,7 +215,7 @@ export default function VerDetallesCotizacionPage() {
             <FileText className="h-4 w-4 mr-2" />
             Generar PDF
           </Button>
-          <Button onClick={() => navigate(`/cotizaciones/${id}/editar`)}>
+          <Button onClick={() => navigate(`/admin/cotizaciones/${id}/editar`)}>
             <Edit className="h-4 w-4 mr-2" />
             Editar
           </Button>

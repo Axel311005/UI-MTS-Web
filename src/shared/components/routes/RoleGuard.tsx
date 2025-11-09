@@ -7,7 +7,7 @@ export function RoleGuard({ allow }: { allow: PanelRole[] }) {
   const isAllowed = useAuthStore.getState().hasAnyRole(allow);
 
   if (!isAllowed) {
-    return <Navigate to="/facturas" replace />;
+    return <Navigate to="/admin/facturas" replace />;
   }
 
   return <Outlet />;

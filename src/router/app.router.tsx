@@ -5,6 +5,22 @@ import { AppLayout } from '@/shared/components/layouts/AppLayout';
 import { ProtectedRoute } from '@/shared/components/routes/ProtectedRoute';
 import { NotAuthenticatedRoute } from '@/shared/components/routes/NotAuthenticatedRoute';
 import { RoleGuard } from '@/shared/components/routes/RoleGuard';
+import { LandingProtectedRoute } from '@/landing/components/routes/LandingProtectedRoute';
+import { LandingNotAuthenticatedRoute } from '@/landing/components/routes/LandingNotAuthenticatedRoute';
+import { RedirectToAdmin } from '@/shared/components/routes/RedirectToAdmin';
+
+// Landing pages
+import { LandingPage } from '@/landing/pages/LandingPage';
+import { SeguimientoPage } from '@/landing/pages/SeguimientoPage';
+const LandingRegisterPage = lazy(() =>
+  import('@/landing/pages/RegisterPage').then((m) => ({ default: m.default }))
+);
+const CotizacionPage = lazy(() =>
+  import('@/landing/pages/CotizacionPage').then((m) => ({ default: m.default }))
+);
+const CitaPage = lazy(() =>
+  import('@/landing/pages/CitaPage').then((m) => ({ default: m.default }))
+);
 const AseguradorasPage = lazy(() =>
   import('@/aseguradora/pages/AseguradoraPage').then((m) => ({
     default: m.default,
@@ -111,25 +127,23 @@ const EditarRecepcionPage = lazy(() =>
 );
 // Recepción Seguimiento
 const RecepcionSeguimientoPage = lazy(() =>
-  import('@/recepcion-seguimiento/page/RecepcionSeguimientoPage').then(
+  import('@/recepcion-seguimiento/page/RecepcionSeguimientoPage').then((m) => ({
+    default: m.default,
+  }))
+);
+const NuevaRecepcionSeguimientoPage = lazy(() =>
+  import('@/recepcion-seguimiento/page/NuevaRecepcionSeguimientoPage').then(
     (m) => ({
       default: m.default,
     })
   )
 );
-const NuevaRecepcionSeguimientoPage = lazy(() =>
-  import(
-    '@/recepcion-seguimiento/page/NuevaRecepcionSeguimientoPage'
-  ).then((m) => ({
-    default: m.default,
-  }))
-);
 const EditarRecepcionSeguimientoPage = lazy(() =>
-  import(
-    '@/recepcion-seguimiento/page/EditarRecepcionSeguimientoPage'
-  ).then((m) => ({
-    default: m.default,
-  }))
+  import('@/recepcion-seguimiento/page/EditarRecepcionSeguimientoPage').then(
+    (m) => ({
+      default: m.default,
+    })
+  )
 );
 // Vehículos
 const VehiculosPage = lazy(() =>
@@ -362,15 +376,153 @@ const EditarExistenciaPage = lazy(() =>
 );
 
 export const appRouter = createBrowserRouter([
+  // Main routes - Landing Page
+  {
+    path: '/',
+    element: <LandingPage />,
+  },
+  {
+    path: '/seguimiento',
+    element: (
+      <LandingProtectedRoute>
+        <SeguimientoPage />
+      </LandingProtectedRoute>
+    ),
+  },
+
+  // Landing Auth Routes (solo si NO está autenticado)
+  {
+    path: '/login',
+    element: (
+      <LandingNotAuthenticatedRoute>
+        <LoginPage />
+      </LandingNotAuthenticatedRoute>
+    ),
+  },
+  {
+    path: '/register',
+    element: (
+      <LandingNotAuthenticatedRoute>
+        <LandingRegisterPage />
+      </LandingNotAuthenticatedRoute>
+    ),
+  },
+
+  // Landing Protected Routes (requieren autenticación de landing)
+  {
+    path: '/cotizacion',
+    element: (
+      <LandingProtectedRoute>
+        <CotizacionPage />
+      </LandingProtectedRoute>
+    ),
+  },
+  {
+    path: '/cita',
+    element: (
+      <LandingProtectedRoute>
+        <CitaPage />
+      </LandingProtectedRoute>
+    ),
+  },
+
+  // Redirecciones de rutas cortas a rutas completas del panel (con soporte para subrutas)
+  {
+    element: <ProtectedRoute />,
+    children: [
+      {
+        path: '/facturas/*',
+        element: <RedirectToAdmin />,
+      },
+      {
+        path: '/compras/*',
+        element: <RedirectToAdmin />,
+      },
+      {
+        path: '/clientes/*',
+        element: <RedirectToAdmin />,
+      },
+      {
+        path: '/productos/*',
+        element: <RedirectToAdmin />,
+      },
+      {
+        path: '/vehiculos/*',
+        element: <RedirectToAdmin />,
+      },
+      {
+        path: '/recepciones/*',
+        element: <RedirectToAdmin />,
+      },
+      {
+        path: '/recepcion-seguimiento/*',
+        element: <RedirectToAdmin />,
+      },
+      {
+        path: '/cotizaciones/*',
+        element: <RedirectToAdmin />,
+      },
+      {
+        path: '/citas/*',
+        element: <RedirectToAdmin />,
+      },
+      {
+        path: '/proformas/*',
+        element: <RedirectToAdmin />,
+      },
+      {
+        path: '/aseguradoras/*',
+        element: <RedirectToAdmin />,
+      },
+      {
+        path: '/tramites-seguros/*',
+        element: <RedirectToAdmin />,
+      },
+      {
+        path: '/clasificaciones/*',
+        element: <RedirectToAdmin />,
+      },
+      {
+        path: '/unidades-medida/*',
+        element: <RedirectToAdmin />,
+      },
+      {
+        path: '/tipos-pago/*',
+        element: <RedirectToAdmin />,
+      },
+      {
+        path: '/monedas/*',
+        element: <RedirectToAdmin />,
+      },
+      {
+        path: '/impuestos/*',
+        element: <RedirectToAdmin />,
+      },
+      {
+        path: '/bodegas/*',
+        element: <RedirectToAdmin />,
+      },
+      {
+        path: '/existencia-bodega/*',
+        element: <RedirectToAdmin />,
+      },
+    ],
+  },
+
   // Rutas de la app (protegidas)
   {
     element: <ProtectedRoute />, // protege todo debajo
     children: [
       {
-        path: '/',
+        path: '/admin',
         element: <AppLayout />,
         children: [
-          { index: true, element: <Navigate to="/facturas" replace /> },
+          { index: true, element: <Navigate to="/admin/dashboard" replace /> },
+          {
+            path: 'dashboard',
+            element: <FacturasPage />,
+            handle: { crumb: 'Dashboard' },
+          },
           {
             path: 'facturas',
             element: <FacturasPage />,
@@ -437,6 +589,11 @@ export const appRouter = createBrowserRouter([
             handle: { crumb: 'Editar recepción' },
           },
           {
+            path: 'recepciones/:id',
+            element: <Navigate to="/admin/recepciones" replace />,
+            handle: { crumb: 'Recepción' },
+          },
+          {
             path: 'recepcion-seguimiento',
             element: <RecepcionSeguimientoPage />,
             handle: { crumb: 'Seguimiento Recepciones' },
@@ -450,6 +607,11 @@ export const appRouter = createBrowserRouter([
             path: 'recepcion-seguimiento/editar/:id',
             element: <EditarRecepcionSeguimientoPage />,
             handle: { crumb: 'Editar seguimiento' },
+          },
+          {
+            path: 'recepcion-seguimiento/:id',
+            element: <Navigate to="/admin/recepcion-seguimiento" replace />,
+            handle: { crumb: 'Seguimiento' },
           },
           {
             path: 'aseguradoras',
@@ -467,6 +629,11 @@ export const appRouter = createBrowserRouter([
             handle: { crumb: 'Editar aseguradora' },
           },
           {
+            path: 'aseguradoras/:id',
+            element: <Navigate to="/admin/aseguradoras" replace />,
+            handle: { crumb: 'Aseguradora' },
+          },
+          {
             path: 'tramites-seguros',
             element: <TramitesSegurosPage />,
             handle: { crumb: 'Trámites de seguros' },
@@ -482,6 +649,11 @@ export const appRouter = createBrowserRouter([
             handle: { crumb: 'Editar trámite de seguro' },
           },
           {
+            path: 'tramites-seguros/:id',
+            element: <Navigate to="/admin/tramites-seguros" replace />,
+            handle: { crumb: 'Trámite de seguro' },
+          },
+          {
             path: 'vehiculos/nuevo',
             element: <NuevoVehiculoPage />,
             handle: { crumb: 'Nuevo vehículo' },
@@ -490,6 +662,11 @@ export const appRouter = createBrowserRouter([
             path: 'vehiculos/:id/editar',
             element: <EditarVehiculoPage />,
             handle: { crumb: 'Editar vehículo' },
+          },
+          {
+            path: 'vehiculos/:id',
+            element: <Navigate to="/admin/vehiculos" replace />,
+            handle: { crumb: 'Vehículo' },
           },
           {
             path: 'clientes',
@@ -545,6 +722,11 @@ export const appRouter = createBrowserRouter([
             path: 'proformas/editar/:id',
             element: <EditarProformaPage />,
             handle: { crumb: 'Editar proforma' },
+          },
+          {
+            path: 'proformas/:id',
+            element: <Navigate to="/admin/proformas" replace />,
+            handle: { crumb: 'Proforma' },
           },
           {
             path: 'facturas/from-proforma',
@@ -607,6 +789,11 @@ export const appRouter = createBrowserRouter([
             handle: { crumb: 'Editar unidad de medida' },
           },
           {
+            path: 'unidades-medida/:id',
+            element: <Navigate to="/admin/unidades-medida" replace />,
+            handle: { crumb: 'Unidad de medida' },
+          },
+          {
             path: 'tipos-pago',
             element: <TiposPagoPage />,
             handle: { crumb: 'Tipos de Pago' },
@@ -620,6 +807,11 @@ export const appRouter = createBrowserRouter([
             path: 'tipos-pago/:id/editar',
             element: <EditarTipoPagoPage />,
             handle: { crumb: 'Editar tipo de pago' },
+          },
+          {
+            path: 'tipos-pago/:id',
+            element: <Navigate to="/admin/tipos-pago" replace />,
+            handle: { crumb: 'Tipo de pago' },
           },
           {
             path: 'monedas',
@@ -637,6 +829,11 @@ export const appRouter = createBrowserRouter([
             handle: { crumb: 'Editar moneda' },
           },
           {
+            path: 'monedas/:id',
+            element: <Navigate to="/admin/monedas" replace />,
+            handle: { crumb: 'Moneda' },
+          },
+          {
             path: 'impuestos',
             element: <ImpuestoPage />,
             handle: { crumb: 'Impuestos' },
@@ -652,6 +849,11 @@ export const appRouter = createBrowserRouter([
             handle: { crumb: 'Editar impuesto' },
           },
           {
+            path: 'impuestos/:id',
+            element: <Navigate to="/admin/impuestos" replace />,
+            handle: { crumb: 'Impuesto' },
+          },
+          {
             path: 'clasificaciones/nueva',
             element: <NuevaClasificacionPage />,
             handle: { crumb: 'Nueva clasificación' },
@@ -660,6 +862,11 @@ export const appRouter = createBrowserRouter([
             path: 'clasificaciones/:id/editar',
             element: <EditarClasificacionPage />,
             handle: { crumb: 'Editar clasificación' },
+          },
+          {
+            path: 'clasificaciones/:id',
+            element: <Navigate to="/admin/clasificaciones" replace />,
+            handle: { crumb: 'Clasificación' },
           },
           {
             element: <RoleGuard allow={['gerente', 'superuser']} />,
@@ -680,6 +887,11 @@ export const appRouter = createBrowserRouter([
                 handle: { crumb: 'Editar bodega' },
               },
               {
+                path: 'bodegas/:id',
+                element: <Navigate to="/admin/bodegas" replace />,
+                handle: { crumb: 'Bodega' },
+              },
+              {
                 path: 'existencia-bodega',
                 element: <ExistenciaBodegaPage />,
                 handle: { crumb: 'Existencia en bodega' },
@@ -694,61 +906,10 @@ export const appRouter = createBrowserRouter([
                 element: <EditarExistenciaPage />,
                 handle: { crumb: 'Editar existencia' },
               },
-            ],
-          },
-        ],
-      },
-      {
-        path: '/admin',
-        element: <RoleGuard allow={['gerente', 'superuser']} />,
-        children: [
-          {
-            element: <AppLayout />,
-            children: [
               {
-                path: 'facturas',
-                element: <FacturasPage />,
-                handle: { crumb: 'Facturas' },
-              },
-              {
-                path: 'clientes',
-                element: <ClientePage />,
-                handle: { crumb: 'Clientes' },
-              },
-              {
-                path: 'clientes/nuevo',
-                element: <NuevoClientePage />,
-                handle: { crumb: 'Nuevo cliente' },
-              },
-              {
-                path: 'clientes/:id/editar',
-                element: <EditarClientePage />,
-                handle: { crumb: 'Editar cliente' },
-              },
-              {
-                path: 'clientes/:id',
-                element: <VerDetallesClientePage />,
-                handle: { crumb: 'Cliente' },
-              },
-              {
-                path: 'productos',
-                element: <ItemPage />,
-                handle: { crumb: 'Productos' },
-              },
-              {
-                path: 'productos/nuevo',
-                element: <NuevoItemPage />,
-                handle: { crumb: 'Nuevo producto' },
-              },
-              {
-                path: 'productos/:id',
-                element: <VerDetallesItemPage />,
-                handle: { crumb: 'Producto' },
-              },
-              {
-                path: 'productos/:id/editar',
-                element: <EditarItemPage />,
-                handle: { crumb: 'Editar producto' },
+                path: 'existencia-bodega/:id',
+                element: <Navigate to="/admin/existencia-bodega" replace />,
+                handle: { crumb: 'Existencia' },
               },
             ],
           },
@@ -767,5 +928,9 @@ export const appRouter = createBrowserRouter([
     ],
   },
 
-  { path: '*', element: <Navigate to="/" replace /> },
+  // Catch-all: Redirigir cualquier ruta no válida a la landing
+  {
+    path: '*',
+    element: <Navigate to="/" replace />,
+  },
 ]);

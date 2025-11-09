@@ -13,6 +13,7 @@ import { Label } from '@/shared/components/ui/label';
 import { useState, type FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { useAuthStore } from '../store/auth.store';
+import { useLandingAuthStore } from '@/landing/store/landing-auth.store';
 
 export default function LoginPage() {
   const [isPosting, setIsPosting] = useState(false);
@@ -21,6 +22,7 @@ export default function LoginPage() {
   const location = useLocation();
 
   const login = useAuthStore((s) => s.login);
+  const setLandingAuth = useLandingAuthStore((s) => s.setAuth);
 
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -32,9 +34,12 @@ export default function LoginPage() {
     try {
       const ok = await login(email, password);
       if (ok) {
-        const hasAccess = useAuthStore.getState().hasPanelAccess();
-        const empleado = useAuthStore.getState().user?.empleado;
-        const cliente = useAuthStore.getState().user?.cliente;
+        const authStore = useAuthStore.getState();
+        const hasPanelAccess = authStore.hasPanelAccess();
+        const empleado = authStore.user?.empleado;
+        const cliente = authStore.user?.cliente;
+        const token = authStore.token;
+        
         const user = empleado
           ? empleado.nombreCompleto ||
             [empleado.primerNombre, empleado.primerApellido]
@@ -45,20 +50,54 @@ export default function LoginPage() {
               .filter(Boolean)
               .join(' ') || cliente.ruc
           : 'Usuario';
-        if (hasAccess) {
-          toast.success(`Inicio de sesión exitoso. Bienvenido ${user}`, {
+
+        if (hasPanelAccess) {
+          // Usuario con acceso al panel (gerente, vendedor, superuser)
+          const userName = user || 'Usuario';
+          toast.success(`Inicio de sesión exitoso. Bienvenido ${userName}`, {
             position: 'top-right',
           });
-          const from = (location.state as any)?.from?.pathname || '/facturas';
+          const from = (location.state as any)?.from?.pathname || '/admin/facturas';
+          navigate(from, { replace: true });
+        } else if (cliente && token) {
+          // Usuario cliente - redirigir a landing y actualizar landing auth
+          // El API puede devolver cliente.id o cliente.idCliente
+          const clienteId = (cliente as any).id || cliente.idCliente;
+          const clienteNombre = 
+            (cliente as any).nombreCompleto ||
+            [cliente.primerNombre, cliente.primerApellido]
+              .filter(Boolean)
+              .join(' ') || 
+            cliente.ruc || 
+            'Cliente';
+          console.log('🔐 Login - Cliente objeto:', cliente);
+          console.log('🔐 Login - ClienteId extraído:', clienteId);
+          console.log('🔐 Login - Token recibido:', token ? 'Token presente' : 'Token ausente');
+          console.log('🔐 Login - Token completo:', token);
+          setLandingAuth(token, {
+            id: Number(authStore.user?.id) || 0,
+            email: email,
+            clienteId: clienteId,
+            nombre: clienteNombre,
+          });
+          // Verificar que se guardó en localStorage
+          const savedToken = localStorage.getItem('token');
+          console.log('🔐 Login - Token guardado en localStorage:', savedToken ? 'Sí' : 'No');
+          console.log('🔐 Login - Token guardado completo:', savedToken);
+          toast.success(`Bienvenido ${clienteNombre}`, {
+            position: 'top-right',
+          });
+          const from = (location.state as any)?.from?.pathname || '/';
           navigate(from, { replace: true });
         } else {
+          // Usuario sin rol válido
           toast.error(
-            'Tu cuenta no tiene permisos para acceder al panel. Solo gerente, vendedor y superuser pueden acceder.',
+            'Tu cuenta no tiene permisos para acceder al sistema.',
             { position: 'top-right' }
           );
-          // Cerrar sesión y permanecer/volver en login
           useAuthStore.getState().logout();
-          navigate('/auth/login', { replace: true });
+          const currentPath = location.pathname;
+          navigate(currentPath, { replace: true });
         }
       } else {
         toast.error('Error al iniciar sesión. Verifica tus credenciales.', {

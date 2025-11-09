@@ -43,15 +43,27 @@ export default function NuevoTramiteSeguroPage() {
       });
       await queryClient.invalidateQueries({ queryKey: ['tramiteSeguros'] });
       toast.success('Trámite de seguro creado');
-      navigate('/tramites-seguros');
+      navigate('/admin/tramites-seguros');
     } catch (error: any) {
-      const raw = error?.response?.data;
-      const message =
-        raw?.message ||
-        (typeof raw === 'string' ? raw : undefined) ||
+      // El backend devuelve: { message: "...", error: "Bad Request", statusCode: 400 }
+      const responseData = error?.response?.data;
+      
+      // Extraer el mensaje del backend - priorizar message que es el campo correcto
+      const message = 
+        responseData?.message || 
         (error instanceof Error ? error.message : undefined) ||
         'No se pudo crear el trámite de seguro';
-      toast.error(message);
+      
+      console.error('Error creando trámite de seguro:', {
+        error,
+        response: error?.response,
+        responseData,
+        extractedMessage: message,
+      });
+      
+      toast.error(message, {
+        duration: 5000,
+      });
     } finally {
       setIsSubmitting(false);
     }

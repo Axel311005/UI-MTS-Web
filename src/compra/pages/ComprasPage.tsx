@@ -211,7 +211,7 @@ export function ComprasPage() {
         </div>
         <Button
           className="button-hover"
-          onClick={() => navigate('/compras/nueva')}
+          onClick={() => navigate('/admin/compras/nueva')}
         >
           <Plus className="h-4 w-4 mr-2" />
           Nueva Compra
@@ -231,7 +231,7 @@ export function ComprasPage() {
       </div>
 
       {showFilters && (
-        <div className="animate-in fade-in-50 slide-in-from-top-1">
+        <div>
           <CompraFilters onClose={() => setShowFilters(false)} />
         </div>
       )}

@@ -57,7 +57,7 @@ export default function NuevaFacturaPage() {
   }, [empleado]);
   const { monedas } = useMoneda();
 
-  // Refrescar datos del servidor al entrar a esta página
+  // Refrescar datos del servidor solo una vez al montar
   useEffect(() => {
     queryClient.invalidateQueries({ queryKey: ['items'] });
     queryClient.invalidateQueries({ queryKey: ['monedas'] });
@@ -65,7 +65,8 @@ export default function NuevaFacturaPage() {
     queryClient.invalidateQueries({ queryKey: ['tipoPagos'] });
     queryClient.invalidateQueries({ queryKey: ['bodegas'] });
     queryClient.invalidateQueries({ queryKey: ['consecutivos'] });
-  }, [queryClient]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Form state (UI only, no real logic)
   const [formValues, setFormValues] = useState<InvoiceFormValues>({

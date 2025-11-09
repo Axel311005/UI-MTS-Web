@@ -55,12 +55,12 @@ function VerDetallesItemPage() {
   useEffect(() => {
     if (!params.id) {
       toast.error('ID de producto no proporcionado');
-      navigate('/productos');
+      navigate('/admin/productos');
       return;
     }
     if (!Number.isFinite(itemId)) {
       toast.error('ID de producto inválido');
-      navigate('/productos');
+      navigate('/admin/productos');
       return;
     }
 
@@ -78,7 +78,7 @@ function VerDetallesItemPage() {
           (error instanceof Error ? error.message : undefined) ||
           'No se pudo cargar el producto';
         toast.error(message);
-        navigate('/productos');
+        navigate('/admin/productos');
       } finally {
         toast.dismiss(dismiss);
         setLoading(false);
@@ -158,7 +158,7 @@ function VerDetallesItemPage() {
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"
-            onClick={() => navigate(`/productos/${itemId}/editar`)}
+            onClick={() => navigate(`/admin/productos/${itemId}/editar`)}
           >
             <Edit className="h-4 w-4 mr-2" />
             Editar Producto

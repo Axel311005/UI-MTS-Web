@@ -60,7 +60,7 @@ export default function EditarVehiculoPage() {
       });
       toast.success('Vehículo actualizado exitosamente');
       await queryClient.invalidateQueries({ queryKey: ['vehiculos'] });
-      navigate('/vehiculos');
+      navigate('/admin/vehiculos');
     } catch (error) {
       toast.error('No se pudo actualizar el vehículo');
     }

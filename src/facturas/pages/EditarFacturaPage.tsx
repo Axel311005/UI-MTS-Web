@@ -66,7 +66,7 @@ export default function EditarFacturaPage() {
   const [saving, setSaving] = React.useState(false);
   const facturaId = React.useMemo(() => Number(id), [id]);
 
-  // Refrescar datos del servidor al entrar a esta página
+  // Refrescar datos del servidor solo una vez al montar
   React.useEffect(() => {
     queryClient.invalidateQueries({ queryKey: ['items'] });
     queryClient.invalidateQueries({ queryKey: ['monedas'] });
@@ -74,7 +74,8 @@ export default function EditarFacturaPage() {
     queryClient.invalidateQueries({ queryKey: ['tipoPagos'] });
     queryClient.invalidateQueries({ queryKey: ['bodegas'] });
     queryClient.invalidateQueries({ queryKey: ['consecutivos'] });
-  }, [queryClient]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [formValues, setFormValues] = React.useState<InvoiceFormValues>({
     consecutivoId: '',
@@ -155,7 +156,7 @@ export default function EditarFacturaPage() {
       } catch (error) {
         console.error('Error loading invoice:', error);
         toast.error('No se pudo cargar la factura');
-        navigate('/facturas');
+        navigate('/admin/facturas');
       } finally {
         setLoading(false);
       }
@@ -302,7 +303,7 @@ export default function EditarFacturaPage() {
   };
 
   const handleCancel = () => {
-    navigate('/facturas');
+    navigate('/admin/facturas');
   };
 
   if (loading) {

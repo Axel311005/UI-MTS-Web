@@ -90,7 +90,7 @@ export default function NuevaProformaPage() {
       );
       toast.success('Líneas guardadas correctamente');
       await queryClient.invalidateQueries({ queryKey: ['proformas'] });
-      navigate('/proformas');
+      navigate('/admin/proformas');
     } catch (err: any) {
       console.error('Error guardando líneas de proforma:', err);
       toast.error(

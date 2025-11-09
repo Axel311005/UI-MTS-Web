@@ -50,7 +50,7 @@ export default function NuevaClasificacionPage() {
         queryKey: ['clasificacionItems'],
         exact: false,
       });
-      navigate('/clasificaciones');
+      navigate('/admin/clasificaciones');
     } catch (error: any) {
       const raw = error?.response?.data;
       const message =

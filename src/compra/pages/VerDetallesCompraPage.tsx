@@ -129,7 +129,7 @@ export default function VerDetallesCompraPage() {
       } catch (error) {
         console.error('Error cargando compra:', error);
         toast.error('No se pudo cargar la compra');
-        navigate('/compras');
+        navigate('/admin/compras');
       } finally {
         setIsLoading(false);
       }
@@ -212,7 +212,7 @@ export default function VerDetallesCompraPage() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate('/compras')}
+            onClick={() => navigate('/admin/compras')}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -239,7 +239,7 @@ export default function VerDetallesCompraPage() {
             <FileText className="h-4 w-4 mr-2" />
             Generar PDF
           </Button>
-          <Button onClick={() => navigate(`/compras/${id}/editar`)}>
+          <Button onClick={() => navigate(`/admin/compras/${id}/editar`)}>
             <Edit className="h-4 w-4 mr-2" />
             Editar
           </Button>

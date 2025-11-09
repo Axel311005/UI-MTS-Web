@@ -31,13 +31,13 @@ export default function EditarItemPage() {
   useEffect(() => {
     if (!params.id) {
       toast.error('ID de item no proporcionado');
-      navigate('/productos');
+      navigate('/admin/productos');
       return;
     }
 
     if (!Number.isFinite(itemId)) {
       toast.error('ID de item inválido');
-      navigate('/productos');
+      navigate('/admin/productos');
       return;
     }
 
@@ -85,7 +85,7 @@ export default function EditarItemPage() {
           (error instanceof Error ? error.message : undefined) ||
           'No se pudo cargar el producto';
         toast.error(message);
-        navigate('/productos');
+        navigate('/admin/productos');
       } finally {
         toast.dismiss(dismiss);
         setLoading(false);

@@ -40,12 +40,12 @@ export default function CompraRowActions({ compra }: Props) {
 
   const onView = () => {
     const id = resolveCompraId();
-    if (id) navigate(`/compras/${id}`);
+    if (id) navigate(`/admin/compras/${id}`);
   };
 
   const onEdit = () => {
     const id = resolveCompraId();
-    if (id) navigate(`/compras/${id}/editar`);
+    if (id) navigate(`/admin/compras/${id}/editar`);
   };
 
   const onDelete = async () => {

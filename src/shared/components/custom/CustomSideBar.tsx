@@ -39,7 +39,7 @@ export const CustomSideBar = ({
 
   return (
     <Sidebar
-      className="w-64 transition-all duration-300 data-[state=collapsed]:w-16"
+      className="w-64 data-[state=collapsed]:w-16"
       collapsible="icon"
     >
       <SidebarHeader className="p-4 border-b border-sidebar-border">

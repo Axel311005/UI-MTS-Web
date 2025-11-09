@@ -46,7 +46,7 @@ export default function NuevaUnidadMedidaPage() {
       await postUnidadMedida({ descripcion: formValues.descripcion });
       toast.success('Unidad de medida creada exitosamente');
       await queryClient.invalidateQueries({ queryKey: ['unidadMedidas'] });
-      navigate('/unidades-medida');
+      navigate('/admin/unidades-medida');
     } catch (error: any) {
       toast.error('No se pudo crear la unidad de medida');
     } finally {
