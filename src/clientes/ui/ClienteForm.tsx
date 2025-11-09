@@ -20,12 +20,49 @@ interface ClienteFormProps {
   showEstadoToggle?: boolean;
 }
 
+// Formatear RUC automáticamente (J + 13 números)
+const formatRUC = (value: string) => {
+  // Si empieza con J, mantenerla, si no agregarla
+  let cleaned = value.toUpperCase().replace(/[^J0-9]/g, '');
+  
+  // Si no empieza con J, agregarla
+  if (!cleaned.startsWith('J')) {
+    // Si hay números, agregar J al inicio
+    const numbers = cleaned.replace(/J/g, '');
+    cleaned = numbers ? `J${numbers}` : 'J';
+  }
+  
+  // Limitar a J + 13 números máximo
+  if (cleaned.length > 14) {
+    cleaned = cleaned.slice(0, 14);
+  }
+  
+  return cleaned;
+};
+
+// Formatear teléfono: solo 8 números (el +505 se agrega automáticamente)
+const formatPhone = (value: string) => {
+  // Solo permitir números, máximo 8 dígitos
+  const numbers = value.replace(/\D/g, '').slice(0, 8);
+  return numbers;
+};
+
 export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
   const handleChange = (
     field: keyof ClienteFormValues,
     value: string | boolean
   ) => {
     onChange({ ...values, [field]: value });
+  };
+
+  const handleRUCChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatRUC(e.target.value);
+    handleChange('ruc', formatted);
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhone(e.target.value);
+    handleChange('telefono', formatted);
   };
 
   return (
@@ -75,26 +112,34 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
               <Input
                 id="ruc"
                 value={values.ruc}
-                onChange={(e) => handleChange('ruc', e.target.value)}
-                placeholder="12345678-9"
+                onChange={handleRUCChange}
+                placeholder="J9999999999999"
+                maxLength={14}
               />
               {errors.ruc && (
                 <p className="text-sm text-destructive">{errors.ruc}</p>
               )}
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="telefono">Teléfono</Label>
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium pointer-events-none">
+                  +505
+                </div>
+                <Input
+                  id="telefono"
+                  type="tel"
+                  value={values.telefono}
+                  onChange={handlePhoneChange}
+                  placeholder="87781633"
+                  className="pl-14"
+                  maxLength={8}
+                />
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="telefono">Teléfono</Label>
-              <Input
-                id="telefono"
-                value={values.telefono}
-                onChange={(e) => handleChange('telefono', e.target.value)}
-                placeholder="+595 21 123 456"
-              />
-            </div>
-
             <div className="space-y-2">
               <Label htmlFor="direccion">Dirección</Label>
               <Input

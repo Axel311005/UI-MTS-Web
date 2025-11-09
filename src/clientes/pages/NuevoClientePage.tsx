@@ -54,19 +54,28 @@ export default function NuevoClientePage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const buildPayload = (): CreateClientePayload => ({
-    primerNombre: formValues.primerNombre.trim() || null,
-    primerApellido: formValues.primerApellido.trim() || null,
-    ruc: formValues.ruc.trim(),
-    esExonerado: formValues.esExonerado,
-    porcentajeExonerado: formValues.esExonerado
-      ? toNumberOrZero(formValues.porcentajeExonerado)
-      : 0,
-    direccion: formValues.direccion.trim(),
-    telefono: formValues.telefono.trim(),
-    activo: EstadoActivo.ACTIVO,
-    notas: formValues.notas.trim(),
-  });
+  const buildPayload = (): CreateClientePayload => {
+    // Convertir teléfono de formato frontend (87781633) a backend (50587781633)
+    // Solo números, todo pegado sin espacios
+    const telefonoLimpio = formValues.telefono.replace(/\D/g, ''); // Solo números
+    const telefonoBackend = telefonoLimpio.length === 8
+      ? `505${telefonoLimpio}`
+      : telefonoLimpio;
+
+    return {
+      primerNombre: formValues.primerNombre.trim() || null,
+      primerApellido: formValues.primerApellido.trim() || null,
+      ruc: formValues.ruc.trim(),
+      esExonerado: formValues.esExonerado,
+      porcentajeExonerado: formValues.esExonerado
+        ? toNumberOrZero(formValues.porcentajeExonerado)
+        : 0,
+      direccion: formValues.direccion.trim(),
+      telefono: telefonoBackend,
+      activo: EstadoActivo.ACTIVO,
+      notas: formValues.notas.trim(),
+    };
+  };
 
   const handleSave = async () => {
     if (saving) return;

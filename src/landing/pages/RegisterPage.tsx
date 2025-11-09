@@ -15,8 +15,6 @@ import { registerAction } from '../actions/auth.actions';
 import { useLandingAuthStore } from '../store/landing-auth.store';
 import { useAuthStore } from '@/auth/store/auth.store';
 import { UserPlus, Eye, EyeOff } from 'lucide-react';
-import PhoneInput from 'react-phone-number-input';
-import 'react-phone-number-input/style.css';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -30,7 +28,6 @@ export default function RegisterPage() {
     confirmPassword: '',
     primerNombre: '',
     primerApellido: '',
-    ruc: '',
     direccion: '',
     telefono: '',
   });
@@ -44,34 +41,18 @@ export default function RegisterPage() {
     }
   }, [isAuthenticated, navigate, redirect]);
 
-  // Formatear RUC automáticamente (1234567-8)
-  const formatRUC = (value: string) => {
-    // Remover todo excepto números
-    const numbers = value.replace(/\D/g, '');
-
-    // Aplicar formato: 1234567-8
-    if (numbers.length <= 7) {
-      return numbers;
-    } else if (numbers.length <= 8) {
-      return `${numbers.slice(0, 7)}-${numbers.slice(7)}`;
-    } else {
-      // Limitar a 8 dígitos
-      return `${numbers.slice(0, 7)}-${numbers.slice(7, 8)}`;
-    }
+  // Formatear teléfono: solo 8 números (el +505 se agrega automáticamente)
+  const formatPhone = (value: string) => {
+    // Solo permitir números, máximo 8 dígitos
+    const numbers = value.replace(/\D/g, '').slice(0, 8);
+    return numbers;
   };
 
-  const handleRUCChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatRUC(e.target.value);
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhone(e.target.value);
     setFormData((prev) => ({
       ...prev,
-      ruc: formatted,
-    }));
-  };
-
-  const handlePhoneChange = (value: string | undefined) => {
-    setFormData((prev) => ({
-      ...prev,
-      telefono: value || '',
+      telefono: formatted,
     }));
   };
 
@@ -97,12 +78,18 @@ export default function RegisterPage() {
 
     try {
       // Preparar clienteData
+      // Convertir teléfono de formato frontend (87781633) a backend (50587781633)
+      // Solo números, todo pegado
+      const telefonoLimpio = formData.telefono.replace(/\D/g, ''); // Solo números
+      const telefonoBackend =
+        telefonoLimpio.length === 8 ? `505${telefonoLimpio}` : telefonoLimpio;
+
       const clienteData = {
         primerNombre: formData.primerNombre,
         primerApellido: formData.primerApellido,
-        ruc: formData.ruc,
+        ruc: '', // RUC opcional, se envía vacío
         direccion: formData.direccion,
-        telefono: formData.telefono,
+        telefono: telefonoBackend,
       };
 
       await registerAction({
@@ -151,9 +138,10 @@ export default function RegisterPage() {
   ) => {
     const { id, value } = e.target;
 
-    // Si es RUC, usar el formateador especial
-    if (id === 'ruc') {
-      const formatted = formatRUC(value);
+    // Si es teléfono, usar el formateador especial
+    if (id === 'telefono') {
+      // Si es teléfono, usar el formateador especial
+      const formatted = formatPhone(value);
       setFormData((prev) => ({
         ...prev,
         [id]: formatted,
@@ -288,31 +276,22 @@ export default function RegisterPage() {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="ruc">RUC *</Label>
-                  <Input
-                    id="ruc"
-                    placeholder="1234567-8"
-                    value={formData.ruc}
-                    onChange={handleRUCChange}
-                    required
-                    className="h-10 sm:h-11"
-                    maxLength={9}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="telefono">Teléfono *</Label>
-                  <div className="[&_.PhoneInputInput]:h-10 [&_.PhoneInputInput]:sm:h-11 [&_.PhoneInputInput]:rounded-md [&_.PhoneInputInput]:border [&_.PhoneInputInput]:border-input [&_.PhoneInputInput]:bg-background [&_.PhoneInputInput]:px-3 [&_.PhoneInputInput]:py-2 [&_.PhoneInputInput]:text-sm [&_.PhoneInputInput]:ring-offset-background [&_.PhoneInputInput]:focus-visible:outline-none [&_.PhoneInputInput]:focus-visible:ring-2 [&_.PhoneInputInput]:focus-visible:ring-ring [&_.PhoneInputInput]:focus-visible:ring-offset-2 [&_.PhoneInputInput]:disabled:cursor-not-allowed [&_.PhoneInputInput]:disabled:opacity-50 [&_.PhoneInputCountryIcon]:w-6 [&_.PhoneInputCountryIcon]:h-4 [&_.PhoneInputCountrySelect]:h-10 [&_.PhoneInputCountrySelect]:sm:h-11 [&_.PhoneInputCountrySelect]:border [&_.PhoneInputCountrySelect]:border-input [&_.PhoneInputCountrySelect]:bg-background [&_.PhoneInputCountrySelect]:rounded-l-md [&_.PhoneInputCountrySelect]:px-2">
-                    <PhoneInput
-                      international
-                      defaultCountry="NI"
-                      value={formData.telefono}
-                      onChange={handlePhoneChange}
-                      placeholder="Ingresa tu teléfono"
-                      required
-                    />
+              <div className="space-y-2">
+                <Label htmlFor="telefono">Teléfono *</Label>
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium pointer-events-none">
+                    +505
                   </div>
+                  <Input
+                    id="telefono"
+                    type="tel"
+                    placeholder="87781633"
+                    value={formData.telefono}
+                    onChange={handlePhoneChange}
+                    required
+                    className="h-10 sm:h-11 pl-14"
+                    maxLength={8}
+                  />
                 </div>
               </div>
               <div className="space-y-2">

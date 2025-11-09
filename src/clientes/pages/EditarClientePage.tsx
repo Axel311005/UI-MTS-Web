@@ -63,12 +63,21 @@ export default function EditarClientePage() {
           }
           return String(porcentajeRaw);
         })();
+        // Convertir teléfono del backend (50587781633) al formato frontend (87781633)
+        const telefonoFrontend = (() => {
+          const tel = cliente.telefono ?? '';
+          if (tel.startsWith('505') && tel.length === 11) {
+            return tel.slice(3); // Remover "505" del inicio
+          }
+          return tel;
+        })();
+
         setFormValues({
           primerNombre: cliente.primerNombre ?? '',
           primerApellido: cliente.primerApellido ?? '',
           ruc: cliente.ruc ?? '',
           direccion: cliente.direccion ?? '',
-          telefono: cliente.telefono ?? '',
+          telefono: telefonoFrontend,
           esExonerado: Boolean(cliente.esExonerado),
           porcentajeExonerado: porcentajeValue,
           activo:
@@ -123,19 +132,28 @@ export default function EditarClientePage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const buildPayload = () => ({
-    primerNombre: formValues.primerNombre.trim() || null,
-    primerApellido: formValues.primerApellido.trim() || null,
-    ruc: formValues.ruc.trim(),
-    esExonerado: formValues.esExonerado,
-    porcentajeExonerado: formValues.esExonerado
-      ? toNumberOrZero(formValues.porcentajeExonerado)
-      : 0,
-    direccion: formValues.direccion.trim(),
-    telefono: formValues.telefono.trim(),
-    activo: formValues.activo,
-    notas: formValues.notas.trim(),
-  });
+  const buildPayload = () => {
+    // Convertir teléfono de formato frontend (87781633) a backend (50587781633)
+    // Solo números, todo pegado sin espacios
+    const telefonoLimpio = formValues.telefono.replace(/\D/g, ''); // Solo números
+    const telefonoBackend = telefonoLimpio.length === 8
+      ? `505${telefonoLimpio}`
+      : telefonoLimpio;
+
+    return {
+      primerNombre: formValues.primerNombre.trim() || null,
+      primerApellido: formValues.primerApellido.trim() || null,
+      ruc: formValues.ruc.trim(),
+      esExonerado: formValues.esExonerado,
+      porcentajeExonerado: formValues.esExonerado
+        ? toNumberOrZero(formValues.porcentajeExonerado)
+        : 0,
+      direccion: formValues.direccion.trim(),
+      telefono: telefonoBackend,
+      activo: formValues.activo,
+      notas: formValues.notas.trim(),
+    };
+  };
 
   const handleSave = async () => {
     if (saving) return;
