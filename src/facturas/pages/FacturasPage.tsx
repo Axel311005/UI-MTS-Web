@@ -1,15 +1,15 @@
-import { lazy, Suspense, useMemo, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
-import { Plus } from '@/shared/icons';
+import { lazy, Suspense, useMemo, useState, useEffect } from "react";
+import { useNavigate } from "react-router";
+import { Plus } from "@/shared/icons";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@/shared/components/ui/card';
-import { Button } from '@/shared/components/ui/button';
-import { Pagination } from '@/shared/components/ui/pagination';
-import { Filter } from '@/shared/icons';
+} from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { Pagination } from "@/shared/components/ui/pagination";
+import { Filter } from "@/shared/icons";
 
 import {
   Table,
@@ -18,85 +18,96 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared/components/ui/table';
-import { Badge } from '@/shared/components/ui/badge';
-import { FacturaSearch } from '../ui/FacturaSearch';
-import { FacturaFilters } from '../ui/FacturaFilters';
-import { formatDate, formatMoney } from '@/shared/utils/formatters';
-import { useFactura } from '../hooks/useFactura';
-import { useSearchParams } from 'react-router';
-import { useQuery } from '@tanstack/react-query';
-import { SearchFacturaAction } from '../actions/search-facturas-action';
-import type { Factura } from '../types/Factura.interface';
-import { getClienteNombre } from '@/clientes/utils/cliente.utils';
-import type { PaginatedResponse } from '@/shared/types/pagination';
+} from "@/shared/components/ui/table";
+import { Badge } from "@/shared/components/ui/badge";
+import { FacturaSearch } from "../ui/FacturaSearch";
+import { FacturaFilters } from "../ui/FacturaFilters";
+import { formatDate, formatMoney } from "@/shared/utils/formatters";
+import { useFactura } from "../hooks/useFactura";
+import { useSearchParams } from "react-router";
+import { useQuery } from "@tanstack/react-query";
+import { SearchFacturaAction } from "../actions/search-facturas-action";
+import type { Factura } from "../types/Factura.interface";
+import { getClienteNombre } from "@/clientes/utils/cliente.utils";
+import type { PaginatedResponse } from "@/shared/types/pagination";
 
-const FacturaRowActions = lazy(() => import('../ui/FacturaRowActions'));
+const FacturaRowActions = lazy(() => import("../ui/FacturaRowActions"));
 
 export const FacturasPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
   // Leer parámetros de URL o usar valores por defecto
-  const page = parseInt(searchParams.get('page') || '1', 10);
-  const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
+  const page = parseInt(searchParams.get("page") || "1", 10);
+  const pageSize = parseInt(searchParams.get("pageSize") || "10", 10);
 
   const limit = pageSize;
   const offset = (page - 1) * pageSize;
 
   // Leer parámetros de búsqueda/filtros desde la URL
-  const codigoLike = searchParams.get('codigoLike')?.trim() || '';
-  const codigoFactura = searchParams.get('codigo_factura')?.trim() || '';
-  const estado = searchParams.get('estado')?.trim() || '';
-  const bodegaNombre = searchParams.get('bodegaNombre')?.trim() || '';
+  const codigoLike = searchParams.get("codigoLike")?.trim() || "";
+  const codigoFactura = searchParams.get("codigo_factura")?.trim() || "";
+  const estado = searchParams.get("estado")?.trim() || "";
+  const bodegaNombre = searchParams.get("bodegaNombre")?.trim() || "";
   // Leer IDs desde sessionStorage (no se muestran en URL)
   // Usar un estado que se actualice cuando cambien los searchParams (para forzar re-render)
   const [clienteId, setClienteId] = useState(() => {
-    const stored = sessionStorage.getItem('factura_filters_clienteId');
-    return stored ? stored : '';
+    const stored = sessionStorage.getItem("factura_filters_clienteId");
+    return stored ? stored : "";
   });
   const [empleadoId, setEmpleadoId] = useState(() => {
-    const stored = sessionStorage.getItem('factura_filters_empleadoId');
-    return stored ? stored : '';
+    const stored = sessionStorage.getItem("factura_filters_empleadoId");
+    return stored ? stored : "";
   });
   const [monedaId, setMonedaId] = useState(() => {
-    const stored = sessionStorage.getItem('factura_filters_monedaId');
-    return stored ? stored : '';
+    const stored = sessionStorage.getItem("factura_filters_monedaId");
+    return stored ? stored : "";
   });
   const [tipoPagoId, setTipoPagoId] = useState(() => {
-    const stored = sessionStorage.getItem('factura_filters_tipoPagoId');
-    return stored ? stored : '';
+    const stored = sessionStorage.getItem("factura_filters_tipoPagoId");
+    return stored ? stored : "";
   });
 
   // Sincronizar con sessionStorage cuando cambien los searchParams (para detectar cambios desde FacturaFilters)
   useEffect(() => {
-    const storedClienteId = sessionStorage.getItem('factura_filters_clienteId');
-    const storedEmpleadoId = sessionStorage.getItem('factura_filters_empleadoId');
-    const storedMonedaId = sessionStorage.getItem('factura_filters_monedaId');
-    const storedTipoPagoId = sessionStorage.getItem('factura_filters_tipoPagoId');
+    const storedClienteId = sessionStorage.getItem("factura_filters_clienteId");
+    const storedEmpleadoId = sessionStorage.getItem(
+      "factura_filters_empleadoId"
+    );
+    const storedMonedaId = sessionStorage.getItem("factura_filters_monedaId");
+    const storedTipoPagoId = sessionStorage.getItem(
+      "factura_filters_tipoPagoId"
+    );
     if (storedClienteId !== clienteId) {
-      setClienteId(storedClienteId || '');
+      setClienteId(storedClienteId || "");
     }
     if (storedEmpleadoId !== empleadoId) {
-      setEmpleadoId(storedEmpleadoId || '');
+      setEmpleadoId(storedEmpleadoId || "");
     }
     if (storedMonedaId !== monedaId) {
-      setMonedaId(storedMonedaId || '');
+      setMonedaId(storedMonedaId || "");
     }
     if (storedTipoPagoId !== tipoPagoId) {
-      setTipoPagoId(storedTipoPagoId || '');
+      setTipoPagoId(storedTipoPagoId || "");
     }
     // Limpiar el parámetro _refresh si existe (no debe mostrarse en la URL)
-    if (searchParams.has('_refresh')) {
+    if (searchParams.has("_refresh")) {
       const sp = new URLSearchParams(searchParams);
-      sp.delete('_refresh');
+      sp.delete("_refresh");
       setSearchParams(sp, { replace: true });
     }
-  }, [searchParams, clienteId, empleadoId, monedaId, tipoPagoId, setSearchParams]);
-  const fechaInicio = searchParams.get('dateFrom')?.trim() || '';
-  const fechaFin = searchParams.get('dateTo')?.trim() || '';
-  const minTotal = searchParams.get('minTotal')?.trim() || '';
-  const maxTotal = searchParams.get('maxTotal')?.trim() || '';
+  }, [
+    searchParams,
+    clienteId,
+    empleadoId,
+    monedaId,
+    tipoPagoId,
+    setSearchParams,
+  ]);
+  const fechaInicio = searchParams.get("dateFrom")?.trim() || "";
+  const fechaFin = searchParams.get("dateTo")?.trim() || "";
+  const minTotal = searchParams.get("minTotal")?.trim() || "";
+  const maxTotal = searchParams.get("maxTotal")?.trim() || "";
 
   const hasAnyFilter = useMemo(
     () =>
@@ -113,7 +124,7 @@ export const FacturasPage = () => {
         fechaFin,
         minTotal,
         maxTotal,
-      ].some((v) => v !== undefined && v !== null && String(v).trim() !== ''),
+      ].some((v) => v !== undefined && v !== null && String(v).trim() !== ""),
     [
       codigoLike,
       codigoFactura,
@@ -136,45 +147,46 @@ export const FacturasPage = () => {
     offset,
   });
 
-  const { data: facturasFiltradasResponse } =
-    useQuery<PaginatedResponse<Factura>>({
-      queryKey: [
-        'facturas.search',
+  const { data: facturasFiltradasResponse } = useQuery<
+    PaginatedResponse<Factura>
+  >({
+    queryKey: [
+      "facturas.search",
+      codigoLike,
+      codigoFactura,
+      estado,
+      clienteId,
+      empleadoId,
+      monedaId,
+      tipoPagoId,
+      bodegaNombre,
+      fechaInicio,
+      fechaFin,
+      minTotal,
+      maxTotal,
+      limit,
+      offset,
+    ],
+    queryFn: () =>
+      SearchFacturaAction({
         codigoLike,
-        codigoFactura,
+        codigo_factura: codigoFactura,
         estado,
         clienteId,
         empleadoId,
         monedaId,
         tipoPagoId,
         bodegaNombre,
-        fechaInicio,
-        fechaFin,
+        dateFrom: fechaInicio,
+        dateTo: fechaFin,
         minTotal,
         maxTotal,
         limit,
         offset,
-      ],
-      queryFn: () =>
-        SearchFacturaAction({
-          codigoLike,
-          codigo_factura: codigoFactura,
-          estado,
-          clienteId,
-          empleadoId,
-          monedaId,
-          tipoPagoId,
-          bodegaNombre,
-          dateFrom: fechaInicio,
-          dateTo: fechaFin,
-          minTotal,
-          maxTotal,
-          limit,
-          offset,
-        }),
-      enabled: hasAnyFilter,
-      staleTime: 1000 * 60 * 5,
-    });
+      }),
+    enabled: hasAnyFilter,
+    staleTime: 1000 * 60 * 5,
+  });
 
   const facturasFiltradas = useMemo(() => {
     if (!facturasFiltradasResponse) return [];
@@ -190,22 +202,21 @@ export const FacturasPage = () => {
     return facturasFiltradasResponse.total ?? 0;
   }, [facturasFiltradasResponse]);
 
-
   const [showFilters, setShowFilters] = useState(false);
 
   const ESTADO_BADGE_VARIANTS: Record<
     string,
-    'secondary' | 'outline' | 'destructive' | 'default'
+    "secondary" | "outline" | "destructive" | "default"
   > = {
-    PAGADO: 'secondary',
-    PENDIENTE: 'outline',
-    ANULADA: 'destructive',
+    PAGADO: "secondary",
+    PENDIENTE: "outline",
+    ANULADA: "destructive",
   };
 
-  const normalizeEstado = (raw: string) => raw?.toUpperCase?.() ?? '';
+  const normalizeEstado = (raw: string) => raw?.toUpperCase?.() ?? "";
 
   const getEstadoBadgeVariant = (estadoRaw: string) =>
-    ESTADO_BADGE_VARIANTS[normalizeEstado(estadoRaw)] ?? 'default';
+    ESTADO_BADGE_VARIANTS[normalizeEstado(estadoRaw)] ?? "default";
 
   const rows = useMemo(() => {
     const data = hasAnyFilter ? facturasFiltradas : facturas;
@@ -221,7 +232,7 @@ export const FacturasPage = () => {
     if (totalRows === 0) {
       if (page !== 1) {
         const params = new URLSearchParams(searchParams);
-        params.delete('page');
+        params.delete("page");
         setSearchParams(params, { replace: true });
       }
       return;
@@ -232,9 +243,9 @@ export const FacturasPage = () => {
       const lastPage = Math.max(1, computedTotalPages);
       const params = new URLSearchParams(searchParams);
       if (lastPage > 1) {
-        params.set('page', lastPage.toString());
+        params.set("page", lastPage.toString());
       } else {
-        params.delete('page');
+        params.delete("page");
       }
       setSearchParams(params, { replace: true });
     }
@@ -253,7 +264,7 @@ export const FacturasPage = () => {
         </div>
         <Button
           className="button-hover"
-          onClick={() => navigate('/admin/facturas/nueva')}
+          onClick={() => navigate("/admin/facturas/nueva")}
         >
           <Plus className="h-4 w-4 mr-2" />
           Nueva Factura
@@ -263,12 +274,12 @@ export const FacturasPage = () => {
       <div className="flex items-center gap-4">
         <FacturaSearch className="max-w-sm" />
         <Button
-          variant={showFilters ? 'default' : 'outline'}
+          variant={showFilters ? "default" : "outline"}
           onClick={() => setShowFilters((s) => !s)}
           className="whitespace-nowrap"
         >
           <Filter className="h-4 w-4 mr-2" />
-          {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
+          {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
         </Button>
       </div>
       {/* Los chips de filtros activos ahora se muestran dentro del panel de filtros */}
@@ -283,7 +294,7 @@ export const FacturasPage = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="overflow-auto rounded-md border max-h-[480px] relative">
-            <Table className="min-w-[1000px]">
+            <Table className="min-w-[900px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Código</TableHead>
@@ -295,7 +306,13 @@ export const FacturasPage = () => {
                   <TableHead>Estado</TableHead>
                   <TableHead>Tipo Pago</TableHead>
                   <TableHead>Origen</TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
+                  <TableHead
+                    className="text-right"
+                    data-mobile-keep
+                    data-mobile-actions
+                  >
+                    Acciones
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -314,7 +331,7 @@ export const FacturasPage = () => {
                           <div className="font-medium">
                             {factura.cliente
                               ? getClienteNombre(factura.cliente)
-                              : '—'}
+                              : "—"}
                           </div>
                           <div className="text-xs text-muted-foreground">
                             {factura.cliente?.ruc}
@@ -323,10 +340,10 @@ export const FacturasPage = () => {
                       </TableCell>
                       <TableCell>{formatDate(factura.fecha)}</TableCell>
                       <TableCell>
-                        {factura.bodega?.descripcion ?? '—'}
+                        {factura.bodega?.descripcion ?? "—"}
                       </TableCell>
                       <TableCell>
-                        {factura.moneda?.descripcion ?? '—'}
+                        {factura.moneda?.descripcion ?? "—"}
                       </TableCell>
                       <TableCell className="font-semibold">
                         {formatMoney(factura.total)}
@@ -337,7 +354,7 @@ export const FacturasPage = () => {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {factura.tipoPago?.descripcion ?? '—'}
+                        {factura.tipoPago?.descripcion ?? "—"}
                       </TableCell>
                       <TableCell>
                         {factura.proforma ? (
@@ -353,7 +370,11 @@ export const FacturasPage = () => {
                           </span>
                         )}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell
+                        className="text-right"
+                        data-mobile-keep
+                        data-mobile-actions
+                      >
                         <Suspense
                           fallback={
                             <div className="text-xs text-muted-foreground">
@@ -379,20 +400,20 @@ export const FacturasPage = () => {
               onPageChange={(newPage) => {
                 const params = new URLSearchParams(searchParams);
                 if (newPage > 1) {
-                  params.set('page', newPage.toString());
+                  params.set("page", newPage.toString());
                 } else {
-                  params.delete('page');
+                  params.delete("page");
                 }
                 setSearchParams(params, { replace: true });
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                window.scrollTo({ top: 0, behavior: "smooth" });
               }}
               onPageSizeChange={(newSize) => {
                 const params = new URLSearchParams(searchParams);
-                params.delete('page'); // Reset a página 1
+                params.delete("page"); // Reset a página 1
                 if (newSize !== 10) {
-                  params.set('pageSize', newSize.toString());
+                  params.set("pageSize", newSize.toString());
                 } else {
-                  params.delete('pageSize');
+                  params.delete("pageSize");
                 }
                 setSearchParams(params, { replace: true });
               }}

@@ -134,7 +134,7 @@ export function LandingNavbar() {
                   variant="outline"
                   size="sm"
                   onClick={() => navigate("/login")}
-                  className="border-white/40 text-white hover:bg-white/10"
+                  className="border-foreground/40 text-foreground hover:bg-foreground/10 dark:border-white/40 dark:text-white dark:hover:bg-white/10"
                 >
                   Iniciar Sesión
                 </Button>

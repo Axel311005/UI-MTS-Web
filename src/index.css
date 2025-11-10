@@ -213,7 +213,8 @@ Todos los colores en HSL para theming perfecto y accesibilidad ISO/WCAG.
       white-space: normal;
       overflow: visible;
       text-overflow: unset;
-      min-width: 3.25rem;
+      min-width: 2.75rem;
+      max-width: 3.5rem;
       padding-right: 0.5rem;
     }
 
