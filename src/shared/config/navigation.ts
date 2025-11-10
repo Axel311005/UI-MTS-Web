@@ -199,7 +199,7 @@ export const getGroupedNavigationItems = (userType: PanelRole) => {
   );
 
   const catalogItems = allItems.filter((item) =>
-    ['Clasificaciones', 'Unidades de Medida', 'Tipos de Pago', 'Monedas', 'Impuestos'].includes(
+    ['Clasificaciones', 'Unidades de Medida', 'Tipos de Pago', 'Monedas', 'Impuestos', 'Motivos de Cita'].includes(
       item.title
     )
   );
