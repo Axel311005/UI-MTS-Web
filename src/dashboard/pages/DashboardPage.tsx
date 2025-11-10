@@ -95,7 +95,7 @@ export default function DashboardPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-left">Dashboard</h1>
-          <p className="text-muted-foreground text-leftgi">
+          <p className="text-muted-foreground text-left">
             Resumen de tu sistema de facturación
           </p>
         </div>

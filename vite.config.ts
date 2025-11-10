@@ -29,12 +29,17 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
+            // React y sus dependencias deben estar juntos
+            if (id.includes('react') || id.includes('scheduler') || id.includes('react-dom')) {
+              return 'react-core';
+            }
+            // Radix UI debe estar con React, no separado
+            if (id.includes('@radix-ui')) {
+              return 'react-core';
+            }
             if (id.includes('react-router')) return 'router';
             if (id.includes('@tanstack/react-query')) return 'react-query';
-            if (id.includes('@radix-ui')) return 'radix';
             if (id.includes('lucide-react')) return 'icons';
-            if (id.includes('react') || id.includes('scheduler'))
-              return 'react-core';
             return 'vendor';
           }
           if (id.includes('/src/facturas/')) return 'facturas';
