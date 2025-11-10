@@ -380,6 +380,12 @@ const AdministracionPage = lazy(() =>
     default: m.default,
   }))
 );
+
+const EditarEmpleadoPage = lazy(() =>
+  import('@/empleados/pages/EditarEmpleadoPage').then((m) => ({
+    default: m.default,
+  }))
+);
 const ReportesPage = lazy(() =>
   import('@/admin/pages/ReportesPage').then((m) => ({
     default: m.ReportesPage,
@@ -931,6 +937,11 @@ export const appRouter = createBrowserRouter([
                 path: 'administracion',
                 element: <AdministracionPage />,
                 handle: { crumb: 'Administración' },
+              },
+              {
+                path: 'administracion/empleados/:id/editar',
+                element: <EditarEmpleadoPage />,
+                handle: { crumb: 'Editar Empleado' },
               },
               {
                 path: 'reportes',

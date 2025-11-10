@@ -34,6 +34,7 @@ const estadoVariantMap: Record<
   [TramiteSeguroEstado.APROBADO]: 'default',
   [TramiteSeguroEstado.RECHAZADO]: 'destructive',
   [TramiteSeguroEstado.CERRADO]: 'outline',
+  [TramiteSeguroEstado.PENDIENTE_DE_PAGO]: 'secondary',
   EN_REVISION: 'secondary',
 };
 

@@ -29,6 +29,12 @@ export const getVehiculoAction = async (params?: PaginationParams) => {
     const pageData = (paged.data || []).filter(
       (vehiculo) => vehiculo.activo === EstadoActivo.ACTIVO
     );
+    // Ordenar por fecha de creación DESC (más recientes primero)
+    pageData.sort((a, b) => {
+      const dateA = new Date(a.fechaCreacion || 0).getTime();
+      const dateB = new Date(b.fechaCreacion || 0).getTime();
+      return dateB - dateA; // DESC
+    });
 
     const limitValue = params?.limit ?? paged.limit ?? pageData.length;
     const offsetValue = params?.offset ?? paged.offset ?? 0;
@@ -58,6 +64,12 @@ export const getVehiculoAction = async (params?: PaginationParams) => {
   const filteredItems = allItems.filter(
     (vehiculo) => vehiculo.activo === EstadoActivo.ACTIVO
   );
+  // Ordenar por fecha de creación DESC (más recientes primero)
+  filteredItems.sort((a, b) => {
+    const dateA = new Date(a.fechaCreacion || 0).getTime();
+    const dateB = new Date(b.fechaCreacion || 0).getTime();
+    return dateB - dateA; // DESC
+  });
   const limitValue = params?.limit;
   const offsetValue = params?.offset ?? 0;
 

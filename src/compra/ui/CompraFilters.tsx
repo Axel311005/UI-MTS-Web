@@ -45,7 +45,7 @@ export const CompraFilters = ({ onClose }: Props) => {
 
   // Sincronizar con sessionStorage cuando cambia y forzar re-render en ComprasPage
   useEffect(() => {
-    if (empleadoId && empleadoId !== '') {
+    if (empleadoId && typeof empleadoId === 'number') {
       sessionStorage.setItem(EMPLEADO_ID_STORAGE_KEY, String(empleadoId));
     } else {
       sessionStorage.removeItem(EMPLEADO_ID_STORAGE_KEY);
@@ -131,7 +131,7 @@ export const CompraFilters = ({ onClose }: Props) => {
       key: 'empleadoId',
       label: 'Empleado',
       value: useMemo(() => {
-        if (!empleadoId || empleadoId === '' || !empleados) return '';
+        if (!empleadoId || typeof empleadoId !== 'number' || !empleados) return '';
         const empleado = Array.isArray(empleados)
           ? empleados.find((e) => e.idEmpleado === empleadoId)
           : null;

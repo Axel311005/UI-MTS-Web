@@ -63,7 +63,7 @@ export const ProformaFilters = ({ onClose }: Props) => {
 
   // Sincronizar con sessionStorage cuando cambian
   useEffect(() => {
-    if (clienteId && clienteId !== '') {
+    if (clienteId && typeof clienteId === 'number') {
       sessionStorage.setItem(CLIENTE_ID_STORAGE_KEY, String(clienteId));
     } else {
       sessionStorage.removeItem(CLIENTE_ID_STORAGE_KEY);
@@ -76,7 +76,7 @@ export const ProformaFilters = ({ onClose }: Props) => {
   }, [clienteId]);
 
   useEffect(() => {
-    if (aseguradoraId && aseguradoraId !== '') {
+    if (aseguradoraId && typeof aseguradoraId === 'number') {
       sessionStorage.setItem(ASEGURADORA_ID_STORAGE_KEY, String(aseguradoraId));
     } else {
       sessionStorage.removeItem(ASEGURADORA_ID_STORAGE_KEY);
@@ -89,7 +89,7 @@ export const ProformaFilters = ({ onClose }: Props) => {
   }, [aseguradoraId]);
 
   useEffect(() => {
-    if (monedaId && monedaId !== '') {
+    if (monedaId && typeof monedaId === 'number') {
       sessionStorage.setItem(MONEDA_ID_STORAGE_KEY, String(monedaId));
     } else {
       sessionStorage.removeItem(MONEDA_ID_STORAGE_KEY);
@@ -102,7 +102,7 @@ export const ProformaFilters = ({ onClose }: Props) => {
   }, [monedaId]);
 
   useEffect(() => {
-    if (vehiculoId && vehiculoId !== '') {
+    if (vehiculoId && typeof vehiculoId === 'number') {
       sessionStorage.setItem(VEHICULO_ID_STORAGE_KEY, String(vehiculoId));
     } else {
       sessionStorage.removeItem(VEHICULO_ID_STORAGE_KEY);
@@ -115,7 +115,7 @@ export const ProformaFilters = ({ onClose }: Props) => {
   }, [vehiculoId]);
 
   useEffect(() => {
-    if (tramiteId && tramiteId !== '') {
+    if (tramiteId && typeof tramiteId === 'number') {
       sessionStorage.setItem(TRAMITE_ID_STORAGE_KEY, String(tramiteId));
     } else {
       sessionStorage.removeItem(TRAMITE_ID_STORAGE_KEY);
@@ -174,7 +174,7 @@ export const ProformaFilters = ({ onClose }: Props) => {
 
   // Obtener nombres para mostrar en filtros activos
   const clienteNombreParaMostrar = useMemo(() => {
-    if (!clienteId || clienteId === '' || !clientes) return '';
+    if (!clienteId || typeof clienteId !== 'number' || !clientes) return '';
     const cliente = Array.isArray(clientes)
       ? clientes.find((c) => c.idCliente === clienteId)
       : null;
@@ -182,7 +182,7 @@ export const ProformaFilters = ({ onClose }: Props) => {
   }, [clienteId, clientes]);
 
   const monedaNombreParaMostrar = useMemo(() => {
-    if (!monedaId || monedaId === '' || !monedas) return '';
+    if (!monedaId || typeof monedaId !== 'number' || !monedas) return '';
     const moneda = Array.isArray(monedas)
       ? monedas.find((m) => m.idMoneda === monedaId)
       : null;
@@ -472,6 +472,7 @@ export const ProformaFilters = ({ onClose }: Props) => {
                 <SelectItem value={TramiteSeguroEstado.APROBADO}>Aprobado</SelectItem>
                 <SelectItem value={TramiteSeguroEstado.RECHAZADO}>Rechazado</SelectItem>
                 <SelectItem value={TramiteSeguroEstado.CERRADO}>Cerrado</SelectItem>
+                <SelectItem value={TramiteSeguroEstado.PENDIENTE_DE_PAGO}>Pendiente de Pago</SelectItem>
               </SelectContent>
             </Select>
           </div>

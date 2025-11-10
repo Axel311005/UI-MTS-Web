@@ -30,7 +30,7 @@ export default function NuevaRecepcionPage() {
         observaciones: data.observaciones,
         estado: data.estado,
         fechaEntregaEstimada: data.fechaEntregaEstimada,
-        fechaEntregaReal: data.fechaEntregaReal,
+        fechaEntregaReal: null, // Siempre se envía null
       });
 
       await queryClient.invalidateQueries({ queryKey: ['recepciones'] });

@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from 'react-router';
 import { useLandingAuthStore } from '../../store/landing-auth.store';
 import { useAuthStore } from '@/auth/store/auth.store';
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 interface LandingNotAuthenticatedRouteProps {
   children: ReactNode;
@@ -17,7 +17,7 @@ export function LandingNotAuthenticatedRoute({ children }: LandingNotAuthenticat
   if (authStatus === 'authenticated') {
     const canAccessPanel = typeof hasPanelAccess === 'function' ? hasPanelAccess() : false;
     if (canAccessPanel) {
-      const from = (location.state as any)?.from?.pathname || '/admin/facturas';
+      const from = (location.state as any)?.from?.pathname || '/admin/dashboard';
       return <Navigate to={from} replace />;
     }
   }

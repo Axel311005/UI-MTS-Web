@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { FileText, Download, Calendar, TrendingUp, DollarSign, Package, Users, ShoppingCart, Receipt, FileSpreadsheet, ClipboardList } from 'lucide-react';
+import { Download, TrendingUp, DollarSign, Package, Users, Receipt, FileSpreadsheet, ClipboardList, BarChart3, Shield } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
-import { Badge } from '@/shared/components/ui/badge';
+import { Input } from '@/shared/components/ui/input';
+import { Label } from '@/shared/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -12,6 +13,9 @@ import {
 } from '@/shared/components/ui/select';
 import { toast } from 'sonner';
 import { tallerApi } from '@/shared/api/tallerApi';
+import { useAuthStore } from '@/auth/store/auth.store';
+import { useMoneda } from '@/moneda/hook/useMoneda';
+import { AseguradoraSelect } from '@/shared/components/selects/AseguradoraSelect';
 
 const reportTypes = [
   {
@@ -47,15 +51,6 @@ const reportTypes = [
     endpoint: '/existencia-bodega/report/inventario',
   },
   {
-    id: 'compras',
-    title: 'Reporte de Compras',
-    description: 'Compras realizadas',
-    icon: ShoppingCart,
-    color: 'text-blue-600',
-    endpoint: '/compra/report/compras',
-    individual: true, // Puede generar PDF individual
-  },
-  {
     id: 'empleados',
     title: 'Reporte de Empleados',
     description: 'Lista de empleados',
@@ -89,24 +84,162 @@ const reportTypes = [
   },
   {
     id: 'items-cotizados',
-    title: 'Items Más Cotizados',
-    description: 'Reporte de items más cotizados',
+    title: 'Items Cotizados',
+    description: 'Items más cotizados',
     icon: TrendingUp,
     color: 'text-violet-600',
     endpoint: '/cotizacion/report/items-cotizados',
   },
+  {
+    id: 'flujo-financiero',
+    title: 'Flujo Financiero',
+    description: 'Reporte de ingresos y egresos',
+    icon: BarChart3,
+    color: 'text-emerald-600',
+    endpoint: '/financial-reports/flujo',
+    special: true, // Requiere parámetros especiales
+  },
+  {
+    id: 'cobro-aseguradora',
+    title: 'Cobro a Aseguradora',
+    description: 'Reporte de cobro a aseguradora por trámites de seguro',
+    icon: Shield,
+    color: 'text-rose-600',
+    endpoint: '/tramite-seguro/reportes/cobro-aseguradora',
+    special: true, // Requiere parámetros especiales
+  },
 ];
 
 export function ReportesPage() {
-  const [selectedPeriod, setSelectedPeriod] = useState('mes');
-  const [selectedFormat, setSelectedFormat] = useState('pdf');
+  const { user } = useAuthStore();
+  const { monedas } = useMoneda();
+  
+  // Estados para el reporte de flujo financiero
+  const [flujoFecha, setFlujoFecha] = useState(() => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  });
+  const [flujoFechaInicio, setFlujoFechaInicio] = useState(() => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  });
+  const [flujoFechaFin, setFlujoFechaFin] = useState(() => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  });
+  const [flujoTitulo, setFlujoTitulo] = useState('Flujo financiero mensual');
+  const [flujoIdMoneda, setFlujoIdMoneda] = useState<number | ''>(1);
+  const [flujoUsarRango, setFlujoUsarRango] = useState(false);
+
+  // Estados para el reporte de cobro a aseguradora
+  const [cobroAseguradoraId, setCobroAseguradoraId] = useState<number | ''>('');
+  const [cobroFechaInicio, setCobroFechaInicio] = useState(() => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  });
+  const [cobroFechaFin, setCobroFechaFin] = useState(() => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  });
 
   const handleGenerateReport = async (report: typeof reportTypes[0]) => {
     try {
       const dismiss = toast.loading('Generando reporte...');
+      
+      // Si es el reporte especial de flujo financiero
+      if (report.special && report.id === 'flujo-financiero') {
+        // Usar nombre completo del empleado si está disponible, sino usar email
+        let generadoPor = 'Usuario';
+        if (user?.empleado) {
+          const nombreCompleto = `${user.empleado.primerNombre || ''} ${user.empleado.primerApellido || ''}`.trim();
+          generadoPor = nombreCompleto || user.email || 'Usuario';
+        } else if (user?.email) {
+          generadoPor = user.email;
+        }
+        
+        const params: Record<string, string | number> = {
+          titulo: flujoTitulo,
+          generadoPor: generadoPor,
+          idMoneda: flujoIdMoneda || 1,
+        };
+
+        if (flujoUsarRango) {
+          params.fechaInicio = flujoFechaInicio || new Date().toISOString().split('T')[0];
+          params.fechaFin = flujoFechaFin || new Date().toISOString().split('T')[0];
+        } else {
+          params.fecha = flujoFecha || new Date().toISOString().split('T')[0];
+        }
+
+        const endpoint = `${report.endpoint}/pdf`;
+
+        const response = await tallerApi.get(endpoint, {
+          responseType: 'blob',
+          params,
+        });
+
+        const mimeType = 'application/pdf';
+        const extension = 'pdf';
+
+        const blob = new Blob([response.data], { type: mimeType });
+        const urlBlob = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = urlBlob;
+        link.download = `${report.id}-${new Date().toISOString().split('T')[0]}.${extension}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(urlBlob);
+
+        toast.dismiss(dismiss);
+        toast.success('Reporte generado correctamente');
+        return;
+      }
+
+      // Si es el reporte especial de cobro a aseguradora
+      if (report.special && report.id === 'cobro-aseguradora') {
+        if (!cobroAseguradoraId || cobroAseguradoraId === 0) {
+          toast.error('Debe seleccionar una aseguradora');
+          toast.dismiss(dismiss);
+          return;
+        }
+
+        if (!cobroFechaInicio || !cobroFechaFin) {
+          toast.error('Debe seleccionar las fechas de inicio y fin');
+          toast.dismiss(dismiss);
+          return;
+        }
+
+        const params: Record<string, string | number> = {
+          aseguradoraId: cobroAseguradoraId,
+          fechaInicio: cobroFechaInicio,
+          fechaFin: cobroFechaFin,
+        };
+
+        const endpoint = `${report.endpoint}/pdf`;
+
+        const response = await tallerApi.get(endpoint, {
+          responseType: 'blob',
+          params,
+        });
+
+        const blob = new Blob([response.data], { type: 'application/pdf' });
+        const urlBlob = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = urlBlob;
+        link.download = `cobro-aseguradora-${cobroAseguradoraId}-${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(urlBlob);
+
+        toast.dismiss(dismiss);
+        toast.success('Reporte generado correctamente');
+        return;
+      }
+
+      // Reportes normales - siempre PDF, sin parámetros de periodo
       const response = await tallerApi.get(report.endpoint, {
         responseType: 'blob',
-        params: selectedPeriod !== 'mes' ? { periodo: selectedPeriod } : undefined,
       });
 
       // Crear un blob y descargarlo
@@ -157,29 +290,105 @@ export function ReportesPage() {
                 {report.description}
               </p>
               <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-2">
-                  <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="semana">Esta semana</SelectItem>
-                      <SelectItem value="mes">Este mes</SelectItem>
-                      <SelectItem value="trimestre">Trimestre</SelectItem>
-                      <SelectItem value="ano">Este año</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Select value={selectedFormat} onValueChange={setSelectedFormat}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pdf">PDF</SelectItem>
-                      <SelectItem value="excel">Excel</SelectItem>
-                      <SelectItem value="csv">CSV</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                {report.special && report.id === 'flujo-financiero' ? (
+                  <>
+                    {/* Selector de tipo de fecha */}
+                    <div className="space-y-2">
+                      <Label>Tipo de fecha</Label>
+                      <Select value={flujoUsarRango ? 'rango' : 'fecha'} onValueChange={(v) => setFlujoUsarRango(v === 'rango')}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="fecha">Fecha específica</SelectItem>
+                          <SelectItem value="rango">Rango de fechas</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Fecha específica o rango */}
+                    {flujoUsarRango ? (
+                      <div className="space-y-2">
+                        <div className="space-y-2">
+                          <Label>Fecha inicio</Label>
+                          <Input type="date" value={flujoFechaInicio} onChange={(e) => setFlujoFechaInicio(e.target.value)} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Fecha fin</Label>
+                          <Input type="date" value={flujoFechaFin} onChange={(e) => setFlujoFechaFin(e.target.value)} />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <Label>Fecha</Label>
+                        <Input type="date" value={flujoFecha} onChange={(e) => setFlujoFecha(e.target.value)} />
+                      </div>
+                    )}
+
+                    {/* Título */}
+                    <div className="space-y-2">
+                      <Label>Título del reporte</Label>
+                      <Input 
+                        type="text" 
+                        value={flujoTitulo} 
+                        onChange={(e) => setFlujoTitulo(e.target.value)}
+                        placeholder="Flujo financiero mensual"
+                      />
+                    </div>
+
+                    {/* Moneda */}
+                    <div className="space-y-2">
+                      <Label>Moneda</Label>
+                      <Select 
+                        value={flujoIdMoneda?.toString() || '1'} 
+                        onValueChange={(v) => setFlujoIdMoneda(Number(v))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(monedas ?? []).map((moneda) => (
+                            <SelectItem key={moneda.idMoneda} value={moneda.idMoneda.toString()}>
+                              {moneda.descripcion}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
+                ) : report.special && report.id === 'cobro-aseguradora' ? (
+                  <>
+                    {/* Selector de aseguradora */}
+                    <div className="space-y-2">
+                      <Label>Aseguradora <span className="text-destructive">*</span></Label>
+                      <AseguradoraSelect
+                        selectedId={cobroAseguradoraId === '' ? '' : Number(cobroAseguradoraId)}
+                        onSelectId={(id) => setCobroAseguradoraId(id)}
+                        onClear={() => setCobroAseguradoraId('')}
+                      />
+                    </div>
+
+                    {/* Fecha inicio */}
+                    <div className="space-y-2">
+                      <Label>Fecha inicio <span className="text-destructive">*</span></Label>
+                      <Input 
+                        type="date" 
+                        value={cobroFechaInicio} 
+                        onChange={(e) => setCobroFechaInicio(e.target.value)} 
+                      />
+                    </div>
+
+                    {/* Fecha fin */}
+                    <div className="space-y-2">
+                      <Label>Fecha fin <span className="text-destructive">*</span></Label>
+                      <Input 
+                        type="date" 
+                        value={cobroFechaFin} 
+                        onChange={(e) => setCobroFechaFin(e.target.value)} 
+                      />
+                    </div>
+                  </>
+                ) : null}
                 <Button
                   className="w-full button-hover"
                   onClick={() => handleGenerateReport(report)}

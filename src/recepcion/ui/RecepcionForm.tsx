@@ -21,7 +21,7 @@ export type RecepcionFormValues = {
   estado: RecepcionEstado;
   fechaRecepcion: string; // yyyy-MM-dd
   fechaEntregaEstimada: string; // yyyy-MM-dd
-  fechaEntregaReal?: string; // yyyy-MM-dd | ''
+  fechaEntregaReal?: string | null; // yyyy-MM-dd | '' | null
   observaciones?: string;
 };
 
@@ -53,7 +53,7 @@ export function RecepcionForm({
     estado: defaultValues?.estado ?? RecepcionEstado.PENDIENTE,
     fechaRecepcion: defaultValues?.fechaRecepcion ?? today(),
     fechaEntregaEstimada: defaultValues?.fechaEntregaEstimada ?? today(),
-    fechaEntregaReal: defaultValues?.fechaEntregaReal ?? '',
+    fechaEntregaReal: undefined, // No se usa en el formulario, siempre se envía null
     observaciones: defaultValues?.observaciones ?? '',
   });
 
@@ -83,13 +83,8 @@ export function RecepcionForm({
     const eta = values.fechaEntregaEstimada
       ? new Date(values.fechaEntregaEstimada)
       : null;
-    const real = values.fechaEntregaReal
-      ? new Date(values.fechaEntregaReal)
-      : null;
     if (start && eta && eta < start)
       e.fechaEntregaEstimada = 'No puede ser anterior a la recepción';
-    if (start && real && real < start)
-      e.fechaEntregaReal = 'No puede ser anterior a la recepción';
 
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -104,7 +99,7 @@ export function RecepcionForm({
       estado: values.estado,
       fechaRecepcion: values.fechaRecepcion,
       fechaEntregaEstimada: values.fechaEntregaEstimada,
-      fechaEntregaReal: values.fechaEntregaReal || undefined,
+      fechaEntregaReal: null, // Siempre se envía null
       observaciones: values.observaciones?.trim() || undefined,
     });
   };
@@ -210,19 +205,6 @@ export function RecepcionForm({
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label>Fecha de Entrega Real</Label>
-          <Input
-            type="date"
-            value={values.fechaEntregaReal ?? ''}
-            onChange={(e) => update({ fechaEntregaReal: e.target.value })}
-          />
-          {errors.fechaEntregaReal && (
-            <p className="text-sm text-destructive">
-              {errors.fechaEntregaReal}
-            </p>
-          )}
-        </div>
       </div>
 
       <div className="space-y-2">

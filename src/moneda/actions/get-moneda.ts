@@ -1,5 +1,5 @@
 import { monedaApi } from '../api/moneda.api';
-import type { Moneda } from '../types/moneda.interface';
+import type { Moneda } from '../types/Moneda.interface';
 import type {
   PaginationParams,
   PaginatedResponse,
@@ -42,6 +42,12 @@ export const getMonedasAction = async (params?: PaginationParams) => {
     const filtered = page.filter(
       (item) => item?.activo === EstadoActivo.ACTIVO
     );
+    // Ordenar por fecha de creación DESC (más recientes primero)
+    filtered.sort((a, b) => {
+      const dateA = new Date(a.fechaCreacion || 0).getTime();
+      const dateB = new Date(b.fechaCreacion || 0).getTime();
+      return dateB - dateA; // DESC
+    });
     return {
       ...(data as any),
       data: filtered,
@@ -54,6 +60,12 @@ export const getMonedasAction = async (params?: PaginationParams) => {
   const filtered = allItems.filter(
     (item) => item?.activo === EstadoActivo.ACTIVO
   );
+  // Ordenar por fecha de creación DESC (más recientes primero)
+  filtered.sort((a, b) => {
+    const dateA = new Date(a.fechaCreacion || 0).getTime();
+    const dateB = new Date(b.fechaCreacion || 0).getTime();
+    return dateB - dateA; // DESC
+  });
   const total = filtered.length;
 
   // Aplicar paginación si se especificó

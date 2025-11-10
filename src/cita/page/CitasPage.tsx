@@ -1,6 +1,7 @@
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { Plus, Pencil, Eye } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/shared/components/ui/button';
 import {
   Card,
@@ -18,15 +19,21 @@ import {
 } from '@/shared/components/ui/table';
 import { Badge } from '@/shared/components/ui/badge';
 import { Pagination } from '@/shared/components/ui/pagination';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/components/ui/select';
 import { useCita } from '../hook/useCita';
 import { CitaSearchBar } from '../ui/CitaSearchBar';
 import type { Cita } from '../types/cita.interface';
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import { CitaEstado } from '@/shared/types/status';
-import {
-  getClienteNombre,
-  getClienteSearchText,
-} from '@/clientes/utils/cliente.utils';
+import { getClienteNombre } from '@/clientes/utils/cliente.utils';
+import { SearchCitasAction } from '../actions/search-citas-action';
+import type { PaginatedResponse } from '@/shared/types/pagination';
 
 const estadoVariant: Record<
   CitaEstado,
@@ -58,62 +65,88 @@ export default function CitasPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const initialSearch = searchParams.get('q') || '';
-  const debounced = useDebounce(initialSearch.trim().toLowerCase(), 300);
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const estadoFilter = searchParams.get('estado') || '';
+
+  useEffect(() => {
+    const currentParam = searchParams.get('q') || '';
+    if (currentParam !== searchTerm) {
+      setSearchTerm(currentParam);
+    }
+  }, [searchParams, searchTerm]);
+
+  const debouncedSearch = useDebounce(searchTerm.trim(), 300);
 
   const page = parseInt(searchParams.get('page') || '1', 10);
   const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
   const limit = pageSize;
   const offset = (page - 1) * pageSize;
-  const shouldUsePagination = debounced.length === 0;
+  const hasSearch = Boolean(
+    debouncedSearch.length > 0 || (estadoFilter && estadoFilter !== 'all')
+  );
 
   const {
     citas = [],
     totalItems = 0,
     isLoading,
   } = useCita({
-    usePagination: shouldUsePagination,
-    limit: shouldUsePagination ? limit : undefined,
-    offset: shouldUsePagination ? offset : undefined,
+    usePagination: !hasSearch,
+    limit: !hasSearch ? limit : undefined,
+    offset: !hasSearch ? offset : undefined,
   });
 
-  const filtered = useMemo<Cita[]>(() => {
-    const list = citas ?? [];
-    if (!debounced) return list;
-    return list.filter((c) => {
-      const clienteSearchText = c.cliente
-        ? getClienteSearchText(c.cliente)
-        : '';
-      const vehiculoPlaca = c.vehiculo?.placa?.toLowerCase?.() ?? '';
-      const motivo = c.motivoCita?.descripcion?.toLowerCase?.() ?? '';
-      const estado = (c.estado ?? '').toString().toLowerCase();
-      return (
-        clienteSearchText.includes(debounced) ||
-        vehiculoPlaca.includes(debounced) ||
-        motivo.includes(debounced) ||
-        estado.includes(debounced)
-      );
-    });
-  }, [citas, debounced]);
+  // Búsqueda usando el backend cuando hay término de búsqueda o filtro de estado
+  const { data: citasFiltradasResponse, isLoading: isLoadingSearch } = useQuery<
+    PaginatedResponse<Cita>
+  >({
+    queryKey: ['citas.search', debouncedSearch, estadoFilter, limit, offset],
+    queryFn: () =>
+      SearchCitasAction({
+        q: debouncedSearch || undefined,
+        estado:
+          estadoFilter && estadoFilter !== 'all'
+            ? (estadoFilter as CitaEstado)
+            : undefined,
+        limit,
+        offset,
+      }),
+    enabled: hasSearch,
+    staleTime: 1000 * 60 * 5,
+  });
 
-  const totalFiltered = shouldUsePagination ? totalItems : filtered.length;
+  const citasFiltradas = useMemo(() => {
+    if (!citasFiltradasResponse) return [];
+    if (Array.isArray(citasFiltradasResponse)) return citasFiltradasResponse;
+    return citasFiltradasResponse.data || [];
+  }, [citasFiltradasResponse]);
 
-  const paginated = useMemo(() => {
-    if (shouldUsePagination) return filtered;
-    const start = (page - 1) * pageSize;
-    return filtered.slice(start, start + pageSize);
-  }, [filtered, page, pageSize, shouldUsePagination]);
+  const totalFiltrados = useMemo(() => {
+    if (!hasSearch) return totalItems;
+    if (!citasFiltradasResponse) return 0;
+    if (Array.isArray(citasFiltradasResponse))
+      return citasFiltradasResponse.length;
+    return citasFiltradasResponse.total ?? 0;
+  }, [hasSearch, totalItems, citasFiltradasResponse]);
 
-  const totalPages = totalFiltered ? Math.ceil(totalFiltered / pageSize) : 1;
-  const showEmpty = !isLoading && totalFiltered === 0;
+  // Determinar qué citas mostrar
+  const displayedCitas = useMemo(() => {
+    if (hasSearch) return citasFiltradas;
+    return citas;
+  }, [hasSearch, citasFiltradas, citas]);
+
+  const isLoadingData = hasSearch ? isLoadingSearch : isLoading;
+
+  const totalPages = totalFiltrados ? Math.ceil(totalFiltrados / pageSize) : 1;
+  const showEmpty = !isLoadingData && totalFiltrados === 0;
 
   // Sincronizar página con URL cuando cambian los datos
   useEffect(() => {
-    if (isLoading) return;
-    const computedTotalPages = totalFiltered
-      ? Math.ceil(totalFiltered / pageSize)
+    if (isLoadingData) return;
+    const computedTotalPages = totalFiltrados
+      ? Math.ceil(totalFiltrados / pageSize)
       : 1;
 
-    if (totalFiltered === 0) {
+    if (totalFiltrados === 0) {
       if (page !== 1) {
         const params = new URLSearchParams(searchParams);
         params.delete('page');
@@ -132,7 +165,14 @@ export default function CitasPage() {
       }
       setSearchParams(params, { replace: true });
     }
-  }, [isLoading, page, pageSize, searchParams, setSearchParams, totalFiltered]);
+  }, [
+    isLoadingData,
+    page,
+    pageSize,
+    searchParams,
+    setSearchParams,
+    totalFiltrados,
+  ]);
 
   return (
     <div className="space-y-6">
@@ -148,11 +188,38 @@ export default function CitasPage() {
         </Button>
       </div>
 
-      <CitaSearchBar
-        containerClassName="w-full max-w-md"
-        className="w-full"
-        placeholder="Buscar por cliente, vehículo, motivo o estado"
-      />
+      <div className="flex flex-col gap-4 md:flex-row md:items-center">
+        <CitaSearchBar
+          containerClassName="w-full max-w-md"
+          className="w-full"
+          placeholder="Buscar por cliente, vehículo, motivo o canal"
+        />
+        <Select
+          value={estadoFilter || 'all'}
+          onValueChange={(value) => {
+            const params = new URLSearchParams(searchParams);
+            if (value && value !== 'all') {
+              params.set('estado', value);
+            } else {
+              params.delete('estado');
+            }
+            params.delete('page'); // Resetear a página 1
+            setSearchParams(params, { replace: true });
+          }}
+        >
+          <SelectTrigger className="w-full md:w-[200px]">
+            <SelectValue placeholder="Filtrar por estado" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos los estados</SelectItem>
+            {Object.values(CitaEstado).map((estado) => (
+              <SelectItem key={estado} value={estado}>
+                {estado.replace('_', ' ')}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       <Card className="card-elegant">
         <CardHeader>
@@ -173,15 +240,15 @@ export default function CitasPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading && (
+              {isLoadingData && (
                 <TableRow>
                   <TableCell colSpan={8} className="h-24 text-center text-sm">
                     Cargando citas...
                   </TableCell>
                 </TableRow>
               )}
-              {!isLoading &&
-                paginated.map((cita) => (
+              {!isLoadingData &&
+                displayedCitas.map((cita: Cita) => (
                   <TableRow key={cita.idCita} className="table-row-hover">
                     <TableCell className="font-medium">
                       {cita.cliente ? getClienteNombre(cita.cliente) : '—'}
@@ -200,7 +267,10 @@ export default function CitasPage() {
                     <TableCell>
                       {cita.estado ? (
                         <Badge
-                          variant={estadoVariant[cita.estado] ?? 'outline'}
+                          variant={
+                            estadoVariant[cita.estado as CitaEstado] ??
+                            'outline'
+                          }
                         >
                           {cita.estado.replace('_', ' ')}
                         </Badge>
@@ -213,7 +283,9 @@ export default function CitasPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => navigate(`/admin/citas/${cita.idCita}`)}
+                          onClick={() =>
+                            navigate(`/admin/citas/${cita.idCita}`)
+                          }
                         >
                           <Eye className="mr-2 h-4 w-4" /> Ver
                         </Button>
@@ -243,12 +315,12 @@ export default function CitasPage() {
             </TableBody>
           </Table>
         </CardContent>
-        {totalFiltered > 0 && (
+        {totalFiltrados > 0 && (
           <Pagination
             currentPage={page}
             totalPages={totalPages}
             pageSize={pageSize}
-            totalItems={totalFiltered}
+            totalItems={totalFiltrados}
             onPageChange={(newPage) => {
               const params = new URLSearchParams(searchParams);
               if (newPage > 1) params.set('page', newPage.toString());

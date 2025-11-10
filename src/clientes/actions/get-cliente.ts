@@ -29,6 +29,12 @@ export const getClientesAction = async (params?: PaginationParams) => {
     const filteredPage = (paged.data || []).filter(
       (c) => c.activo === EstadoActivo.ACTIVO
     );
+    // Ordenar por fecha de creación DESC (más recientes primero)
+    filteredPage.sort((a, b) => {
+      const dateA = new Date(a.fechaCreacion || 0).getTime();
+      const dateB = new Date(b.fechaCreacion || 0).getTime();
+      return dateB - dateA; // DESC
+    });
     const limitValue = params?.limit ?? paged.limit ?? filteredPage.length;
     const offsetValue = params?.offset ?? paged.offset ?? 0;
 
@@ -55,6 +61,12 @@ export const getClientesAction = async (params?: PaginationParams) => {
   // Si viene como array simple, filtrar activos y aplicar paginación
   const allItems = Array.isArray(data) ? data : [];
   const filtered = allItems.filter((c) => c.activo === EstadoActivo.ACTIVO);
+  // Ordenar por fecha de creación DESC (más recientes primero)
+  filtered.sort((a, b) => {
+    const dateA = new Date(a.fechaCreacion || 0).getTime();
+    const dateB = new Date(b.fechaCreacion || 0).getTime();
+    return dateB - dateA; // DESC
+  });
 
   const limitValue = params?.limit;
   const offsetValue = params?.offset ?? 0;

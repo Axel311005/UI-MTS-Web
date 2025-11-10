@@ -10,7 +10,6 @@ import {
 import { Input } from '@/shared/components/ui/input';
 import {
   Command,
-  CommandEmpty,
   CommandGroup,
   CommandItem,
   CommandList,

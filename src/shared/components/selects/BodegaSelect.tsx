@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import {
@@ -64,12 +65,32 @@ export const BodegaSelect: React.FC<Props> = ({
     return Math.min(Math.max(calculatedHeight + padding + messageHeight, itemHeight + padding), maxHeight);
   }, [displayedBodegas.length, hasMore]);
 
+  // Buscar la bodega seleccionada incluso si no está en la lista cargada
+  const { data: selectedBodegaData } = useQuery({
+    queryKey: ['bodega.byId', selectedId],
+    queryFn: async () => {
+      if (!selectedId || typeof selectedId !== 'number') return null;
+      try {
+        const { getBodegaByIdAction } = await import('@/bodega/actions/get-bodega-by-id');
+        return await getBodegaByIdAction(selectedId);
+      } catch {
+        return null;
+      }
+    },
+    enabled: !!selectedId && typeof selectedId === 'number' && !bodegas.find((b) => b.idBodega === selectedId),
+    staleTime: 1000 * 60 * 5,
+  });
+
   const selected = useMemo(() => {
-    if (selectedId !== undefined && selectedId !== '') {
-      return bodegas.find((b) => b.idBodega === selectedId);
+    if (selectedId !== undefined && typeof selectedId === 'number') {
+      // Primero buscar en la lista cargada
+      const foundInBodegas = bodegas.find((b) => b.idBodega === selectedId);
+      if (foundInBodegas) return foundInBodegas;
+      // Si no está en la lista, usar la bodega cargada específicamente
+      if (selectedBodegaData) return selectedBodegaData;
     }
     return undefined;
-  }, [bodegas, selectedId]);
+  }, [bodegas, selectedId, selectedBodegaData]);
 
   return (
     <div className="space-y-2">

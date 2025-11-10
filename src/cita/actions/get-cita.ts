@@ -22,6 +22,12 @@ export const getCitasAction = async (params?: PaginationParams) => {
   ) {
     const paged = data as PaginatedResponse<Cita>;
     const pageData = paged.data || [];
+    // Ordenar por fecha de creación DESC (más recientes primero)
+    pageData.sort((a, b) => {
+      const dateA = new Date(a.fechaCreacion || 0).getTime();
+      const dateB = new Date(b.fechaCreacion || 0).getTime();
+      return dateB - dateA; // DESC
+    });
 
     const limitValue = params?.limit ?? paged.limit ?? pageData.length;
     const offsetValue = params?.offset ?? paged.offset ?? 0;
@@ -47,6 +53,12 @@ export const getCitasAction = async (params?: PaginationParams) => {
   }
 
   const allItems = Array.isArray(data) ? data : [];
+  // Ordenar por fecha de creación DESC (más recientes primero)
+  allItems.sort((a, b) => {
+    const dateA = new Date(a.fechaCreacion || 0).getTime();
+    const dateB = new Date(b.fechaCreacion || 0).getTime();
+    return dateB - dateA; // DESC
+  });
   const limitValue = params?.limit;
   const offsetValue = params?.offset ?? 0;
 

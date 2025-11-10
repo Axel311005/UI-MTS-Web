@@ -15,9 +15,9 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select';
 
-import type { ItemEstado } from '../types/item.response';
+import { EstadoActivo } from '@/shared/types/status';
 
-export type ItemStatusFilter = 'ALL' | ItemEstado;
+export type ItemStatusFilter = 'ALL' | EstadoActivo;
 
 interface ItemFiltersProps {
   clasificacion: string;

@@ -73,8 +73,6 @@ export const SearchComprasAction = async (
     page,
     limit,
     offset,
-    sortBy,
-    sortDir,
   } = options ?? {};
 
   // Determinar si hay algún criterio (excluir paginación y ordenamiento)

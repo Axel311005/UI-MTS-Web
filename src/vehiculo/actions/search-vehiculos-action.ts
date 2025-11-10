@@ -64,6 +64,11 @@ export const SearchVehiculosAction = async (
     } as PaginatedResponse<Vehiculo>;
   }
 
-  return { data: [], total: 0, limit: params.limit, offset: params.offset ?? 0 };
+  return { 
+    data: [], 
+    total: 0, 
+    limit: typeof params.limit === 'number' ? params.limit : undefined, 
+    offset: typeof params.offset === 'number' ? params.offset : 0 
+  };
 };
 

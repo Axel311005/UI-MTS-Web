@@ -19,7 +19,7 @@ export const useCompra = (options?: UseCompraOptions) => {
     queryKey: ['compras', paginationParams?.limit, paginationParams?.offset],
     queryFn: () => getComprasAction(paginationParams),
     staleTime: paginationParams ? 0 : 1000 * 60 * 5, // No cachear cuando hay paginación
-    keepPreviousData: false,
+    placeholderData: (previousData) => previousData,
   });
 
   const compras = useMemo(() => {

@@ -8,7 +8,7 @@ export interface UpdateRecepcionPayload {
   observaciones?: string;
   estado?: RecepcionEstado;
   fechaEntregaEstimada?: string | Date;
-  fechaEntregaReal?: string | Date;
+  fechaEntregaReal?: string | Date | null;
 }
 
 export const patchRecepcionAction = async (

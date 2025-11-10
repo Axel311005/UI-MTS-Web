@@ -9,7 +9,7 @@ export interface CreateRecepcionPayload {
   observaciones?: string;
   estado?: RecepcionEstado;
   fechaEntregaEstimada?: string | Date;
-  fechaEntregaReal?: string | Date;
+  fechaEntregaReal?: string | Date | null;
 }
 
 export const postRecepcionAction = async (payload: CreateRecepcionPayload) => {

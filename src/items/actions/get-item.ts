@@ -13,11 +13,24 @@ export const getItemAction = async (params?: PaginationParams) => {
 
   // Si el backend devuelve un objeto con data y total, lo retornamos así
   if (data && typeof data === 'object' && 'data' in data && Array.isArray((data as any).data)) {
-    return data as PaginatedResponse<ItemResponse>;
+    const paged = data as PaginatedResponse<ItemResponse>;
+    // Ordenar por fecha de creación DESC (más recientes primero)
+    paged.data.sort((a, b) => {
+      const dateA = new Date(a.fechaCreacion || 0).getTime();
+      const dateB = new Date(b.fechaCreacion || 0).getTime();
+      return dateB - dateA; // DESC
+    });
+    return paged;
   }
 
   // Si devuelve directamente un array, aplicar paginación si se especificó
   const allItems = Array.isArray(data) ? data : [];
+  // Ordenar por fecha de creación DESC (más recientes primero)
+  allItems.sort((a, b) => {
+    const dateA = new Date(a.fechaCreacion || 0).getTime();
+    const dateB = new Date(b.fechaCreacion || 0).getTime();
+    return dateB - dateA; // DESC
+  });
   const total = allItems.length;
   
   // Aplicar paginación si se especificó

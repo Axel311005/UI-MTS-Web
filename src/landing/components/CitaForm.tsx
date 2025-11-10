@@ -88,24 +88,84 @@ export function CitaForm() {
     loadData();
   }, [user]);
 
+  // Sanitizar texto
+  const sanitizeText = (text: string, maxLength: number = 255): string => {
+    return text.trim().slice(0, maxLength);
+  };
+
+  // Validar fecha y hora
+  const validateFechaHora = (fecha: string, hora: string): boolean => {
+    try {
+      const fechaHora = `${fecha}T${hora}:00`;
+      const date = new Date(fechaHora);
+      // Verificar que la fecha sea válida y no sea en el pasado
+      if (isNaN(date.getTime())) {
+        return false;
+      }
+      // La fecha debe ser en el futuro o hoy
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      const fechaDate = new Date(fecha);
+      fechaDate.setHours(0, 0, 0, 0);
+      return fechaDate >= now;
+    } catch {
+      return false;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validaciones
+    if (!formData.idMotivoCita) {
+      toast.error('Debe seleccionar un motivo de cita');
+      return;
+    }
+
+    if (!formData.idVehiculo) {
+      toast.error('Debe seleccionar un vehículo');
+      return;
+    }
+
+    if (!formData.fechaInicio || !formData.horaInicio) {
+      toast.error('Debe seleccionar una fecha y hora');
+      return;
+    }
+
+    // Validar fecha y hora
+    if (!validateFechaHora(formData.fechaInicio, formData.horaInicio)) {
+      toast.error(
+        'La fecha y hora seleccionadas no son válidas o están en el pasado'
+      );
+      return;
+    }
+
     setSubmitting(true);
 
     try {
-      if (!formData.idMotivoCita) {
-        toast.error('Debe seleccionar un motivo de cita');
+      // Combinar fecha y hora
+      const fechaHora = `${formData.fechaInicio}T${formData.horaInicio}:00`;
+
+      // Validar que los IDs sean números válidos
+      const idVehiculo = Number(formData.idVehiculo);
+      const idMotivoCita = Number(formData.idMotivoCita);
+
+      if (!Number.isFinite(idVehiculo) || idVehiculo <= 0) {
+        toast.error('El vehículo seleccionado no es válido');
         setSubmitting(false);
         return;
       }
 
-      // Combinar fecha y hora
-      const fechaHora = `${formData.fechaInicio}T${formData.horaInicio}:00`;
+      if (!Number.isFinite(idMotivoCita) || idMotivoCita <= 0) {
+        toast.error('El motivo de cita seleccionado no es válido');
+        setSubmitting(false);
+        return;
+      }
 
       await createCita({
         idCliente: user!.clienteId!,
-        idVehiculo: Number(formData.idVehiculo),
-        idMotivoCita: Number(formData.idMotivoCita),
+        idVehiculo: idVehiculo,
+        idMotivoCita: idMotivoCita,
         fechaInicio: new Date(fechaHora).toISOString(),
         estado: 'PROGRAMADA',
         canal: 'web',
@@ -129,16 +189,48 @@ export function CitaForm() {
       return;
     }
 
+    // Sanitizar y validar campos del vehículo
+    const placaLimpia = sanitizeText(vehiculoForm.placa, 20).toUpperCase();
+    const motorLimpio = sanitizeText(vehiculoForm.motor, 50);
+    const marcaLimpia = sanitizeText(vehiculoForm.marca, 50);
+    const modeloLimpio = sanitizeText(vehiculoForm.modelo, 50);
+    const colorLimpio = sanitizeText(vehiculoForm.color, 30);
+    const numChasisLimpio = sanitizeText(vehiculoForm.numChasis, 50);
+    const anio = Number(vehiculoForm.anio);
+
+    // Validaciones
+    if (!placaLimpia || placaLimpia.length < 3) {
+      toast.error('La placa debe tener al menos 3 caracteres');
+      return;
+    }
+
+    if (!marcaLimpia || marcaLimpia.length < 2) {
+      toast.error('La marca debe tener al menos 2 caracteres');
+      return;
+    }
+
+    if (!modeloLimpio || modeloLimpio.length < 2) {
+      toast.error('El modelo debe tener al menos 2 caracteres');
+      return;
+    }
+
+    // Validar año (entre 1900 y año actual + 1)
+    const anioActual = new Date().getFullYear();
+    if (!Number.isFinite(anio) || anio < 1900 || anio > anioActual + 1) {
+      toast.error(`El año debe estar entre 1900 y ${anioActual + 1}`);
+      return;
+    }
+
     try {
       const nuevoVehiculo = await createVehiculo({
         idCliente: user.clienteId,
-        placa: vehiculoForm.placa,
-        motor: vehiculoForm.motor,
-        marca: vehiculoForm.marca,
-        modelo: vehiculoForm.modelo,
-        color: vehiculoForm.color,
-        anio: Number(vehiculoForm.anio),
-        numChasis: vehiculoForm.numChasis,
+        placa: placaLimpia,
+        motor: motorLimpio,
+        marca: marcaLimpia,
+        modelo: modeloLimpio,
+        color: colorLimpio,
+        anio: anio,
+        numChasis: numChasisLimpio,
       });
 
       setVehiculos([...vehiculos, nuevoVehiculo]);

@@ -30,7 +30,7 @@ import { patchMoneda } from '../actions/patch-moneda';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { formatDate } from '@/shared/utils/formatters';
-import type { Moneda } from '../types/moneda.interface';
+import type { Moneda } from '../types/Moneda.interface';
 import { EstadoActivo } from '@/shared/types/status';
 
 export function MonedaPage() {

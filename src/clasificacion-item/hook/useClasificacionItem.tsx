@@ -19,7 +19,7 @@ export const useClasificacionItem = (options?: UseClasificacionItemOptions) => {
     queryKey: ['clasificacionItems', paginationParams?.limit, paginationParams?.offset],
     queryFn: () => getClasificacionItemsAction(paginationParams),
     staleTime: paginationParams ? 0 : 1000 * 60 * 5, // No cachear cuando hay paginación
-    keepPreviousData: false,
+    placeholderData: (previousData) => previousData,
   });
 
   const clasificacionItems = useMemo(() => {

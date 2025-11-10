@@ -22,7 +22,6 @@ import { useRecepcionSeguimiento } from '../hook/useRecepcionSeguimiento';
 import { RecepcionSeguimientoSearchBar } from '../ui/RecepcionSeguimientoSearchBar';
 import type { RecepcionSeguimiento } from '../types/recepcion-seguimiento.interface';
 import { useDebounce } from '@/shared/hooks/use-debounce';
-import { RecepcionSeguimientoEstado } from '@/shared/types/status';
 
 const estadoVariant: Record<
   string,

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import type { Moneda } from '../types/moneda.interface';
+import type { Moneda } from '../types/Moneda.interface';
 import { getMonedasAction } from '../actions/get-moneda';
 import type { PaginatedResponse } from '@/shared/types/pagination';
 

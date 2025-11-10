@@ -1,10 +1,9 @@
 // src/shared/components/layouts/AppHeader.tsx
 
-import { Search, User, Sun, Moon, Menu, LogOut } from '@/shared/icons';
+import { User, Sun, Moon, Menu, LogOut } from '@/shared/icons';
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 import { SidebarTrigger } from '@/shared/components/ui/sidebar';
 import { Button } from '../ui/button';
-import { Input } from '../ui/input';
 import { useTheme } from 'next-themes';
 import {
   DropdownMenu,
@@ -43,15 +42,6 @@ export const AppHeader = () => {
         <SidebarTrigger>
           <Menu className="h-5 w-5" />
         </SidebarTrigger>
-
-        {/* Barra de búsqueda (oculta en móvil) */}
-        <div className="hidden md:flex items-center space-x-2">
-          <Search className="h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar productos, facturas, clientes..."
-            className="w-64 bg-background/50 border-border/50"
-          />
-        </div>
       </div>
 
       <div className="flex items-center space-x-3">

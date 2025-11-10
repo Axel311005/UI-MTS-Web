@@ -11,11 +11,8 @@ import {
   TableRow,
 } from '@/shared/components/ui/table';
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
-import { useMemo, useState } from 'react';
-import { useItem } from '@/items/hooks/useItem';
-import type { ItemResponse } from '@/items/types/item.response';
+import { useMemo } from 'react';
 import { useMoneda } from '@/moneda/hook/useMoneda';
-import { useExistenciaBodega } from '@/existencia-bodega/hook/useExistenciaBodega';
 import { ItemSelect } from '@/shared/components/selects/ItemSelect';
 
 interface CompraLine {

@@ -10,7 +10,6 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select';
 import { CitaEstado } from '@/shared/types/status';
-import { useCliente } from '@/clientes/hook/useCliente';
 import { useVehiculo } from '@/vehiculo/hook/useVehiculo';
 import { EstadoActivo } from '@/shared/types/status';
 import { ClienteSelect } from '@/facturas/ui/ClienteSelect';
@@ -51,13 +50,8 @@ export function CitaForm({
   onSubmit,
   onCancel,
 }: CitaFormProps) {
-  const { clientes } = useCliente({ usePagination: false });
   const { vehiculos } = useVehiculo({ usePagination: false });
 
-  const activeClientes = useMemo(
-    () => (clientes ?? []).filter((c) => c.activo === EstadoActivo.ACTIVO),
-    [clientes]
-  );
 
   const activeVehiculos = useMemo(
     () => (vehiculos ?? []).filter((v) => v.activo === EstadoActivo.ACTIVO),

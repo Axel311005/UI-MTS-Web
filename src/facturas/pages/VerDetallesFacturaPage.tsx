@@ -383,7 +383,7 @@ export default function VerDetallesFacturaPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Nombre</p>
-                    <p className="font-medium">{getClienteNombre(factura.cliente)}</p>
+                    <p className="font-medium">{getClienteNombre(factura.cliente as any)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">RUC</p>

@@ -30,7 +30,7 @@ export function NotAuthenticatedRoute() {
   if (authStatus === 'authenticated') {
     const canAccessPanel = typeof hasPanelAccess === 'function' ? hasPanelAccess() : false;
     if (canAccessPanel) {
-      const from = (location.state as any)?.from?.pathname || '/admin/facturas';
+      const from = (location.state as any)?.from?.pathname || '/admin/dashboard';
       return <Navigate to={from} replace />;
     }
   }

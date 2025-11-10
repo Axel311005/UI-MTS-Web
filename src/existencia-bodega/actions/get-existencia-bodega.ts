@@ -14,8 +14,8 @@ export const getExistenciaBodegasAction = async (params?: PaginationParams) => {
   if (data && typeof data === 'object' && 'data' in data && Array.isArray((data as any).data)) {
     // Filtrar existencias donde item y bodega estén activos
     const filtered = (data as PaginatedResponse<ExistenciaBodega>).data.filter((existencia) => {
-      const itemActivo = existencia.item?.activo !== false;
-      const bodegaActiva = existencia.bodega?.activo === true || existencia.bodega?.activo === 'ACTIVO';
+      const itemActivo = existencia.item?.activo === 'ACTIVO' || (typeof existencia.item?.activo === 'boolean' && existencia.item?.activo === true);
+      const bodegaActiva = existencia.bodega?.activo === 'ACTIVO' || (typeof existencia.bodega?.activo === 'boolean' && existencia.bodega?.activo === true);
       return itemActivo && bodegaActiva;
     });
     return {
@@ -29,8 +29,8 @@ export const getExistenciaBodegasAction = async (params?: PaginationParams) => {
   const allItems = Array.isArray(data) ? data : [];
   // Filtrar existencias donde item y bodega estén activos
   const filtered = allItems.filter((existencia) => {
-    const itemActivo = existencia.item?.activo !== false;
-    const bodegaActiva = existencia.bodega?.activo === true || existencia.bodega?.activo === 'ACTIVO';
+    const itemActivo = existencia.item?.activo === 'ACTIVO' || (typeof existencia.item?.activo === 'boolean' && existencia.item?.activo === true);
+    const bodegaActiva = existencia.bodega?.activo === 'ACTIVO' || (typeof existencia.bodega?.activo === 'boolean' && existencia.bodega?.activo === true);
     return itemActivo && bodegaActiva;
   });
   const total = filtered.length;

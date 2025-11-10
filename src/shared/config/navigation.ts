@@ -6,7 +6,6 @@ import {
   ShoppingCart,
   FileText,
   Users,
-  Settings,
   TrendingUp,
   Tag,
   Ruler,
@@ -165,12 +164,6 @@ export const navigationConfig: MenuItem[] = [
     userTypes: ['gerente', 'superuser'],
   },
   {
-    title: 'Configuración',
-    url: '/admin/configuracion',
-    icon: Settings,
-    userTypes: ['gerente', 'superuser'],
-  },
-  {
     title: 'Administración',
     url: '/admin/administracion',
     icon: Shield,
@@ -221,7 +214,7 @@ export const getGroupedNavigationItems = (userType: PanelRole) => {
   );
 
   const systemItems = allItems.filter((item) =>
-    ['Reportes', 'Configuración', 'Administración'].includes(item.title)
+    ['Reportes', 'Administración'].includes(item.title)
   );
 
   return {

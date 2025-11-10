@@ -16,21 +16,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/components/ui/select';
-import { Plus, Trash2, DollarSign, ShoppingCart, Sparkles } from 'lucide-react';
+import { Plus, Trash2, DollarSign, ShoppingCart, Sparkles, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   getItemsCotizables,
   createCotizacion,
   createDetalleCotizacion,
 } from '../actions/cotizacion.actions';
+import { landingCotizacionApi } from '../api/landing.api';
 import type { ItemCotizable } from '../types/cotizacion.types';
 import { useLandingAuthStore } from '../store/landing-auth.store';
 
 interface DetalleLinea {
-  idItem: number;
+  idItem: number | null; // null cuando no hay item seleccionado
   cantidad: number;
   precioUnitario: number;
   totalLinea: number;
+  lineaId?: string; // ID único para cada línea
 }
 
 export function CotizacionForm() {
@@ -39,6 +41,8 @@ export function CotizacionForm() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [lineas, setLineas] = useState<DetalleLinea[]>([]);
+  const [createdCotizacionId, setCreatedCotizacionId] = useState<number | null>(null);
+  const [createdCotizacionCodigo, setCreatedCotizacionCodigo] = useState<string | null>(null);
   // ID 4 es el consecutivo de cotizaciones (fijo, no necesita estado)
   const consecutivoId = 4;
 
@@ -50,6 +54,21 @@ export function CotizacionForm() {
         setItems(itemsData);
 
         // El consecutivoId ya está inicializado con el valor 4 (consecutivo de cotizaciones)
+        
+        // Cargar ID de cotización desde localStorage si existe (para mostrar botón de PDF después de recargar)
+        try {
+          const savedId = localStorage.getItem('lastCreatedCotizacionId');
+          const savedCodigo = localStorage.getItem('lastCreatedCotizacionCodigo');
+          if (savedId) {
+            setCreatedCotizacionId(Number(savedId));
+            if (savedCodigo) {
+              setCreatedCotizacionCodigo(savedCodigo);
+            }
+          }
+        } catch (error) {
+          // Si hay error al leer localStorage, continuar de todas formas
+          console.warn('Error al leer localStorage:', error);
+        }
       } catch (error: any) {
         toast.error('Error al cargar items cotizables');
       } finally {
@@ -64,15 +83,16 @@ export function CotizacionForm() {
 
   const addLinea = () => {
     if (items.length === 0) return;
-    const firstItem = items[0];
-    const precio = firstItem.precioBaseLocal ?? firstItem.precioUnitario ?? 0;
+    
+    // Agregar nueva línea sin item seleccionado
     setLineas([
       ...lineas,
       {
-        idItem: firstItem.idItem,
+        idItem: null, // Sin item seleccionado inicialmente
         cantidad: 1,
-        precioUnitario: precio,
-        totalLinea: precio,
+        precioUnitario: 0,
+        totalLinea: 0,
+        lineaId: `linea-${Date.now()}-${Math.random()}`,
       },
     ]);
   };
@@ -84,11 +104,43 @@ export function CotizacionForm() {
   const updateLinea = (
     index: number,
     field: keyof DetalleLinea,
-    value: number
+    value: number | null
   ) => {
     const updated = [...lineas];
     if (field === 'idItem') {
-      // Cuando cambia el item, actualizar el precio unitario al del item seleccionado (buscar por el nuevo id)
+      if (value === null) {
+        // Si se deselecciona, resetear valores
+        updated[index] = {
+          ...updated[index],
+          idItem: null,
+          precioUnitario: 0,
+          totalLinea: 0,
+        };
+        setLineas(updated);
+        return;
+      }
+
+      // Verificar si el nuevo item ya existe en otra línea
+      const existingIndex = updated.findIndex(
+        (l, i) => i !== index && l.idItem === value
+      );
+      
+      if (existingIndex !== -1) {
+        // Si existe, fusionar: sumar cantidades y eliminar la línea actual
+        const existingLinea = updated[existingIndex];
+        const currentCantidad = updated[index].cantidad;
+        const newCantidad = existingLinea.cantidad + currentCantidad;
+        updated[existingIndex] = {
+          ...existingLinea,
+          cantidad: newCantidad,
+          totalLinea: newCantidad * existingLinea.precioUnitario,
+        };
+        updated.splice(index, 1);
+        setLineas(updated);
+        return; // Salir temprano porque ya actualizamos el estado
+      }
+      
+      // Si no existe, actualizar normalmente
       const selected = items.find((i) => i.idItem === value);
       const precio = Number(
         (selected as any)?.precioBaseLocal ??
@@ -127,6 +179,117 @@ export function CotizacionForm() {
     setLineas(updated);
   };
 
+  const handleDownloadPdf = async () => {
+    // Obtener el ID desde el estado o localStorage
+    let cotizacionId = createdCotizacionId;
+    let cotizacionCodigo = createdCotizacionCodigo;
+    
+    // Si no hay ID en el estado, intentar obtenerlo de localStorage
+    if (!cotizacionId) {
+      try {
+        const savedId = localStorage.getItem('lastCreatedCotizacionId');
+        const savedCodigo = localStorage.getItem('lastCreatedCotizacionCodigo');
+        if (savedId) {
+          cotizacionId = Number(savedId);
+          cotizacionCodigo = savedCodigo || null;
+        } else {
+          toast.error('No se encontró la cotización para descargar');
+          return;
+        }
+      } catch (error) {
+        toast.error('Error al obtener la información de la cotización');
+        return;
+      }
+    }
+    
+    if (!cotizacionId) {
+      toast.error('No se encontró la cotización para descargar');
+      return;
+    }
+    
+    try {
+      const dismiss = toast.loading('Generando PDF...');
+      
+      // Verificar que el usuario esté autenticado
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.dismiss(dismiss);
+        toast.error('Debes estar autenticado para descargar el PDF');
+        return;
+      }
+
+      // Usar el ID guardado directamente, sin hacer GET adicional
+      const response = await landingCotizacionApi.get(
+        `/${cotizacionId}/cotizacion-pdf`,
+        { responseType: 'blob' }
+      );
+      
+      const blob = new Blob([response.data], {
+        type: 'application/pdf',
+      });
+      const urlBlob = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = urlBlob;
+      link.download = `cotizacion-${
+        cotizacionCodigo || cotizacionId
+      }.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(urlBlob);
+      toast.dismiss(dismiss);
+      toast.success('PDF generado correctamente');
+      
+      // Limpiar los estados y localStorage después de descargar exitosamente
+      setCreatedCotizacionId(null);
+      setCreatedCotizacionCodigo(null);
+      try {
+        localStorage.removeItem('lastCreatedCotizacionId');
+        localStorage.removeItem('lastCreatedCotizacionCodigo');
+      } catch (error) {
+        // Si hay error al limpiar localStorage, continuar de todas formas
+        console.warn('Error al limpiar localStorage:', error);
+      }
+    } catch (error: any) {
+      toast.dismiss();
+      
+      // Manejo específico de errores
+      if (error?.response?.status === 403) {
+        // Intentar leer el mensaje del error desde el Blob si es posible
+        let errorMessage = 'No tienes permisos para generar el PDF de esta cotización';
+        try {
+          if (error?.response?.data instanceof Blob) {
+            const text = await error.response.data.text();
+            const json = JSON.parse(text);
+            errorMessage = json.message || errorMessage;
+          }
+        } catch {
+          // Si no se puede parsear, usar el mensaje por defecto
+        }
+        toast.error(errorMessage);
+      } else if (error?.response?.status === 401) {
+        toast.error('Debes iniciar sesión para descargar el PDF');
+      } else if (error?.response?.status === 404) {
+        toast.error('La cotización no fue encontrada');
+      } else {
+        // Intentar leer el mensaje del error desde el Blob si es posible
+        let message = 'Error al generar PDF';
+        try {
+          if (error?.response?.data instanceof Blob) {
+            const text = await error.response.data.text();
+            const json = JSON.parse(text);
+            message = json.message || message;
+          } else {
+            message = error?.response?.data?.message || error?.message || message;
+          }
+        } catch {
+          message = error?.response?.data?.message || error?.message || message;
+        }
+        toast.error(message);
+      }
+    }
+  };
+
   const total = lineas.reduce((sum, linea) => {
     const totalLinea = Number(linea.totalLinea) || 0;
     return sum + totalLinea;
@@ -146,24 +309,48 @@ export function CotizacionForm() {
 
     // El consecutivoId siempre es 4 (consecutivo de cotizaciones)
 
-    // Validar que todas las líneas tengan valores válidos
+    // Validar que todas las líneas tengan un item seleccionado
+    const lineasSinItem = lineas.filter((linea) => !linea.idItem || linea.idItem === null);
+    if (lineasSinItem.length > 0) {
+      toast.error('Por favor, selecciona un item para todas las líneas');
+      return;
+    }
+
+    // Validar que todas las líneas tengan valores válidos y dentro de límites razonables
     const lineasInvalidas = lineas.some((linea) => {
       const precioUnitario = Number(linea.precioUnitario);
       const totalLinea = Number(linea.totalLinea);
       const cantidad = Number(linea.cantidad);
       
-      return (
-        !Number.isFinite(precioUnitario) ||
-        precioUnitario <= 0 ||
-        !Number.isFinite(totalLinea) ||
-        totalLinea < 0 ||
-        !Number.isFinite(cantidad) ||
-        cantidad <= 0
-      );
+      // Validar que sean números finitos
+      if (!Number.isFinite(precioUnitario) || !Number.isFinite(totalLinea) || !Number.isFinite(cantidad)) {
+        return true;
+      }
+      
+      // Validar límites: cantidad máximo 10000, precio máximo 1,000,000
+      if (cantidad <= 0 || cantidad > 10000) {
+        return true;
+      }
+      
+      if (precioUnitario <= 0 || precioUnitario > 1000000) {
+        return true;
+      }
+      
+      if (totalLinea < 0 || totalLinea > 100000000) {
+        return true;
+      }
+      
+      return false;
     });
 
     if (lineasInvalidas) {
-      toast.error('Por favor, verifica que todos los items tengan valores válidos');
+      toast.error('Por favor, verifica que todos los items tengan valores válidos (cantidad: 1-10000, precio: hasta 1,000,000)');
+      return;
+    }
+
+    // Validar número máximo de líneas (prevenir ataques)
+    if (lineas.length > 100) {
+      toast.error('No se pueden agregar más de 100 items en una cotización');
       return;
     }
 
@@ -179,6 +366,11 @@ export function CotizacionForm() {
 
       // Crear detalles - asegurar que todos los valores sean números válidos
       for (const linea of lineas) {
+        // Validar que tenga un item seleccionado (ya validado arriba, pero por seguridad)
+        if (!linea.idItem || linea.idItem === null) {
+          throw new Error('Todas las líneas deben tener un item seleccionado');
+        }
+
         const precioUnitario = Number(linea.precioUnitario) || 0;
         const totalLineas = Number(linea.totalLinea) || 0;
         const cantidad = Number(linea.cantidad) || 0;
@@ -197,6 +389,24 @@ export function CotizacionForm() {
       }
 
       toast.success('Cotización enviada con éxito');
+      // Guardar el ID de la cotización creada en localStorage y estado
+      const cotizacionId = cotizacion.idCotizacion;
+      setCreatedCotizacionId(cotizacionId);
+      
+      // Guardar en localStorage para persistir después de recargar
+      // Solo guardamos el ID, no hacemos GET adicional para obtener el código
+      try {
+        localStorage.setItem('lastCreatedCotizacionId', String(cotizacionId));
+        // Si el código viene en la respuesta, guardarlo también
+        if (cotizacion.codigoCotizacion) {
+          localStorage.setItem('lastCreatedCotizacionCodigo', cotizacion.codigoCotizacion);
+          setCreatedCotizacionCodigo(cotizacion.codigoCotizacion);
+        }
+      } catch (error) {
+        // Si hay error al guardar en localStorage, continuar de todas formas
+        console.warn('Error al guardar en localStorage:', error);
+      }
+      
       setLineas([]);
     } catch (error: any) {
       const message =
@@ -250,7 +460,7 @@ export function CotizacionForm() {
                     : 0;
                   return (
                     <div
-                      key={index}
+                      key={linea.lineaId || `linea-${index}-${linea.idItem}`}
                       className="grid grid-cols-12 gap-3 sm:gap-4 items-end p-4 sm:p-6 bg-gradient-to-br from-white via-orange-50/10 to-white rounded-xl sm:rounded-2xl border-2 border-orange-500/20 shadow-lg hover:shadow-orange-500/30 transition-all duration-300"
                     >
                       <div className="col-span-12 sm:col-span-6 md:col-span-5">
@@ -258,24 +468,50 @@ export function CotizacionForm() {
                           Item
                         </Label>
                         <Select
-                          value={linea.idItem.toString()}
+                          key={`select-${linea.lineaId || index}-${linea.idItem || 'empty'}`}
+                          value={linea.idItem?.toString() || ''}
                           onValueChange={(value) => {
+                            if (!value) {
+                              updateLinea(index, 'idItem', null);
+                              return;
+                            }
                             const selectedItem = items.find(
                               (i) => i.idItem === Number(value)
                             );
                             if (selectedItem) {
-                              updateLinea(index, 'idItem', Number(value));
+                              // Verificar si el item ya existe en otra línea
+                              const existingIndex = lineas.findIndex(
+                                (l, i) => i !== index && l.idItem === Number(value)
+                              );
+                              if (existingIndex !== -1) {
+                                // Si existe, sumar a esa línea y eliminar la actual
+                                const updated = [...lineas];
+                                const existingLinea = updated[existingIndex];
+                                const currentCantidad = updated[index].cantidad;
+                                const newCantidad = existingLinea.cantidad + currentCantidad;
+                                updated[existingIndex] = {
+                                  ...existingLinea,
+                                  cantidad: newCantidad,
+                                  totalLinea: newCantidad * existingLinea.precioUnitario,
+                                };
+                                updated.splice(index, 1);
+                                setLineas(updated);
+                              } else {
+                                // Si no existe, actualizar normalmente
+                                updateLinea(index, 'idItem', Number(value));
+                              }
                             }
                           }}
                         >
                           <SelectTrigger className="h-11 sm:h-12 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all">
-                            <SelectValue />
+                            <SelectValue placeholder="Selecciona un item" />
                           </SelectTrigger>
                           <SelectContent>
                             {items.map((item) => (
                               <SelectItem
                                 key={item.idItem}
                                 value={item.idItem.toString()}
+                                textValue={`${item.codigoItem} - ${item.descripcion}`}
                               >
                                 <div className="flex items-center gap-2">
                                   <ShoppingCart className="h-4 w-4 text-orange-500" />
@@ -420,6 +656,24 @@ export function CotizacionForm() {
                 )}
               </Button>
             </motion.div>
+
+            {/* Botón para descargar PDF de la cotización recién creada */}
+            {createdCotizacionId && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="mt-4"
+              >
+                <Button
+                  onClick={handleDownloadPdf}
+                  className="w-full bg-green-500 hover:bg-green-600 text-white h-12 sm:h-14 rounded-xl font-bold text-base sm:text-lg shadow-2xl hover:shadow-green-500/50 transition-all duration-300 font-montserrat"
+                >
+                  <Download className="h-5 w-5 mr-2" />
+                  Descargar PDF de la Cotización
+                </Button>
+              </motion.div>
+            )}
           </form>
         </CardContent>
       </Card>

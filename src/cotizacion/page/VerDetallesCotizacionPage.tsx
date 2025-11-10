@@ -8,7 +8,7 @@ import {
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 import { Separator } from '@/shared/components/ui/separator';
-import { ArrowLeft, Loader2, FileText, Edit } from 'lucide-react';
+import { ArrowLeft, Loader2, Edit, FileText } from 'lucide-react';
 import {
   Table,
   TableBody,

@@ -18,7 +18,7 @@ export const CitaSearchBar = ({
 }: CitaSearchBarProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialSearch = searchParams.get(paramName) || '';
-  const debounced = useDebounce(initialSearch.trim().toLowerCase(), 300);
+  useDebounce(initialSearch.trim().toLowerCase(), 300);
 
   const commit = (raw: string) => {
     const value = raw.trim();

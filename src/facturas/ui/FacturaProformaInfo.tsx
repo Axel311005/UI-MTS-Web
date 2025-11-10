@@ -97,7 +97,7 @@ export function FacturaProformaInfo({ factura }: FacturaProformaInfoProps) {
   }, [proforma?.fecha]);
 
   // Formatear moneda
-  const simboloMoneda = proforma?.moneda?.simbolo || factura.moneda?.simbolo || '₲';
+  const simboloMoneda = '₲'; // Moneda no tiene campo simbolo, usar por defecto
 
   // Si no hay proforma, no mostrar nada
   if (!proforma && !proformaQuery.isLoading) {

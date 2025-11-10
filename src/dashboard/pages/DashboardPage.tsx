@@ -1,7 +1,5 @@
-import React from 'react';
 import { useNavigate } from 'react-router';
 import {
-  TrendingUp,
   Package,
   ShoppingCart,
   FileText,
@@ -11,6 +9,7 @@ import {
   ArrowDownRight,
   BarChart3,
 } from 'lucide-react';
+import { useAuthStore } from '@/auth/store/auth.store';
 import {
   Card,
   CardContent,
@@ -89,23 +88,26 @@ const recentActivities = [
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const isAdmin = useAuthStore((s) => s.isAdmin);
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold text-left">Dashboard</h1>
+          <p className="text-muted-foreground text-leftgi">
             Resumen de tu sistema de facturación
           </p>
         </div>
-        <Button
-          className="button-hover"
-          onClick={() => navigate('/admin/reportes')}
-        >
-          <BarChart3 className="h-4 w-4 mr-2" />
-          Ver Reportes
-        </Button>
+        {isAdmin() && (
+          <Button
+            className="button-hover"
+            onClick={() => navigate('/admin/reportes')}
+          >
+            <BarChart3 className="h-4 w-4 mr-2" />
+            Ver Reportes
+          </Button>
+        )}
       </div>
 
       {/* Stats Cards */}
@@ -201,7 +203,7 @@ export default function DashboardPage() {
             <Button
               variant="outline"
               className="w-full justify-start button-hover"
-              onClick={() => navigate('/admin/productos')}
+              onClick={() => navigate('/admin/productos/nuevo')}
             >
               <Package className="h-4 w-4 mr-2" />
               Agregar Producto
@@ -209,7 +211,7 @@ export default function DashboardPage() {
             <Button
               variant="outline"
               className="w-full justify-start button-hover"
-              onClick={() => navigate('/admin/clientes')}
+              onClick={() => navigate('/admin/clientes/nuevo')}
             >
               <Users className="h-4 w-4 mr-2" />
               Nuevo Cliente

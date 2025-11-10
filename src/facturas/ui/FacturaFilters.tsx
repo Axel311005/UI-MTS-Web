@@ -62,7 +62,7 @@ export const FacturaFilters = ({ onClose }: Props) => {
 
   // Sincronizar con sessionStorage cuando cambian y forzar re-render en FacturasPage
   useEffect(() => {
-    if (clienteId && clienteId !== '') {
+    if (clienteId && typeof clienteId === 'number') {
       sessionStorage.setItem(CLIENTE_ID_STORAGE_KEY, String(clienteId));
     } else {
       sessionStorage.removeItem(CLIENTE_ID_STORAGE_KEY);
@@ -77,7 +77,7 @@ export const FacturaFilters = ({ onClose }: Props) => {
   }, [clienteId]);
 
   useEffect(() => {
-    if (empleadoId && empleadoId !== '') {
+    if (empleadoId && typeof empleadoId === 'number') {
       sessionStorage.setItem(EMPLEADO_ID_STORAGE_KEY, String(empleadoId));
     } else {
       sessionStorage.removeItem(EMPLEADO_ID_STORAGE_KEY);
@@ -92,7 +92,7 @@ export const FacturaFilters = ({ onClose }: Props) => {
   }, [empleadoId]);
 
   useEffect(() => {
-    if (monedaId && monedaId !== '') {
+    if (monedaId && typeof monedaId === 'number') {
       sessionStorage.setItem(MONEDA_ID_STORAGE_KEY, String(monedaId));
     } else {
       sessionStorage.removeItem(MONEDA_ID_STORAGE_KEY);
@@ -107,7 +107,7 @@ export const FacturaFilters = ({ onClose }: Props) => {
   }, [monedaId]);
 
   useEffect(() => {
-    if (tipoPagoId && tipoPagoId !== '') {
+    if (tipoPagoId && typeof tipoPagoId === 'number') {
       sessionStorage.setItem(TIPO_PAGO_ID_STORAGE_KEY, String(tipoPagoId));
     } else {
       sessionStorage.removeItem(TIPO_PAGO_ID_STORAGE_KEY);
@@ -163,7 +163,7 @@ export const FacturaFilters = ({ onClose }: Props) => {
 
   // Obtener el nombre del cliente desde el ID para mostrarlo en los filtros activos
   const clienteNombreParaMostrar = useMemo(() => {
-    if (!clienteId || clienteId === '' || !clientes) return '';
+    if (!clienteId || typeof clienteId !== 'number' || !clientes) return '';
     const cliente = Array.isArray(clientes)
       ? clientes.find((c) => c.idCliente === clienteId)
       : null;
@@ -172,7 +172,7 @@ export const FacturaFilters = ({ onClose }: Props) => {
 
   // Obtener el nombre del empleado desde el ID para mostrarlo en los filtros activos
   const empleadoNombreParaMostrar = useMemo(() => {
-    if (!empleadoId || empleadoId === '' || !empleados) return '';
+    if (!empleadoId || typeof empleadoId !== 'number' || !empleados) return '';
     const empleado = Array.isArray(empleados)
       ? empleados.find((e) => e.idEmpleado === empleadoId)
       : null;
@@ -181,7 +181,7 @@ export const FacturaFilters = ({ onClose }: Props) => {
 
   // Obtener el nombre de la moneda desde el ID para mostrarlo en los filtros activos
   const monedaNombreParaMostrar = useMemo(() => {
-    if (!monedaId || monedaId === '' || !monedas) return '';
+    if (!monedaId || typeof monedaId !== 'number' || !monedas) return '';
     const moneda = Array.isArray(monedas)
       ? monedas.find((m) => m.idMoneda === monedaId)
       : null;
@@ -190,7 +190,7 @@ export const FacturaFilters = ({ onClose }: Props) => {
 
   // Obtener el nombre del tipo de pago desde el ID para mostrarlo en los filtros activos
   const tipoPagoNombreParaMostrar = useMemo(() => {
-    if (!tipoPagoId || tipoPagoId === '' || !tipoPagos) return '';
+    if (!tipoPagoId || typeof tipoPagoId !== 'number' || !tipoPagos) return '';
     const tipoPago = Array.isArray(tipoPagos)
       ? tipoPagos.find((tp) => tp.idTipoPago === tipoPagoId)
       : null;

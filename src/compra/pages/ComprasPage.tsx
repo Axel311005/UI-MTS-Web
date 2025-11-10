@@ -131,7 +131,7 @@ export function ComprasPage() {
     offset: !hasAnyFilter ? offset : undefined,
   });
 
-  const { data: comprasFiltradasResponse } = useQuery<PaginatedResponse<Compra>>({
+  const { data: comprasFiltradasResponse } = useQuery<PaginatedResponse<any>>({
     queryKey: [
       'compras.search',
       codigoLike,

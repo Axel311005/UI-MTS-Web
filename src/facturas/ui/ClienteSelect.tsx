@@ -134,15 +134,35 @@ export const ClienteSelect: React.FC<Props> = ({
     }
   }, [hasMore, filtered.length]);
 
+  // Buscar el cliente seleccionado incluso si no está en la lista filtrada
+  const { data: selectedClienteData } = useQuery<Cliente | null>({
+    queryKey: ['cliente.byId', selectedId],
+    queryFn: async () => {
+      if (!selectedId || typeof selectedId !== 'number') return null;
+      try {
+        const { getClienteById } = await import('@/clientes/actions/get-cliente-by-id');
+        return await getClienteById(selectedId);
+      } catch {
+        return null;
+      }
+    },
+    enabled: !!selectedId && typeof selectedId === 'number' && !filtered.find((c) => c.idCliente === selectedId),
+    staleTime: 1000 * 60 * 5,
+  });
+
   const selected = useMemo(() => {
-    if (selectedId !== undefined && selectedId !== '') {
-      return filtered.find((c) => c.idCliente === selectedId);
+    if (selectedId !== undefined && typeof selectedId === 'number') {
+      // Primero buscar en la lista filtrada
+      const foundInFiltered = filtered.find((c) => c.idCliente === selectedId);
+      if (foundInFiltered) return foundInFiltered;
+      // Si no está en la lista filtrada, usar el cliente cargado específicamente
+      if (selectedClienteData) return selectedClienteData;
     }
     if (value) {
       return filtered.find((c) => getClienteNombre(c) === value);
     }
     return undefined;
-  }, [filtered, selectedId, value]);
+  }, [filtered, selectedId, value, selectedClienteData]);
 
   return (
     <div className="space-y-2">

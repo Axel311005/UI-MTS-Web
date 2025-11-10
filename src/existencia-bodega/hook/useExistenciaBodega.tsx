@@ -20,7 +20,7 @@ export const useExistenciaBodega = (options?: UseExistenciaBodegaOptions) => {
     queryKey: ['existencia-bodega', paginationParams?.limit, paginationParams?.offset],
     queryFn: () => getExistenciaBodegasAction(paginationParams),
     staleTime: paginationParams ? 0 : 1000 * 60 * 5, // No cachear cuando hay paginación
-    keepPreviousData: false,
+    placeholderData: (previousData) => previousData,
   });
 
   const existencias = useMemo(() => {

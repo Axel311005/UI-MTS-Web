@@ -24,6 +24,12 @@ export const getTramiteSeguroAction = async (params?: PaginationParams) => {
   ) {
     const paged = data as PaginatedResponse<TramiteSeguro>;
     const pageData = paged.data || [];
+    // Ordenar por fecha de inicio DESC (más recientes primero)
+    pageData.sort((a, b) => {
+      const dateA = new Date(a.fechaInicio || 0).getTime();
+      const dateB = new Date(b.fechaInicio || 0).getTime();
+      return dateB - dateA; // DESC
+    });
 
     const limitValue = params?.limit ?? paged.limit ?? pageData.length;
     const offsetValue = params?.offset ?? paged.offset ?? 0;
@@ -49,6 +55,12 @@ export const getTramiteSeguroAction = async (params?: PaginationParams) => {
   }
 
   const allItems = Array.isArray(data) ? data : [];
+  // Ordenar por fecha de inicio DESC (más recientes primero)
+  allItems.sort((a, b) => {
+    const dateA = new Date(a.fechaInicio || 0).getTime();
+    const dateB = new Date(b.fechaInicio || 0).getTime();
+    return dateB - dateA; // DESC
+  });
   const limitValue = params?.limit;
   const offsetValue = params?.offset ?? 0;
 

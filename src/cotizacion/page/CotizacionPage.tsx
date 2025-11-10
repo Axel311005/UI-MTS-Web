@@ -1,6 +1,7 @@
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { Pencil, Eye, FileText } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/shared/components/ui/button';
 import { toast } from 'sonner';
 import { tallerApi } from '@/shared/api/tallerApi';
@@ -20,6 +21,13 @@ import {
 } from '@/shared/components/ui/table';
 import { Badge } from '@/shared/components/ui/badge';
 import { Pagination } from '@/shared/components/ui/pagination';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/components/ui/select';
 import { useCotizacion } from '../hook/useCotizacion';
 import { CotizacionSearchBar } from '../ui/CotizacionSearchBar';
 import type { Cotizacion } from '../types/cotizacion.interface';
@@ -27,6 +35,8 @@ import { useDebounce } from '@/shared/hooks/use-debounce';
 import { CotizacionEstado } from '@/shared/types/status';
 import { formatMoney } from '@/shared/utils/formatters';
 import { getClienteNombre } from '@/clientes/utils/cliente.utils';
+import { SearchCotizacionesAction } from '../actions/search-cotizaciones-action';
+import type { PaginatedResponse } from '@/shared/types/pagination';
 
 const estadoVariant: Record<CotizacionEstado, 'default' | 'destructive'> = {
   [CotizacionEstado.GENERADA]: 'default',
@@ -46,58 +56,94 @@ export default function CotizacionesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const initialSearch = searchParams.get('q') || '';
-  const debounced = useDebounce(initialSearch.trim().toLowerCase(), 300);
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const estadoFilter = searchParams.get('estado') || '';
+
+  useEffect(() => {
+    const currentParam = searchParams.get('q') || '';
+    if (currentParam !== searchTerm) {
+      setSearchTerm(currentParam);
+    }
+  }, [searchParams, searchTerm]);
+
+  const debouncedSearch = useDebounce(searchTerm.trim(), 300);
 
   const page = parseInt(searchParams.get('page') || '1', 10);
   const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
   const limit = pageSize;
   const offset = (page - 1) * pageSize;
-  const shouldUsePagination = debounced.length === 0;
+  const hasSearch = Boolean(
+    debouncedSearch.length > 0 || (estadoFilter && estadoFilter !== 'all')
+  );
 
   const {
     cotizaciones = [],
     totalItems = 0,
     isLoading,
   } = useCotizacion({
-    usePagination: shouldUsePagination,
-    limit: shouldUsePagination ? limit : undefined,
-    offset: shouldUsePagination ? offset : undefined,
+    usePagination: !hasSearch,
+    limit: !hasSearch ? limit : undefined,
+    offset: !hasSearch ? offset : undefined,
   });
 
-  const filtered = useMemo<Cotizacion[]>(() => {
-    const list = cotizaciones ?? [];
-    if (!debounced) return list;
-    return list.filter((c) => {
-      const codigo = c.codigoCotizacion?.toLowerCase?.() ?? '';
-      const cliente = c.nombreCliente?.toLowerCase?.() ?? '';
-      const estado = (c.estado ?? '').toString().toLowerCase();
-      return (
-        codigo.includes(debounced) ||
-        cliente.includes(debounced) ||
-        estado.includes(debounced)
-      );
+  // Búsqueda usando el backend cuando hay término de búsqueda o filtro de estado
+  const { data: cotizacionesFiltradasResponse, isLoading: isLoadingSearch } =
+    useQuery<PaginatedResponse<Cotizacion>>({
+      queryKey: [
+        'cotizaciones.search',
+        debouncedSearch,
+        estadoFilter,
+        limit,
+        offset,
+      ],
+      queryFn: () =>
+        SearchCotizacionesAction({
+          q: debouncedSearch || undefined,
+          estado:
+            estadoFilter && estadoFilter !== 'all'
+              ? (estadoFilter as CotizacionEstado)
+              : undefined,
+          limit,
+          offset,
+        }),
+      enabled: hasSearch,
+      staleTime: 1000 * 60 * 5,
     });
-  }, [cotizaciones, debounced]);
 
-  const totalFiltered = shouldUsePagination ? totalItems : filtered.length;
+  const cotizacionesFiltradas = useMemo(() => {
+    if (!cotizacionesFiltradasResponse) return [];
+    if (Array.isArray(cotizacionesFiltradasResponse))
+      return cotizacionesFiltradasResponse;
+    return cotizacionesFiltradasResponse.data || [];
+  }, [cotizacionesFiltradasResponse]);
 
-  const paginated = useMemo(() => {
-    if (shouldUsePagination) return filtered;
-    const start = (page - 1) * pageSize;
-    return filtered.slice(start, start + pageSize);
-  }, [filtered, page, pageSize, shouldUsePagination]);
+  const totalFiltrados = useMemo(() => {
+    if (!hasSearch) return totalItems;
+    if (!cotizacionesFiltradasResponse) return 0;
+    if (Array.isArray(cotizacionesFiltradasResponse))
+      return cotizacionesFiltradasResponse.length;
+    return cotizacionesFiltradasResponse.total ?? 0;
+  }, [hasSearch, totalItems, cotizacionesFiltradasResponse]);
 
-  const totalPages = totalFiltered ? Math.ceil(totalFiltered / pageSize) : 1;
-  const showEmpty = !isLoading && totalFiltered === 0;
+  // Determinar qué cotizaciones mostrar
+  const displayedCotizaciones = useMemo(() => {
+    if (hasSearch) return cotizacionesFiltradas;
+    return cotizaciones;
+  }, [hasSearch, cotizacionesFiltradas, cotizaciones]);
+
+  const isLoadingData = hasSearch ? isLoadingSearch : isLoading;
+
+  const totalPages = totalFiltrados ? Math.ceil(totalFiltrados / pageSize) : 1;
+  const showEmpty = !isLoadingData && totalFiltrados === 0;
 
   // Sincronizar página con URL cuando cambian los datos
   useEffect(() => {
-    if (isLoading) return;
-    const computedTotalPages = totalFiltered
-      ? Math.ceil(totalFiltered / pageSize)
+    if (isLoadingData) return;
+    const computedTotalPages = totalFiltrados
+      ? Math.ceil(totalFiltrados / pageSize)
       : 1;
 
-    if (totalFiltered === 0) {
+    if (totalFiltrados === 0) {
       if (page !== 1) {
         const params = new URLSearchParams(searchParams);
         params.delete('page');
@@ -116,7 +162,14 @@ export default function CotizacionesPage() {
       }
       setSearchParams(params, { replace: true });
     }
-  }, [isLoading, page, pageSize, searchParams, setSearchParams, totalFiltered]);
+  }, [
+    isLoadingData,
+    page,
+    pageSize,
+    searchParams,
+    setSearchParams,
+    totalFiltrados,
+  ]);
 
   return (
     <div className="space-y-6">
@@ -129,11 +182,38 @@ export default function CotizacionesPage() {
         </div>
       </div>
 
-      <CotizacionSearchBar
-        containerClassName="w-full max-w-md"
-        className="w-full"
-        placeholder="Buscar por código, cliente o estado"
-      />
+      <div className="flex flex-col gap-4 md:flex-row md:items-center">
+        <CotizacionSearchBar
+          containerClassName="w-full max-w-md"
+          className="w-full"
+          placeholder="Buscar por código, cliente, RUC o teléfono"
+        />
+        <Select
+          value={estadoFilter || 'all'}
+          onValueChange={(value) => {
+            const params = new URLSearchParams(searchParams);
+            if (value && value !== 'all') {
+              params.set('estado', value);
+            } else {
+              params.delete('estado');
+            }
+            params.delete('page'); // Resetear a página 1
+            setSearchParams(params, { replace: true });
+          }}
+        >
+          <SelectTrigger className="w-full md:w-[200px]">
+            <SelectValue placeholder="Filtrar por estado" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos los estados</SelectItem>
+            {Object.values(CotizacionEstado).map((estado) => (
+              <SelectItem key={estado} value={estado}>
+                {estado}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       <Card className="card-elegant">
         <CardHeader>
@@ -153,15 +233,15 @@ export default function CotizacionesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading && (
+              {isLoadingData && (
                 <TableRow>
                   <TableCell colSpan={7} className="h-24 text-center text-sm">
                     Cargando cotizaciones...
                   </TableCell>
                 </TableRow>
               )}
-              {!isLoading &&
-                paginated.map((cotizacion) => (
+              {!isLoadingData &&
+                displayedCotizaciones.map((cotizacion: Cotizacion) => (
                   <TableRow
                     key={cotizacion.idCotizacion}
                     className="table-row-hover"
@@ -186,7 +266,9 @@ export default function CotizacionesPage() {
                       {cotizacion.estado ? (
                         <Badge
                           variant={
-                            estadoVariant[cotizacion.estado] ?? 'outline'
+                            estadoVariant[
+                              cotizacion.estado as keyof typeof estadoVariant
+                            ] ?? 'outline'
                           }
                         >
                           {cotizacion.estado}
@@ -272,12 +354,12 @@ export default function CotizacionesPage() {
             </TableBody>
           </Table>
         </CardContent>
-        {totalFiltered > 0 && (
+        {totalFiltrados > 0 && (
           <Pagination
             currentPage={page}
             totalPages={totalPages}
             pageSize={pageSize}
-            totalItems={totalFiltered}
+            totalItems={totalFiltrados}
             onPageChange={(newPage) => {
               const params = new URLSearchParams(searchParams);
               if (newPage > 1) params.set('page', newPage.toString());

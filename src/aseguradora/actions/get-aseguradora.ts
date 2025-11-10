@@ -27,6 +27,10 @@ export const getAseguradoraAction = async (params?: PaginationParams) => {
     const filteredPage = (paged.data || []).filter(
       (a) => a.activo === EstadoActivo.ACTIVO
     );
+    // Ordenar por ID DESC (más recientes primero, ya que no hay fecha de creación)
+    filteredPage.sort((a, b) => {
+      return (b.idAseguradora || 0) - (a.idAseguradora || 0); // DESC
+    });
 
     const limitValue = params?.limit ?? paged.limit ?? filteredPage.length;
     const offsetValue = params?.offset ?? paged.offset ?? 0;
@@ -53,6 +57,10 @@ export const getAseguradoraAction = async (params?: PaginationParams) => {
 
   const allItems = Array.isArray(data) ? data || [] : [];
   const filtered = allItems.filter((a) => a.activo === EstadoActivo.ACTIVO);
+  // Ordenar por ID DESC (más recientes primero, ya que no hay fecha de creación)
+  filtered.sort((a, b) => {
+    return (b.idAseguradora || 0) - (a.idAseguradora || 0); // DESC
+  });
 
   const limitValue = params?.limit;
   const offsetValue = params?.offset ?? 0;

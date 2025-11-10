@@ -56,8 +56,64 @@ export default function RegisterPage() {
     }));
   };
 
+  // Validar email
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email) && email.length <= 255;
+  };
+
+  // Sanitizar texto
+  const sanitizeText = (text: string, maxLength: number = 255): string => {
+    return text.trim().slice(0, maxLength);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Sanitizar todos los inputs
+    const emailLimpio = sanitizeText(formData.email, 255).toLowerCase();
+    const primerNombreLimpio = sanitizeText(formData.primerNombre, 100);
+    const primerApellidoLimpio = sanitizeText(formData.primerApellido, 100);
+    const direccionLimpio = sanitizeText(formData.direccion, 200);
+
+    // Validaciones de email
+    if (!emailLimpio || !validateEmail(emailLimpio)) {
+      toast.error('El correo electrónico no es válido', {
+        position: 'top-right',
+      });
+      return;
+    }
+
+    // Validaciones de nombres
+    if (!primerNombreLimpio || primerNombreLimpio.length < 2) {
+      toast.error('El primer nombre debe tener al menos 2 caracteres', {
+        position: 'top-right',
+      });
+      return;
+    }
+
+    if (!primerApellidoLimpio || primerApellidoLimpio.length < 2) {
+      toast.error('El primer apellido debe tener al menos 2 caracteres', {
+        position: 'top-right',
+      });
+      return;
+    }
+
+    // Validación de teléfono
+    if (!formData.telefono || formData.telefono.length !== 8) {
+      toast.error('El teléfono debe tener 8 dígitos', {
+        position: 'top-right',
+      });
+      return;
+    }
+
+    // Validación de dirección
+    if (!direccionLimpio || direccionLimpio.length < 5) {
+      toast.error('La dirección debe tener al menos 5 caracteres', {
+        position: 'top-right',
+      });
+      return;
+    }
 
     // Validación de contraseñas
     if (formData.password !== formData.confirmPassword) {
@@ -74,6 +130,25 @@ export default function RegisterPage() {
       return;
     }
 
+    if (formData.password.length > 128) {
+      toast.error('La contraseña es demasiado larga (máximo 128 caracteres)', {
+        position: 'top-right',
+      });
+      return;
+    }
+
+    // Validar que la contraseña tenga al menos una letra y un número
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)/;
+    if (!passwordRegex.test(formData.password)) {
+      toast.error(
+        'La contraseña debe contener al menos una letra y un número',
+        {
+          position: 'top-right',
+        }
+      );
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -85,15 +160,15 @@ export default function RegisterPage() {
         telefonoLimpio.length === 8 ? `505${telefonoLimpio}` : telefonoLimpio;
 
       const clienteData = {
-        primerNombre: formData.primerNombre,
-        primerApellido: formData.primerApellido,
+        primerNombre: primerNombreLimpio,
+        primerApellido: primerApellidoLimpio,
         ruc: '', // RUC opcional, se envía vacío
-        direccion: formData.direccion,
+        direccion: direccionLimpio,
         telefono: telefonoBackend,
       };
 
       await registerAction({
-        email: formData.email,
+        email: emailLimpio,
         password: formData.password,
         clienteData,
       });

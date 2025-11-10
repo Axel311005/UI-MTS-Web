@@ -1,6 +1,6 @@
-import { lazy, Suspense, useMemo, useState, useEffect, useRef } from 'react';
+import { lazy, Suspense, useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { Plus, Loader2 } from '@/shared/icons';
+import { Plus } from '@/shared/icons';
 import {
   Card,
   CardContent,
@@ -41,14 +41,8 @@ export const FacturasPage = () => {
   const page = parseInt(searchParams.get('page') || '1', 10);
   const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
 
-  const [useInfiniteScroll, setUseInfiniteScroll] = useState(false);
-  const [loadedPages, setLoadedPages] = useState(1);
-  const loadingRef = useRef(false);
-  const observerTarget = useRef<HTMLDivElement>(null);
-
   const limit = pageSize;
-  const offset = useInfiniteScroll ? 0 : (page - 1) * pageSize;
-  const currentLimit = useInfiniteScroll ? loadedPages * pageSize : pageSize;
+  const offset = (page - 1) * pageSize;
 
   // Leer parámetros de búsqueda/filtros desde la URL
   const codigoLike = searchParams.get('codigoLike')?.trim() || '';
@@ -137,12 +131,12 @@ export const FacturasPage = () => {
   );
 
   const { facturas, totalItems: totalFacturas = 0 } = useFactura({
-    usePagination: !hasAnyFilter && !useInfiniteScroll,
-    limit: useInfiniteScroll ? undefined : limit,
-    offset: useInfiniteScroll ? undefined : offset,
+    usePagination: !hasAnyFilter,
+    limit,
+    offset,
   });
 
-  const { data: facturasFiltradasResponse, isLoading: isLoadingSearch } =
+  const { data: facturasFiltradasResponse } =
     useQuery<PaginatedResponse<Factura>>({
       queryKey: [
         'facturas.search',
@@ -158,7 +152,7 @@ export const FacturasPage = () => {
         fechaFin,
         minTotal,
         maxTotal,
-        useInfiniteScroll ? currentLimit : limit,
+        limit,
         offset,
       ],
       queryFn: () =>
@@ -175,7 +169,7 @@ export const FacturasPage = () => {
           dateTo: fechaFin,
           minTotal,
           maxTotal,
-          limit: useInfiniteScroll ? currentLimit : limit,
+          limit,
           offset,
         }),
       enabled: hasAnyFilter,
@@ -196,83 +190,6 @@ export const FacturasPage = () => {
     return facturasFiltradasResponse.total ?? 0;
   }, [facturasFiltradasResponse]);
 
-  // Scroll infinito: cuando se alcanza el final, cargar más
-  useEffect(() => {
-    if (!useInfiniteScroll || !hasAnyFilter) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !loadingRef.current) {
-          const currentTotal = facturasFiltradas.length;
-          const totalAvailable = totalFiltradas;
-
-          if (
-            currentTotal < totalAvailable &&
-            currentTotal >= loadedPages * pageSize
-          ) {
-            loadingRef.current = true;
-            setLoadedPages((prev) => prev + 1);
-          }
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    const target = observerTarget.current;
-    if (target) observer.observe(target);
-
-    return () => {
-      if (target) observer.unobserve(target);
-    };
-  }, [
-    useInfiniteScroll,
-    hasAnyFilter,
-    facturasFiltradas.length,
-    totalFiltradas,
-    loadedPages,
-    pageSize,
-  ]);
-
-  useEffect(() => {
-    loadingRef.current = false;
-  }, [facturasFiltradas.length]);
-
-  // Para scroll infinito sin filtros
-  useEffect(() => {
-    if (!useInfiniteScroll || hasAnyFilter) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !loadingRef.current) {
-          const currentTotal = facturas.length;
-          const totalAvailable = totalFacturas;
-
-          if (
-            currentTotal < totalAvailable &&
-            currentTotal >= loadedPages * pageSize
-          ) {
-            loadingRef.current = true;
-            setLoadedPages((prev) => prev + 1);
-          }
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    const target = observerTarget.current;
-    if (target) observer.observe(target);
-
-    return () => {
-      if (target) observer.unobserve(target);
-    };
-  }, [
-    useInfiniteScroll,
-    hasAnyFilter,
-    facturas.length,
-    totalFacturas,
-    loadedPages,
-    pageSize,
-  ]);
 
   const [showFilters, setShowFilters] = useState(false);
 
@@ -293,30 +210,14 @@ export const FacturasPage = () => {
   const rows = useMemo(() => {
     const data = hasAnyFilter ? facturasFiltradas : facturas;
     if (!Array.isArray(data)) return [];
-
-    // Las facturas ya vienen filtradas del action (sin anuladas)
-    // Solo aplicar el slice para scroll infinito si es necesario
-    if (useInfiniteScroll) {
-      return data.slice(0, loadedPages * pageSize);
-    }
-
     return data;
-  }, [
-    hasAnyFilter,
-    facturasFiltradas,
-    facturas,
-    useInfiniteScroll,
-    loadedPages,
-    pageSize,
-  ]);
+  }, [hasAnyFilter, facturasFiltradas, facturas]);
 
   const totalRows = hasAnyFilter ? totalFiltradas : totalFacturas;
   const totalPages = totalRows > 0 ? Math.ceil(totalRows / pageSize) : 1;
-  const hasMore = useInfiniteScroll ? rows.length < totalRows : false;
 
   // Sincronizar página con URL cuando cambian los datos
   useEffect(() => {
-    if (useInfiniteScroll) return;
     if (totalRows === 0) {
       if (page !== 1) {
         const params = new URLSearchParams(searchParams);
@@ -337,14 +238,7 @@ export const FacturasPage = () => {
       }
       setSearchParams(params, { replace: true });
     }
-  }, [
-    totalRows,
-    page,
-    pageSize,
-    searchParams,
-    setSearchParams,
-    useInfiniteScroll,
-  ]);
+  }, [totalRows, page, pageSize, searchParams, setSearchParams]);
 
   return (
     <div className="space-y-6">
@@ -375,21 +269,6 @@ export const FacturasPage = () => {
         >
           <Filter className="h-4 w-4 mr-2" />
           {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
-        </Button>
-        <Button
-          variant={useInfiniteScroll ? 'default' : 'outline'}
-          onClick={() => {
-            setUseInfiniteScroll(!useInfiniteScroll);
-            setLoadedPages(1);
-            // Reset a página 1 en la URL
-            const params = new URLSearchParams(searchParams);
-            params.delete('page');
-            setSearchParams(params, { replace: true });
-          }}
-          className="whitespace-nowrap"
-          size="sm"
-        >
-          {useInfiniteScroll ? 'Modo: Scroll Infinito' : 'Modo: Paginación'}
         </Button>
       </div>
       {/* Los chips de filtros activos ahora se muestran dentro del panel de filtros */}
@@ -491,7 +370,7 @@ export const FacturasPage = () => {
               </TableBody>
             </Table>
           </div>
-          {!useInfiniteScroll && totalRows > 0 && (
+          {totalRows > 0 && (
             <Pagination
               currentPage={page}
               totalPages={totalPages}
@@ -518,16 +397,6 @@ export const FacturasPage = () => {
                 setSearchParams(params, { replace: true });
               }}
             />
-          )}
-          {useInfiniteScroll && hasMore && (
-            <div ref={observerTarget} className="flex justify-center py-4">
-              {isLoadingSearch && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Cargando más facturas...
-                </div>
-              )}
-            </div>
           )}
         </CardContent>
       </Card>

@@ -138,8 +138,8 @@ export const VehiculosPage = () => {
     }
   };
 
-  const totalPages = totalFiltered ? Math.ceil(totalFiltered / pageSize) : 1;
-  const showEmptyState = !isLoading && totalFiltered === 0;
+  const totalPages = totalFiltrados > 0 ? Math.ceil(totalFiltrados / pageSize) : 1;
+  const showEmptyState = !isLoadingData && totalFiltrados === 0;
 
   return (
     <div className="space-y-6">

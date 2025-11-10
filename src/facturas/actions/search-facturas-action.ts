@@ -24,6 +24,7 @@ interface SearchFacturaOptions extends PaginationParams {
   dateTo?: string | Date; // nuevo nombre
   minTotal?: string | number;
   maxTotal?: string | number;
+  page?: number;
 }
 
 export const SearchFacturaAction = async (options: SearchFacturaOptions): Promise<PaginatedResponse<Factura>> => {
@@ -76,7 +77,7 @@ export const SearchFacturaAction = async (options: SearchFacturaOptions): Promis
     minTotal,
     maxTotal,
   ].some((v) => v !== undefined && v !== '' && v !== null);
-  if (!hasAny) return [];
+  if (!hasAny) return { data: [], total: 0 };
 
   const params: Record<string, unknown> = {};
   const codigoExacto = codigo_factura ?? codigoFactura;

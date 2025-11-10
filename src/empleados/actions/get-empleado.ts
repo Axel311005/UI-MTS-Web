@@ -4,7 +4,6 @@ import type {
   PaginationParams,
   PaginatedResponse,
 } from '@/shared/types/pagination';
-import { EstadoActivo } from '@/shared/types/status';
 
 export const getEmpleadosAction = async (params?: PaginationParams) => {
   const queryParams: Record<string, number> = {};
@@ -24,43 +23,40 @@ export const getEmpleadosAction = async (params?: PaginationParams) => {
     'data' in data &&
     Array.isArray((data as any).data)
   ) {
-    // Filtrar empleados activos en la página actual pero mantener el total del backend
+    // Mostrar todos los empleados (activos e inactivos)
     const paged = data as PaginatedResponse<Empleado>;
-    const filteredPage = (paged.data || []).filter(
-      (e) => e.activo === EstadoActivo.ACTIVO
-    );
-    const limitValue = params?.limit ?? paged.limit ?? filteredPage.length;
+    const allPage = paged.data || [];
+    // Ordenar por fecha de creación DESC (más recientes primero)
+    allPage.sort((a, b) => {
+      const dateA = new Date(a.fecha_creacion || 0).getTime();
+      const dateB = new Date(b.fecha_creacion || 0).getTime();
+      return dateB - dateA; // DESC
+    });
+    const limitValue = params?.limit ?? paged.limit ?? allPage.length;
     const offsetValue = params?.offset ?? paged.offset ?? 0;
-
-    let totalValue = paged.total ?? 0;
-    const coverage = offsetValue + filteredPage.length;
-
-    if (!totalValue || totalValue <= coverage) {
-      if (limitValue > 0 && filteredPage.length === limitValue) {
-        totalValue = coverage + limitValue;
-      } else {
-        totalValue = coverage;
-      }
-    }
 
     return {
       ...paged,
-      data: filteredPage,
-      total: totalValue,
+      data: allPage,
       limit: limitValue,
       offset: offsetValue,
     } as PaginatedResponse<Empleado>;
   }
 
-  // Si viene como array simple, filtrar activos y aplicar paginación
+  // Si viene como array simple, mostrar todos (activos e inactivos)
   const allItems = Array.isArray(data) ? data : [];
-  const filtered = allItems.filter((e) => e.activo === EstadoActivo.ACTIVO);
+  // Ordenar por fecha de creación DESC (más recientes primero)
+  allItems.sort((a, b) => {
+    const dateA = new Date(a.fecha_creacion || 0).getTime();
+    const dateB = new Date(b.fecha_creacion || 0).getTime();
+    return dateB - dateA; // DESC
+  });
 
   const limitValue = params?.limit;
   const offsetValue = params?.offset ?? 0;
 
-  let paginatedData = filtered;
-  let totalValue = filtered.length;
+  let paginatedData = allItems;
+  let totalValue = allItems.length;
 
   if (limitValue !== undefined || offsetValue > 0) {
     const serverAppliedPagination =
@@ -76,9 +72,9 @@ export const getEmpleadosAction = async (params?: PaginationParams) => {
     } else {
       const start = offsetValue;
       const end = limitValue !== undefined ? start + limitValue : undefined;
-      paginatedData = filtered.slice(start, end);
+      paginatedData = allItems.slice(start, end);
       const coverage = offsetValue + paginatedData.length;
-      totalValue = Math.max(filtered.length, coverage);
+      totalValue = Math.max(allItems.length, coverage);
     }
   }
 

@@ -47,7 +47,7 @@ export default function EditarRecepcionPage() {
         observaciones: data.observaciones,
         estado: data.estado,
         fechaEntregaEstimada: data.fechaEntregaEstimada,
-        fechaEntregaReal: data.fechaEntregaReal,
+        fechaEntregaReal: null, // Siempre se envía null
       });
 
       await queryClient.invalidateQueries({ queryKey: ['recepciones'] });
@@ -102,7 +102,7 @@ export default function EditarRecepcionPage() {
                 fechaEntregaEstimada: toDateInput(
                   recepcion.fechaEntregaEstimada
                 ),
-                fechaEntregaReal: toDateInput(recepcion.fechaEntregaReal),
+                // fechaEntregaReal no se muestra en el formulario, siempre se envía null
                 observaciones: (recepcion as any).observaciones ?? '',
               }}
               onSubmit={handleSubmit}

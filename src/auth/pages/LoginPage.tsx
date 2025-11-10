@@ -18,18 +18,84 @@ import { useLandingAuthStore } from '@/landing/store/landing-auth.store';
 export default function LoginPage() {
   const [isPosting, setIsPosting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [lastAttemptTime, setLastAttemptTime] = useState<number>(0);
   const navigate = useNavigate();
   const location = useLocation();
 
   const login = useAuthStore((s) => s.login);
   const setLandingAuth = useLandingAuthStore((s) => s.setAuth);
 
+  // Validar email
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email) && email.length <= 255;
+  };
+
+  // Sanitizar input
+  const sanitizeInput = (input: string): string => {
+    return input.trim().slice(0, 500); // Limitar longitud
+  };
+
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    
+    // Rate limiting básico: máximo 5 intentos por minuto
+    const now = Date.now();
+    const timeSinceLastAttempt = now - lastAttemptTime;
+    
+    if (timeSinceLastAttempt < 60000) { // 1 minuto
+      if (loginAttempts >= 5) {
+        toast.error('Demasiados intentos. Por favor espera un minuto.', {
+          position: 'top-right',
+        });
+        return;
+      }
+    } else {
+      setLoginAttempts(0); // Resetear contador después de 1 minuto
+    }
+
     setIsPosting(true);
     const formData = new FormData(event.currentTarget);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
+    let email = formData.get('email') as string;
+    let password = formData.get('password') as string;
+
+    // Sanitizar inputs
+    email = sanitizeInput(email);
+    password = sanitizeInput(password);
+
+    // Validaciones
+    if (!email || email.length === 0) {
+      toast.error('El correo electrónico es requerido', {
+        position: 'top-right',
+      });
+      setIsPosting(false);
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      toast.error('El correo electrónico no es válido', {
+        position: 'top-right',
+      });
+      setIsPosting(false);
+      return;
+    }
+
+    if (!password || password.length < 4) {
+      toast.error('La contraseña debe tener al menos 4 caracteres', {
+        position: 'top-right',
+      });
+      setIsPosting(false);
+      return;
+    }
+
+    if (password.length > 128) {
+      toast.error('La contraseña es demasiado larga', {
+        position: 'top-right',
+      });
+      setIsPosting(false);
+      return;
+    }
 
     try {
       const ok = await login(email, password);
@@ -56,7 +122,7 @@ export default function LoginPage() {
           toast.success(`Inicio de sesión exitoso. Bienvenido ${userName}`, {
             position: 'top-right',
           });
-          const from = (location.state as any)?.from?.pathname || '/admin/facturas';
+          const from = (location.state as any)?.from?.pathname || '/admin/dashboard';
           navigate(from, { replace: true });
         } else if (cliente && token) {
           const clienteId = (cliente as any).id || cliente.idCliente;
@@ -88,11 +154,15 @@ export default function LoginPage() {
           navigate(currentPath, { replace: true });
         }
       } else {
+        setLoginAttempts(prev => prev + 1);
+        setLastAttemptTime(Date.now());
         toast.error('Error al iniciar sesión. Verifica tus credenciales.', {
           position: 'top-right',
         });
       }
     } catch (error: any) {
+      setLoginAttempts(prev => prev + 1);
+      setLastAttemptTime(Date.now());
       const errorMessage =
         error instanceof Error
           ? error.message

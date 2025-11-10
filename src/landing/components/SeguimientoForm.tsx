@@ -211,20 +211,36 @@ export function SeguimientoForm() {
       return;
     }
 
-    if (!codigo.trim()) {
+    // Sanitizar y validar código
+    const codigoLimpio = codigo.trim().toUpperCase();
+
+    if (!codigoLimpio) {
       toast.error('Ingresa un código de recepción');
       return;
     }
 
+    // Validar longitud del código (máximo 50 caracteres)
+    if (codigoLimpio.length > 50) {
+      toast.error('El código es demasiado largo');
+      return;
+    }
+
+    // Validar formato del código (solo letras, números y guiones)
+    const codigoRegex = /^[A-Z0-9\-]+$/;
+    if (!codigoRegex.test(codigoLimpio)) {
+      toast.error('El código contiene caracteres inválidos');
+      return;
+    }
+
     // Si ya hay un seguimiento con el mismo código, no buscar de nuevo
-    if (seguimiento?.codigoRecepcion === codigo.trim().toUpperCase()) {
+    if (seguimiento?.codigoRecepcion === codigoLimpio) {
       return;
     }
 
     isSearchingRef.current = true;
     setLoading(true);
     try {
-      const data = await getSeguimientoByCodigo(codigo.trim());
+      const data = await getSeguimientoByCodigo(codigoLimpio);
       setSeguimiento(data);
     } catch (error: any) {
       const message = error?.response?.data?.message || 'Código no encontrado';
