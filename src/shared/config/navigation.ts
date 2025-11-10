@@ -199,7 +199,7 @@ export const getGroupedNavigationItems = (userType: PanelRole) => {
   );
 
   const catalogItems = allItems.filter((item) =>
-    ['Clasificaciones', 'Unidades de Medida', 'Tipos de Pago', 'Monedas', 'Impuestos', 'Motivos de Cita'].includes(
+    ['Clasificaciones', 'Unidades de Medida', 'Tipos de Pago', 'Monedas', 'Impuestos'].includes(
       item.title
     )
   );
@@ -216,7 +216,7 @@ export const getGroupedNavigationItems = (userType: PanelRole) => {
   );
 
   const clientPortalItems = allItems.filter((item) =>
-    ['Cotizaciones', 'Citas'].includes(item.title)
+    ['Cotizaciones', 'Citas', 'Motivos de Cita'].includes(item.title)
   );
 
   const systemItems = allItems.filter((item) =>
