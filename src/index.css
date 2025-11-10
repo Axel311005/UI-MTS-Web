@@ -172,6 +172,10 @@ Todos los colores en HSL para theming perfecto y accesibilidad ISO/WCAG.
   body {
     @apply bg-background text-foreground;
   }
+
+  .responsive-table {
+    min-width: max(100%, var(--table-min-width, 56rem));
+  }
 }
 
 @layer base {

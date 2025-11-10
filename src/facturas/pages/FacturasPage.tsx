@@ -293,8 +293,8 @@ export const FacturasPage = () => {
           <CardTitle>Lista de Facturas</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="overflow-auto rounded-md border max-h-[480px] relative">
-            <Table className="min-w-[900px]">
+          <div className="rounded-md border max-h-[480px] overflow-y-auto">
+            <Table minTableWidth="72rem">
               <TableHeader>
                 <TableRow>
                   <TableHead>Código</TableHead>

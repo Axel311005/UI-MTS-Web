@@ -2,21 +2,37 @@ import * as React from "react";
 
 import { cn } from "@/shared/lib/utils";
 
-const Table = React.forwardRef<
-  HTMLTableElement,
-  React.HTMLAttributes<HTMLTableElement>
->(({ className, ...props }, ref) => (
-  <div className="relative w-full overflow-x-auto overflow-y-visible">
-    <table
-      ref={ref}
-      className={cn(
-        "responsive-table w-full caption-bottom text-sm",
-        className
-      )}
-      {...props}
-    />
-  </div>
-));
+type TableProps = React.HTMLAttributes<HTMLTableElement> & {
+  minTableWidth?: string;
+};
+
+const Table = React.forwardRef<HTMLTableElement, TableProps>(
+  ({ className, style, minTableWidth, ...props }, ref) => {
+    const mergedStyle =
+      minTableWidth || style
+        ? ({
+            ...(style ?? {}),
+            ...(minTableWidth
+              ? { ["--table-min-width" as const]: minTableWidth }
+              : {}),
+          } as React.CSSProperties)
+        : undefined;
+
+    return (
+      <div className="relative w-full overflow-x-auto overflow-y-visible">
+        <table
+          ref={ref}
+          className={cn(
+            "responsive-table w-full caption-bottom text-sm",
+            className
+          )}
+          style={mergedStyle}
+          {...props}
+        />
+      </div>
+    );
+  }
+);
 Table.displayName = "Table";
 
 const TableHeader = React.forwardRef<
