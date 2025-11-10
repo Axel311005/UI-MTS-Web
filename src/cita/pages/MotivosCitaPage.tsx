@@ -28,7 +28,6 @@ import { patchMotivoCitaAction } from '../actions/patch-motivo-cita';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import type { MotivoCita } from '../types/motivo-cita.interface';
-import { EstadoActivo } from '@/shared/types/status';
 import {
   Dialog,
   DialogContent,
