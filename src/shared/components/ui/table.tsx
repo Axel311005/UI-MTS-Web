@@ -19,7 +19,7 @@ const Table = React.forwardRef<HTMLTableElement, TableProps>(
         : undefined;
 
     return (
-      <div className="relative w-full overflow-x-auto overflow-y-visible">
+      <div className="relative w-full overflow-x-auto overflow-y-visible -mx-2 sm:mx-0 px-2 sm:px-0">
         <table
           ref={ref}
           className={cn(

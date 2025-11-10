@@ -150,50 +150,52 @@ export const VehiculosPage = () => {
   const showEmptyState = !isLoadingData && totalFiltrados === 0;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-left">Vehículos</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold text-left">Vehículos</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Listado de vehículos registrados
           </p>
         </div>
-        <Button onClick={() => navigate("/admin/vehiculos/nuevo")}>
+        <Button className="w-full sm:w-auto" onClick={() => navigate("/admin/vehiculos/nuevo")}>
           Nuevo vehículo
         </Button>
       </div>
 
       <VehiculoSearch />
       <Card className="card-elegant">
-        <CardHeader>
+        <CardHeader className="p-4 sm:p-6">
           <div className="flex items-center justify-between gap-4">
-            <CardTitle>Lista de Vehículos</CardTitle>
+            <CardTitle className="text-lg sm:text-xl">Lista de Vehículos</CardTitle>
             <div className="w-full max-w-sm"></div>
           </div>
         </CardHeader>
-        <CardContent>
-          <Table>
+        <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+          <div className="rounded-md border max-h-[600px] overflow-y-auto overflow-x-auto -mx-2 sm:mx-0">
+            <div className="min-w-full inline-block">
+              <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Placa</TableHead>
-                <TableHead>Marca</TableHead>
-                <TableHead>Modelo</TableHead>
-                <TableHead>Año</TableHead>
-                <TableHead>Color</TableHead>
-                <TableHead>Cliente</TableHead>
+                <TableHead data-mobile-keep>Marca</TableHead>
+                <TableHead data-mobile-hidden>Modelo</TableHead>
+                <TableHead data-mobile-hidden>Año</TableHead>
+                <TableHead data-mobile-hidden>Color</TableHead>
+                <TableHead data-mobile-hidden>Cliente</TableHead>
                 <TableHead data-mobile-keep>Estado</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
+                <TableHead className="text-right" data-mobile-keep data-mobile-actions>Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {displayedVehiculos.map((v) => (
                 <TableRow key={v.idVehiculo} className="table-row-hover">
                   <TableCell className="font-medium">{v.placa}</TableCell>
-                  <TableCell>{v.marca || "—"}</TableCell>
-                  <TableCell>{v.modelo || "—"}</TableCell>
-                  <TableCell>{v.anio ?? "—"}</TableCell>
-                  <TableCell>{v.color || "—"}</TableCell>
-                  <TableCell>
+                  <TableCell data-mobile-keep>{v.marca || "—"}</TableCell>
+                  <TableCell data-mobile-hidden>{v.modelo || "—"}</TableCell>
+                  <TableCell data-mobile-hidden>{v.anio ?? "—"}</TableCell>
+                  <TableCell data-mobile-hidden>{v.color || "—"}</TableCell>
+                  <TableCell data-mobile-hidden>
                     {v.cliente ? getClienteNombre(v.cliente) : "—"}
                   </TableCell>
                   <TableCell data-mobile-keep>
@@ -207,7 +209,7 @@ export const VehiculosPage = () => {
                       {v.activo === EstadoActivo.ACTIVO ? "Activo" : "Inactivo"}
                     </span>
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right" data-mobile-keep data-mobile-actions>
                     <div className="flex justify-end gap-2">
                       <Button
                         variant="outline"
@@ -243,6 +245,8 @@ export const VehiculosPage = () => {
               )}
             </TableBody>
           </Table>
+            </div>
+          </div>
         </CardContent>
         {totalFiltrados > 0 && (
           <Pagination

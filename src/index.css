@@ -181,19 +181,33 @@ Todos los colores en HSL para theming perfecto y accesibilidad ISO/WCAG.
 @layer base {
   @media (max-width: 768px) {
     .responsive-table {
-      font-size: 0.875rem;
-      table-layout: fixed;
+      font-size: 0.8125rem;
+      table-layout: auto;
+      width: 100%;
+      min-width: 100%;
     }
 
     .responsive-table th,
     .responsive-table td {
-      padding-left: 0.75rem;
-      padding-right: 0.75rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      padding: 0.5rem 0.5rem;
+      white-space: normal;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      max-width: 120px;
     }
 
+    .responsive-table th:first-child,
+    .responsive-table td:first-child {
+      padding-left: 0.75rem;
+      max-width: 100px;
+    }
+
+    .responsive-table th:last-child,
+    .responsive-table td:last-child {
+      padding-right: 0.75rem;
+    }
+
+    /* Ocultar columnas que no son esenciales en móvil */
     .responsive-table
       th:nth-child(n + 4):not(:last-child):not([data-mobile-keep]),
     .responsive-table
@@ -204,6 +218,12 @@ Todos los colores en HSL para theming perfecto y accesibilidad ISO/WCAG.
     .responsive-table th[data-mobile-hidden],
     .responsive-table td[data-mobile-hidden] {
       display: none;
+    }
+
+    /* Mantener columnas importantes visibles */
+    .responsive-table th[data-mobile-keep],
+    .responsive-table td[data-mobile-keep] {
+      display: table-cell;
     }
 
     .table-actions-mobile {
@@ -217,15 +237,44 @@ Todos los colores en HSL para theming perfecto y accesibilidad ISO/WCAG.
       white-space: normal;
       overflow: visible;
       text-overflow: unset;
-      min-width: 2.75rem;
-      max-width: 3.5rem;
-      padding-right: 0.5rem;
+      min-width: 3rem;
+      max-width: 4rem;
+      padding: 0.5rem 0.5rem;
+      position: sticky;
+      right: 0;
+      background-color: hsl(var(--card));
+      z-index: 10;
     }
 
     .responsive-table td[data-mobile-actions] {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
+      display: table-cell;
+    }
+
+    /* Mejorar la visualización de celdas con texto largo */
+    .responsive-table td {
+      line-height: 1.4;
+    }
+
+    /* Asegurar que las primeras columnas sean visibles */
+    .responsive-table th:nth-child(1),
+    .responsive-table td:nth-child(1),
+    .responsive-table th:nth-child(2),
+    .responsive-table td:nth-child(2),
+    .responsive-table th:nth-child(3),
+    .responsive-table td:nth-child(3) {
+      display: table-cell;
+    }
+  }
+
+  /* Mejoras para tablets */
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .responsive-table {
+      font-size: 0.875rem;
+    }
+
+    .responsive-table th,
+    .responsive-table td {
+      padding: 0.625rem 0.75rem;
     }
   }
 }

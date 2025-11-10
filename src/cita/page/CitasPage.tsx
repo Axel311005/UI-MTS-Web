@@ -176,15 +176,15 @@ export default function CitasPage() {
   ]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-left">Citas</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold text-left">Citas</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Gestión de citas agendadas por clientes
           </p>
         </div>
-        <Button onClick={() => navigate("/admin/citas/nueva")}>
+        <Button className="w-full sm:w-auto" onClick={() => navigate("/admin/citas/nueva")}>
           <Plus className="mr-2 h-4 w-4" /> Nueva Cita
         </Button>
       </div>
@@ -223,11 +223,13 @@ export default function CitasPage() {
       </div>
 
       <Card className="card-elegant">
-        <CardHeader>
-          <CardTitle>Lista de Citas</CardTitle>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-lg sm:text-xl">Lista de Citas</CardTitle>
         </CardHeader>
-        <CardContent>
-          <Table>
+        <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+          <div className="rounded-md border max-h-[600px] overflow-y-auto overflow-x-auto -mx-2 sm:mx-0">
+            <div className="min-w-full inline-block">
+              <Table>
             <TableHeader>
               <TableRow>
                 <TableHead data-mobile-keep>Cliente</TableHead>
@@ -314,6 +316,8 @@ export default function CitasPage() {
               )}
             </TableBody>
           </Table>
+            </div>
+          </div>
         </CardContent>
         {totalFiltrados > 0 && (
           <Pagination

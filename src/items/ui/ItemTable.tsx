@@ -28,27 +28,29 @@ export function ItemTable({ items }: ItemTableProps) {
 
   return (
     <Card className="card-elegant">
-      <CardHeader>
-        <CardTitle>Lista de Productos</CardTitle>
-        <CardDescription>{total} productos encontrados</CardDescription>
+      <CardHeader className="p-4 sm:p-6">
+        <CardTitle className="text-lg sm:text-xl">Lista de Productos</CardTitle>
+        <CardDescription className="text-sm">{total} productos encontrados</CardDescription>
       </CardHeader>
-      <CardContent>
-        <Table>
+      <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+        <div className="rounded-md border max-h-[600px] overflow-y-auto overflow-x-auto -mx-2 sm:mx-0">
+          <div className="min-w-full inline-block">
+            <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Código</TableHead>
               <TableHead>Nombre</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead>Clasificación</TableHead>
+              <TableHead data-mobile-hidden>Tipo</TableHead>
+              <TableHead data-mobile-hidden>Clasificación</TableHead>
               <TableHead className="text-right" data-mobile-keep>
                 Precio Córdoba
               </TableHead>
-              <TableHead className="text-right">Precio USD</TableHead>
+              <TableHead className="text-right" data-mobile-hidden>Precio USD</TableHead>
               <TableHead className="text-right" data-mobile-keep>
                 Stock disponible
               </TableHead>
               <TableHead data-mobile-keep>Estado</TableHead>
-              <TableHead className="w-[50px]" />
+              <TableHead className="w-[50px]" data-mobile-keep data-mobile-actions />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -84,7 +86,7 @@ export function ItemTable({ items }: ItemTableProps) {
                   <TableCell className="font-medium">
                     {item.descripcion}
                   </TableCell>
-                  <TableCell>
+                  <TableCell data-mobile-hidden>
                     <Badge
                       variant={
                         item.tipo === "PRODUCTO" ? "default" : "secondary"
@@ -93,7 +95,7 @@ export function ItemTable({ items }: ItemTableProps) {
                       {item.tipo === "PRODUCTO" ? "Producto" : "Servicio"}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell data-mobile-hidden>
                     <Badge variant="outline">{clasificacion}</Badge>
                   </TableCell>
                   <TableCell className="text-right font-mono" data-mobile-keep>
@@ -103,7 +105,7 @@ export function ItemTable({ items }: ItemTableProps) {
                       minimumFractionDigits: 2,
                     })}
                   </TableCell>
-                  <TableCell className="text-right font-mono">
+                  <TableCell className="text-right font-mono" data-mobile-hidden>
                     {precioDolar.toLocaleString("en-US", {
                       style: "currency",
                       currency: "USD",
@@ -123,7 +125,7 @@ export function ItemTable({ items }: ItemTableProps) {
                       {estado === "ACTIVO" ? "Activo" : "Inactivo"}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell data-mobile-keep data-mobile-actions>
                     <ItemRowActions item={item} />
                   </TableCell>
                 </TableRow>
@@ -141,6 +143,8 @@ export function ItemTable({ items }: ItemTableProps) {
             )}
           </TableBody>
         </Table>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

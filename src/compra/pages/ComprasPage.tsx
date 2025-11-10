@@ -204,18 +204,18 @@ export function ComprasPage() {
   const totalPages = Math.ceil(totalRows / pageSize);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-left">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-left">
             Compras
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground">
             Gestiona las compras y órdenes de compra
           </p>
         </div>
         <Button
-          className="button-hover"
+          className="button-hover w-full sm:w-auto"
           onClick={() => navigate("/admin/compras/nueva")}
         >
           <Plus className="h-4 w-4 mr-2" />
@@ -223,15 +223,20 @@ export function ComprasPage() {
         </Button>
       </div>
 
-      <div className="flex items-center gap-4">
-        <CompraSearch className="max-w-sm" placeholder="Buscar por código" />
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+        <CompraSearch className="w-full sm:max-w-sm" placeholder="Buscar por código" />
         <Button
           variant={showFilters ? "default" : "outline"}
           onClick={() => setShowFilters((s) => !s)}
-          className="whitespace-nowrap"
+          className="whitespace-nowrap w-full sm:w-auto"
         >
           <Filter className="h-4 w-4 mr-2" />
-          {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
+          <span className="hidden sm:inline">
+            {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
+          </span>
+          <span className="sm:hidden">
+            {showFilters ? "Ocultar" : "Filtros"}
+          </span>
         </Button>
       </div>
 
@@ -242,22 +247,23 @@ export function ComprasPage() {
       )}
 
       <Card className="card-elegant">
-        <CardHeader>
-          <CardTitle>Lista de Compras</CardTitle>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-lg sm:text-xl">Lista de Compras</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="rounded-md border max-h-[480px] overflow-y-auto">
-            <Table minTableWidth="72rem">
+        <CardContent className="space-y-4 p-4 sm:p-6 pt-0 sm:pt-0">
+          <div className="rounded-md border max-h-[480px] overflow-y-auto overflow-x-auto -mx-2 sm:mx-0">
+            <div className="min-w-full inline-block">
+              <Table minTableWidth="72rem">
               <TableHeader>
                 <TableRow>
                   <TableHead>Código</TableHead>
                   <TableHead>Fecha</TableHead>
-                  <TableHead>Bodega</TableHead>
-                  <TableHead>Moneda</TableHead>
-                  <TableHead>Total</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Tipo Pago</TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
+                  <TableHead data-mobile-hidden>Bodega</TableHead>
+                  <TableHead data-mobile-hidden>Moneda</TableHead>
+                  <TableHead data-mobile-keep>Total</TableHead>
+                  <TableHead data-mobile-keep>Estado</TableHead>
+                  <TableHead data-mobile-hidden>Tipo Pago</TableHead>
+                  <TableHead className="text-right" data-mobile-keep data-mobile-actions>Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -267,12 +273,12 @@ export function ComprasPage() {
                       {compra.codigoCompra}
                     </TableCell>
                     <TableCell>{formatDate(compra.fecha)}</TableCell>
-                    <TableCell>{compra.bodega?.descripcion ?? "—"}</TableCell>
-                    <TableCell>{compra.moneda?.descripcion ?? "—"}</TableCell>
-                    <TableCell className="font-semibold">
+                    <TableCell data-mobile-hidden>{compra.bodega?.descripcion ?? "—"}</TableCell>
+                    <TableCell data-mobile-hidden>{compra.moneda?.descripcion ?? "—"}</TableCell>
+                    <TableCell className="font-semibold" data-mobile-keep>
                       {formatMoney(compra.total)}
                     </TableCell>
-                    <TableCell>
+                    <TableCell data-mobile-keep>
                       <Badge
                         variant={
                           (compra.estado ?? "").toString().toUpperCase() ===
@@ -287,8 +293,8 @@ export function ComprasPage() {
                         {compra.estado}
                       </Badge>
                     </TableCell>
-                    <TableCell>{compra.tipoPago?.descripcion ?? "—"}</TableCell>
-                    <TableCell className="text-right">
+                    <TableCell data-mobile-hidden>{compra.tipoPago?.descripcion ?? "—"}</TableCell>
+                    <TableCell className="text-right" data-mobile-keep data-mobile-actions>
                       <Suspense
                         fallback={
                           <div className="text-xs text-muted-foreground">…</div>
@@ -301,6 +307,7 @@ export function ComprasPage() {
                 ))}
               </TableBody>
             </Table>
+            </div>
           </div>
         </CardContent>
         {totalRows > 0 && (

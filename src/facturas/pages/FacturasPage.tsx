@@ -252,18 +252,18 @@ export const FacturasPage = () => {
   }, [totalRows, page, pageSize, searchParams, setSearchParams]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-left">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-left">
             Facturas
           </h1>
-          <p className="text-muted-foreground text-left">
+          <p className="text-sm sm:text-base text-muted-foreground text-left">
             Gestiona las facturas y documentos de venta
           </p>
         </div>
         <Button
-          className="button-hover"
+          className="button-hover w-full sm:w-auto"
           onClick={() => navigate("/admin/facturas/nueva")}
         >
           <Plus className="h-4 w-4 mr-2" />
@@ -271,15 +271,20 @@ export const FacturasPage = () => {
         </Button>
       </div>
       {/* Barra de búsqueda reutilizando componente existente */}
-      <div className="flex items-center gap-4">
-        <FacturaSearch className="max-w-sm" />
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+        <FacturaSearch className="w-full sm:max-w-sm" />
         <Button
           variant={showFilters ? "default" : "outline"}
           onClick={() => setShowFilters((s) => !s)}
-          className="whitespace-nowrap"
+          className="whitespace-nowrap w-full sm:w-auto"
         >
           <Filter className="h-4 w-4 mr-2" />
-          {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
+          <span className="hidden sm:inline">
+            {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
+          </span>
+          <span className="sm:hidden">
+            {showFilters ? "Ocultar" : "Filtros"}
+          </span>
         </Button>
       </div>
       {/* Los chips de filtros activos ahora se muestran dentro del panel de filtros */}
@@ -289,23 +294,24 @@ export const FacturasPage = () => {
         </div>
       )}
       <Card className="card-elegant">
-        <CardHeader>
-          <CardTitle>Lista de Facturas</CardTitle>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-lg sm:text-xl">Lista de Facturas</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="rounded-md border max-h-[480px] overflow-y-auto">
-            <Table minTableWidth="72rem">
+        <CardContent className="space-y-4 p-4 sm:p-6 pt-0 sm:pt-0">
+          <div className="rounded-md border max-h-[480px] overflow-y-auto overflow-x-auto -mx-2 sm:mx-0">
+            <div className="min-w-full inline-block">
+              <Table minTableWidth="72rem">
               <TableHeader>
                 <TableRow>
                   <TableHead>Código</TableHead>
                   <TableHead>Cliente</TableHead>
                   <TableHead>Fecha</TableHead>
-                  <TableHead>Bodega</TableHead>
-                  <TableHead>Moneda</TableHead>
-                  <TableHead>Total</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Tipo Pago</TableHead>
-                  <TableHead>Origen</TableHead>
+                  <TableHead data-mobile-hidden>Bodega</TableHead>
+                  <TableHead data-mobile-hidden>Moneda</TableHead>
+                  <TableHead data-mobile-keep>Total</TableHead>
+                  <TableHead data-mobile-keep>Estado</TableHead>
+                  <TableHead data-mobile-hidden>Tipo Pago</TableHead>
+                  <TableHead data-mobile-hidden>Origen</TableHead>
                   <TableHead
                     className="text-right"
                     data-mobile-keep
@@ -339,24 +345,24 @@ export const FacturasPage = () => {
                         </div>
                       </TableCell>
                       <TableCell>{formatDate(factura.fecha)}</TableCell>
-                      <TableCell>
+                      <TableCell data-mobile-hidden>
                         {factura.bodega?.descripcion ?? "—"}
                       </TableCell>
-                      <TableCell>
+                      <TableCell data-mobile-hidden>
                         {factura.moneda?.descripcion ?? "—"}
                       </TableCell>
-                      <TableCell className="font-semibold">
+                      <TableCell className="font-semibold" data-mobile-keep>
                         {formatMoney(factura.total)}
                       </TableCell>
-                      <TableCell>
+                      <TableCell data-mobile-keep>
                         <Badge variant={getEstadoBadgeVariant(estadoNorm)}>
                           {estadoNorm}
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell data-mobile-hidden>
                         {factura.tipoPago?.descripcion ?? "—"}
                       </TableCell>
-                      <TableCell>
+                      <TableCell data-mobile-hidden>
                         {factura.proforma ? (
                           <Badge
                             variant="secondary"
@@ -390,6 +396,7 @@ export const FacturasPage = () => {
                 })}
               </TableBody>
             </Table>
+            </div>
           </div>
           {totalRows > 0 && (
             <Pagination

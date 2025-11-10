@@ -131,7 +131,7 @@ export const ClientesPage = () => {
   const showEmptyState = !isLoadingData && totalFiltrados === 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <ClienteHeader onNewClient={() => navigate('/admin/clientes/nuevo')} />
 
       <ClienteSearchBar
@@ -157,20 +157,22 @@ export const ClientesPage = () => {
       )}
 
       <Card className="card-elegant">
-        <CardHeader>
-          <CardTitle>Lista de Clientes</CardTitle>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-lg sm:text-xl">Lista de Clientes</CardTitle>
         </CardHeader>
-        <CardContent>
-          <Table>
+        <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+          <div className="rounded-md border max-h-[600px] overflow-y-auto overflow-x-auto -mx-2 sm:mx-0">
+            <div className="min-w-full inline-block">
+              <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Nombre</TableHead>
-                <TableHead>RUC</TableHead>
-                <TableHead>Teléfono</TableHead>
-                <TableHead>Dirección</TableHead>
-                <TableHead>Exonerado</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
+                <TableHead data-mobile-keep>RUC</TableHead>
+                <TableHead data-mobile-hidden>Teléfono</TableHead>
+                <TableHead data-mobile-hidden>Dirección</TableHead>
+                <TableHead data-mobile-hidden>Exonerado</TableHead>
+                <TableHead data-mobile-keep>Estado</TableHead>
+                <TableHead className="text-right" data-mobile-keep data-mobile-actions>Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -191,21 +193,21 @@ export const ClientesPage = () => {
                     <TableCell className="font-medium">
                       {getClienteNombre(cliente)}
                     </TableCell>
-                    <TableCell>{cliente.ruc || '—'}</TableCell>
-                    <TableCell>
+                    <TableCell data-mobile-keep>{cliente.ruc || '—'}</TableCell>
+                    <TableCell data-mobile-hidden>
                       <div className="flex items-center text-sm">
                         <Phone className="h-3 w-3 mr-1 text-muted-foreground" />
                         {telefono}
                       </div>
                     </TableCell>
-                    <TableCell>{direccion}</TableCell>
-                    <TableCell>{exoneradoLabel}</TableCell>
-                    <TableCell>
+                    <TableCell data-mobile-hidden>{direccion}</TableCell>
+                    <TableCell data-mobile-hidden>{exoneradoLabel}</TableCell>
+                    <TableCell data-mobile-keep>
                       <Badge variant={isActivo ? 'default' : 'secondary'}>
                         {estadoLabel}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right" data-mobile-keep data-mobile-actions>
                       <ClienteRowActions cliente={cliente} />
                     </TableCell>
                   </TableRow>
@@ -223,6 +225,8 @@ export const ClientesPage = () => {
               )}
             </TableBody>
           </Table>
+            </div>
+          </div>
         </CardContent>
         {totalFiltrados > 0 && (
           <Pagination

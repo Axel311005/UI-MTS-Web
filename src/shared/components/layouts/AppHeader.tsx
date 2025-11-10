@@ -36,21 +36,21 @@ export const AppHeader = () => {
   };
 
   return (
-    <header className="header-glass h-16 flex items-center justify-between px-4 md:px-6 border-b border-sidebar-border">
-      <div className="flex items-center space-x-4">
+    <header className="header-glass h-14 sm:h-16 flex items-center justify-between px-3 sm:px-4 md:px-6 border-b border-sidebar-border">
+      <div className="flex items-center space-x-2 sm:space-x-4">
         {/* Sidebar trigger con icono */}
         <SidebarTrigger>
           <Menu className="h-5 w-5" />
         </SidebarTrigger>
       </div>
 
-      <div className="flex items-center space-x-3">
+      <div className="flex items-center space-x-2 sm:space-x-3">
         {/* Toggle de tema */}
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="button-hover"
+          className="button-hover h-8 w-8 sm:h-9 sm:w-9 p-0"
         >
           {theme === 'dark' ? (
             <Sun className="h-4 w-4" />
@@ -70,9 +70,9 @@ export const AppHeader = () => {
         {/* Avatar con dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="button-hover">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+            <Button variant="ghost" size="sm" className="button-hover h-8 w-8 sm:h-9 sm:w-9 p-0">
+              <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
+                <AvatarFallback className="bg-primary text-primary-foreground text-xs sm:text-sm">
                   {user?.email ? user.email.charAt(0).toUpperCase() : 'U'}
                 </AvatarFallback>
               </Avatar>
