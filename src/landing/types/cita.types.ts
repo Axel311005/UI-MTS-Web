@@ -1,6 +1,7 @@
 export interface MotivoCita {
   idMotivoCita: number;
   descripcion: string;
+  estado?: "ACTIVO" | "INACTIVO";
 }
 
 export interface CreateMotivoCitaPayload {
@@ -12,8 +13,8 @@ export interface CreateCitaPayload {
   idVehiculo: number;
   idMotivoCita: number;
   fechaInicio: string;
-  estado: 'PROGRAMADA';
-  canal: 'web';
+  estado: "PROGRAMADA";
+  canal: "web";
 }
 
 export interface Vehiculo {
@@ -31,4 +32,3 @@ export interface Vehiculo {
   idCliente?: number; // Fallback si viene directamente
   activo?: string | number; // Para filtrar solo activos
 }
-

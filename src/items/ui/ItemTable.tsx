@@ -1,11 +1,11 @@
-import { Badge } from '@/shared/components/ui/badge';
+import { Badge } from "@/shared/components/ui/badge";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/shared/components/ui/card';
+} from "@/shared/components/ui/card";
 import {
   Table,
   TableBody,
@@ -13,10 +13,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared/components/ui/table';
-import { ItemRowActions } from './ItemRowActions';
-import type { ItemResponse } from '../types/item.response';
-import { EstadoActivo } from '@/shared/types/status';
+} from "@/shared/components/ui/table";
+import { ItemRowActions } from "./ItemRowActions";
+import type { ItemResponse } from "../types/item.response";
+import { EstadoActivo } from "@/shared/types/status";
 
 interface ItemTableProps {
   items: ItemResponse[];
@@ -40,24 +40,28 @@ export function ItemTable({ items }: ItemTableProps) {
               <TableHead>Nombre</TableHead>
               <TableHead>Tipo</TableHead>
               <TableHead>Clasificación</TableHead>
-              <TableHead className="text-right">Precio Córdoba</TableHead>
+              <TableHead className="text-right" data-mobile-keep>
+                Precio Córdoba
+              </TableHead>
               <TableHead className="text-right">Precio USD</TableHead>
-              <TableHead className="text-right">Stock disponible</TableHead>
-              <TableHead>Estado</TableHead>
+              <TableHead className="text-right" data-mobile-keep>
+                Stock disponible
+              </TableHead>
+              <TableHead data-mobile-keep>Estado</TableHead>
               <TableHead className="w-[50px]" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {activos.map((item) => {
-              const clasificacion = item.clasificacion?.descripcion ?? '—';
+              const clasificacion = item.clasificacion?.descripcion ?? "—";
               const precioCordobaValue = Number.parseFloat(
-                item.precioBaseLocal ?? '0'
+                item.precioBaseLocal ?? "0"
               );
               const precioCordoba = Number.isFinite(precioCordobaValue)
                 ? precioCordobaValue
                 : 0;
               const precioDolarValue = Number.parseFloat(
-                item.precioBaseDolar ?? '0'
+                item.precioBaseDolar ?? "0"
               );
               const precioDolar = Number.isFinite(precioDolarValue)
                 ? precioDolarValue
@@ -66,7 +70,7 @@ export function ItemTable({ items }: ItemTableProps) {
               const stockDisponible = Array.isArray(item.existencias)
                 ? item.existencias.reduce((total, existencia) => {
                     const cantidad = Number.parseFloat(
-                      existencia.cantDisponible ?? '0'
+                      existencia.cantDisponible ?? "0"
                     );
                     return Number.isFinite(cantidad) ? total + cantidad : total;
                   }, 0)
@@ -82,39 +86,41 @@ export function ItemTable({ items }: ItemTableProps) {
                   </TableCell>
                   <TableCell>
                     <Badge
-                      variant={item.tipo === 'PRODUCTO' ? 'default' : 'secondary'}
+                      variant={
+                        item.tipo === "PRODUCTO" ? "default" : "secondary"
+                      }
                     >
-                      {item.tipo === 'PRODUCTO' ? 'Producto' : 'Servicio'}
+                      {item.tipo === "PRODUCTO" ? "Producto" : "Servicio"}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline">{clasificacion}</Badge>
                   </TableCell>
-                  <TableCell className="text-right font-mono">
-                    {precioCordoba.toLocaleString('es-NI', {
-                      style: 'currency',
-                      currency: 'NIO',
+                  <TableCell className="text-right font-mono" data-mobile-keep>
+                    {precioCordoba.toLocaleString("es-NI", {
+                      style: "currency",
+                      currency: "NIO",
                       minimumFractionDigits: 2,
                     })}
                   </TableCell>
                   <TableCell className="text-right font-mono">
-                    {precioDolar.toLocaleString('en-US', {
-                      style: 'currency',
-                      currency: 'USD',
+                    {precioDolar.toLocaleString("en-US", {
+                      style: "currency",
+                      currency: "USD",
                       minimumFractionDigits: 2,
                     })}
                   </TableCell>
-                  <TableCell className="text-right font-mono">
-                    {stockDisponible.toLocaleString('es-PE', {
+                  <TableCell className="text-right font-mono" data-mobile-keep>
+                    {stockDisponible.toLocaleString("es-PE", {
                       minimumFractionDigits: 0,
                       maximumFractionDigits: 2,
                     })}
                   </TableCell>
-                  <TableCell>
+                  <TableCell data-mobile-keep>
                     <Badge
-                      variant={estado === 'ACTIVO' ? 'default' : 'secondary'}
+                      variant={estado === "ACTIVO" ? "default" : "secondary"}
                     >
-                      {estado === 'ACTIVO' ? 'Activo' : 'Inactivo'}
+                      {estado === "ACTIVO" ? "Activo" : "Inactivo"}
                     </Badge>
                   </TableCell>
                   <TableCell>

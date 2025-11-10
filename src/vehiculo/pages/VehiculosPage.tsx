@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router";
+import { useQuery } from "@tanstack/react-query";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@/shared/components/ui/card';
+} from "@/shared/components/ui/card";
 import {
   Table,
   TableBody,
@@ -14,33 +14,33 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared/components/ui/table';
-import { Button } from '@/shared/components/ui/button';
-import { Pagination } from '@/shared/components/ui/pagination';
-import { useVehiculo } from '../hook/useVehiculo';
-import type { Vehiculo } from '../types/vehiculo.interface';
-import type { PaginatedResponse } from '@/shared/types/pagination';
-import { VehiculoSearch } from '../ui/VehiculoSearch';
-import { Trash2 } from 'lucide-react';
-import { toast } from 'sonner';
-import { patchVehiculoAction } from '../actions/patch-vehiculo';
-import { EstadoActivo } from '@/shared/types/status';
-import { useDebounce } from '@/shared/hooks/use-debounce';
-import { getClienteNombre } from '@/clientes/utils/cliente.utils';
-import { SearchVehiculosAction } from '../actions/search-vehiculos-action';
+} from "@/shared/components/ui/table";
+import { Button } from "@/shared/components/ui/button";
+import { Pagination } from "@/shared/components/ui/pagination";
+import { useVehiculo } from "../hook/useVehiculo";
+import type { Vehiculo } from "../types/vehiculo.interface";
+import type { PaginatedResponse } from "@/shared/types/pagination";
+import { VehiculoSearch } from "../ui/VehiculoSearch";
+import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { patchVehiculoAction } from "../actions/patch-vehiculo";
+import { EstadoActivo } from "@/shared/types/status";
+import { useDebounce } from "@/shared/hooks/use-debounce";
+import { getClienteNombre } from "@/clientes/utils/cliente.utils";
+import { SearchVehiculosAction } from "../actions/search-vehiculos-action";
 
 export const VehiculosPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const page = parseInt(searchParams.get('page') || '1', 10);
-  const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
+  const page = parseInt(searchParams.get("page") || "1", 10);
+  const pageSize = parseInt(searchParams.get("pageSize") || "10", 10);
   const limit = pageSize;
   const offset = (page - 1) * pageSize;
 
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  const query = (searchParams.get('q') || '').trim();
+  const query = (searchParams.get("q") || "").trim();
   const debouncedQuery = useDebounce(query, 300);
   const hasSearch = debouncedQuery.length > 0;
 
@@ -58,7 +58,7 @@ export const VehiculosPage = () => {
   // Búsqueda usando el backend cuando hay término de búsqueda
   const { data: vehiculosFiltradosResponse, isLoading: isLoadingSearch } =
     useQuery<PaginatedResponse<Vehiculo>>({
-      queryKey: ['vehiculos.search', debouncedQuery, limit, offset],
+      queryKey: ["vehiculos.search", debouncedQuery, limit, offset],
       queryFn: () =>
         SearchVehiculosAction({
           q: debouncedQuery,
@@ -101,7 +101,7 @@ export const VehiculosPage = () => {
     if (totalFiltrados === 0) {
       if (page !== 1) {
         const params = new URLSearchParams(searchParams);
-        params.delete('page');
+        params.delete("page");
         setSearchParams(params, { replace: true });
       }
       return;
@@ -110,13 +110,20 @@ export const VehiculosPage = () => {
     if (page > computedTotalPages) {
       const params = new URLSearchParams(searchParams);
       if (computedTotalPages > 1) {
-        params.set('page', computedTotalPages.toString());
+        params.set("page", computedTotalPages.toString());
       } else {
-        params.delete('page');
+        params.delete("page");
       }
       setSearchParams(params, { replace: true });
     }
-  }, [isLoadingData, page, pageSize, searchParams, setSearchParams, totalFiltrados]);
+  }, [
+    isLoadingData,
+    page,
+    pageSize,
+    searchParams,
+    setSearchParams,
+    totalFiltrados,
+  ]);
 
   const handleDelete = async (idVehiculo: number, placa: string) => {
     if (deletingId) return;
@@ -129,16 +136,17 @@ export const VehiculosPage = () => {
       await patchVehiculoAction(idVehiculo, {
         activo: EstadoActivo.INACTIVO,
       });
-      toast.success('Vehículo eliminado');
+      toast.success("Vehículo eliminado");
       await refetch();
     } catch (error) {
-      toast.error('No se pudo eliminar el vehículo');
+      toast.error("No se pudo eliminar el vehículo");
     } finally {
       setDeletingId(null);
     }
   };
 
-  const totalPages = totalFiltrados > 0 ? Math.ceil(totalFiltrados / pageSize) : 1;
+  const totalPages =
+    totalFiltrados > 0 ? Math.ceil(totalFiltrados / pageSize) : 1;
   const showEmptyState = !isLoadingData && totalFiltrados === 0;
 
   return (
@@ -150,7 +158,7 @@ export const VehiculosPage = () => {
             Listado de vehículos registrados
           </p>
         </div>
-        <Button onClick={() => navigate('/admin/vehiculos/nuevo')}>
+        <Button onClick={() => navigate("/admin/vehiculos/nuevo")}>
           Nuevo vehículo
         </Button>
       </div>
@@ -173,7 +181,7 @@ export const VehiculosPage = () => {
                 <TableHead>Año</TableHead>
                 <TableHead>Color</TableHead>
                 <TableHead>Cliente</TableHead>
-                <TableHead>Estado</TableHead>
+                <TableHead data-mobile-keep>Estado</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -181,20 +189,22 @@ export const VehiculosPage = () => {
               {displayedVehiculos.map((v) => (
                 <TableRow key={v.idVehiculo} className="table-row-hover">
                   <TableCell className="font-medium">{v.placa}</TableCell>
-                  <TableCell>{v.marca || '—'}</TableCell>
-                  <TableCell>{v.modelo || '—'}</TableCell>
-                  <TableCell>{v.anio ?? '—'}</TableCell>
-                  <TableCell>{v.color || '—'}</TableCell>
-                  <TableCell>{v.cliente ? getClienteNombre(v.cliente) : '—'}</TableCell>
+                  <TableCell>{v.marca || "—"}</TableCell>
+                  <TableCell>{v.modelo || "—"}</TableCell>
+                  <TableCell>{v.anio ?? "—"}</TableCell>
+                  <TableCell>{v.color || "—"}</TableCell>
                   <TableCell>
+                    {v.cliente ? getClienteNombre(v.cliente) : "—"}
+                  </TableCell>
+                  <TableCell data-mobile-keep>
                     <span
                       className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
                         v.activo === EstadoActivo.ACTIVO
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                          : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                          ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                          : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
                       }`}
                     >
-                      {v.activo === EstadoActivo.ACTIVO ? 'Activo' : 'Inactivo'}
+                      {v.activo === EstadoActivo.ACTIVO ? "Activo" : "Inactivo"}
                     </span>
                   </TableCell>
                   <TableCell className="text-right">
@@ -242,16 +252,16 @@ export const VehiculosPage = () => {
             totalItems={totalFiltrados}
             onPageChange={(newPage) => {
               const params = new URLSearchParams(searchParams);
-              if (newPage > 1) params.set('page', newPage.toString());
-              else params.delete('page');
+              if (newPage > 1) params.set("page", newPage.toString());
+              else params.delete("page");
               setSearchParams(params, { replace: true });
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              window.scrollTo({ top: 0, behavior: "smooth" });
             }}
             onPageSizeChange={(newSize) => {
               const params = new URLSearchParams(searchParams);
-              params.delete('page');
-              if (newSize !== 10) params.set('pageSize', newSize.toString());
-              else params.delete('pageSize');
+              params.delete("page");
+              if (newSize !== 10) params.set("pageSize", newSize.toString());
+              else params.delete("pageSize");
               setSearchParams(params, { replace: true });
             }}
           />

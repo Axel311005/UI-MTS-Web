@@ -1,16 +1,12 @@
-import { useMemo, useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
-import { Pencil, Eye, FileText } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { Button } from '@/shared/components/ui/button';
-import { toast } from 'sonner';
-import { tallerApi } from '@/shared/api/tallerApi';
+import { useMemo, useEffect, useState } from "react";
+import { useSearchParams } from "react-router";
+import { useQuery } from "@tanstack/react-query";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@/shared/components/ui/card';
+} from "@/shared/components/ui/card";
 import {
   Table,
   TableBody,
@@ -18,49 +14,49 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared/components/ui/table';
-import { Badge } from '@/shared/components/ui/badge';
-import { Pagination } from '@/shared/components/ui/pagination';
+} from "@/shared/components/ui/table";
+import { Badge } from "@/shared/components/ui/badge";
+import { Pagination } from "@/shared/components/ui/pagination";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/components/ui/select';
-import { useCotizacion } from '../hook/useCotizacion';
-import { CotizacionSearchBar } from '../ui/CotizacionSearchBar';
-import type { Cotizacion } from '../types/cotizacion.interface';
-import { useDebounce } from '@/shared/hooks/use-debounce';
-import { CotizacionEstado } from '@/shared/types/status';
-import { formatMoney } from '@/shared/utils/formatters';
-import { getClienteNombre } from '@/clientes/utils/cliente.utils';
-import { SearchCotizacionesAction } from '../actions/search-cotizaciones-action';
-import type { PaginatedResponse } from '@/shared/types/pagination';
+} from "@/shared/components/ui/select";
+import { useCotizacion } from "../hook/useCotizacion";
+import { CotizacionSearchBar } from "../ui/CotizacionSearchBar";
+import type { Cotizacion } from "../types/cotizacion.interface";
+import { useDebounce } from "@/shared/hooks/use-debounce";
+import { CotizacionEstado } from "@/shared/types/status";
+import { formatMoney } from "@/shared/utils/formatters";
+import { getClienteNombre } from "@/clientes/utils/cliente.utils";
+import { SearchCotizacionesAction } from "../actions/search-cotizaciones-action";
+import type { PaginatedResponse } from "@/shared/types/pagination";
+import { CotizacionRowActions } from "../ui/CotizacionRowActions";
 
-const estadoVariant: Record<CotizacionEstado, 'default' | 'destructive'> = {
-  [CotizacionEstado.GENERADA]: 'default',
-  [CotizacionEstado.CADUCADA]: 'destructive',
+const estadoVariant: Record<CotizacionEstado, "default" | "destructive"> = {
+  [CotizacionEstado.GENERADA]: "default",
+  [CotizacionEstado.CADUCADA]: "destructive",
 };
 
 const formatDate = (value?: string | Date | null) => {
-  if (!value) return '—';
-  const d = typeof value === 'string' ? new Date(value) : value;
+  if (!value) return "—";
+  const d = typeof value === "string" ? new Date(value) : value;
   return d instanceof Date && !Number.isNaN(d.getTime())
-    ? d.toLocaleDateString('es-ES')
-    : '—';
+    ? d.toLocaleDateString("es-ES")
+    : "—";
 };
 
 export default function CotizacionesPage() {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const initialSearch = searchParams.get('q') || '';
+  const initialSearch = searchParams.get("q") || "";
   const [searchTerm, setSearchTerm] = useState(initialSearch);
-  const estadoFilter = searchParams.get('estado') || '';
+  const estadoFilter = searchParams.get("estado") || "";
 
   useEffect(() => {
-    const currentParam = searchParams.get('q') || '';
+    const currentParam = searchParams.get("q") || "";
     if (currentParam !== searchTerm) {
       setSearchTerm(currentParam);
     }
@@ -68,12 +64,12 @@ export default function CotizacionesPage() {
 
   const debouncedSearch = useDebounce(searchTerm.trim(), 300);
 
-  const page = parseInt(searchParams.get('page') || '1', 10);
-  const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
+  const page = parseInt(searchParams.get("page") || "1", 10);
+  const pageSize = parseInt(searchParams.get("pageSize") || "10", 10);
   const limit = pageSize;
   const offset = (page - 1) * pageSize;
   const hasSearch = Boolean(
-    debouncedSearch.length > 0 || (estadoFilter && estadoFilter !== 'all')
+    debouncedSearch.length > 0 || (estadoFilter && estadoFilter !== "all")
   );
 
   const {
@@ -90,7 +86,7 @@ export default function CotizacionesPage() {
   const { data: cotizacionesFiltradasResponse, isLoading: isLoadingSearch } =
     useQuery<PaginatedResponse<Cotizacion>>({
       queryKey: [
-        'cotizaciones.search',
+        "cotizaciones.search",
         debouncedSearch,
         estadoFilter,
         limit,
@@ -100,7 +96,7 @@ export default function CotizacionesPage() {
         SearchCotizacionesAction({
           q: debouncedSearch || undefined,
           estado:
-            estadoFilter && estadoFilter !== 'all'
+            estadoFilter && estadoFilter !== "all"
               ? (estadoFilter as CotizacionEstado)
               : undefined,
           limit,
@@ -146,7 +142,7 @@ export default function CotizacionesPage() {
     if (totalFiltrados === 0) {
       if (page !== 1) {
         const params = new URLSearchParams(searchParams);
-        params.delete('page');
+        params.delete("page");
         setSearchParams(params, { replace: true });
       }
       return;
@@ -156,9 +152,9 @@ export default function CotizacionesPage() {
       const lastPage = Math.max(1, computedTotalPages);
       const params = new URLSearchParams(searchParams);
       if (lastPage > 1) {
-        params.set('page', lastPage.toString());
+        params.set("page", lastPage.toString());
       } else {
-        params.delete('page');
+        params.delete("page");
       }
       setSearchParams(params, { replace: true });
     }
@@ -189,15 +185,15 @@ export default function CotizacionesPage() {
           placeholder="Buscar por código, cliente, RUC o teléfono"
         />
         <Select
-          value={estadoFilter || 'all'}
+          value={estadoFilter || "all"}
           onValueChange={(value) => {
             const params = new URLSearchParams(searchParams);
-            if (value && value !== 'all') {
-              params.set('estado', value);
+            if (value && value !== "all") {
+              params.set("estado", value);
             } else {
-              params.delete('estado');
+              params.delete("estado");
             }
-            params.delete('page'); // Resetear a página 1
+            params.delete("page"); // Resetear a página 1
             setSearchParams(params, { replace: true });
           }}
         >
@@ -223,13 +219,19 @@ export default function CotizacionesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Código</TableHead>
-                <TableHead>Cliente</TableHead>
-                <TableHead>RUC</TableHead>
-                <TableHead>Fecha</TableHead>
-                <TableHead>Total</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
+                <TableHead data-mobile-keep>Código</TableHead>
+                <TableHead data-mobile-keep>Cliente</TableHead>
+                <TableHead data-mobile-hidden>RUC</TableHead>
+                <TableHead data-mobile-hidden>Fecha</TableHead>
+                <TableHead data-mobile-keep>Total</TableHead>
+                <TableHead data-mobile-keep>Estado</TableHead>
+                <TableHead
+                  className="w-0 text-right"
+                  data-mobile-keep
+                  data-mobile-actions
+                >
+                  Acciones
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -246,97 +248,48 @@ export default function CotizacionesPage() {
                     key={cotizacion.idCotizacion}
                     className="table-row-hover"
                   >
-                    <TableCell className="font-medium">
-                      {cotizacion.codigoCotizacion ?? '—'}
+                    <TableCell className="font-medium" data-mobile-keep>
+                      {cotizacion.codigoCotizacion ?? "—"}
                     </TableCell>
-                    <TableCell>
+                    <TableCell data-mobile-keep>
                       {cotizacion.nombreCliente ??
                         (cotizacion.cliente
                           ? getClienteNombre(cotizacion.cliente)
-                          : '—')}
+                          : "—")}
                     </TableCell>
-                    <TableCell>{cotizacion.cliente?.ruc ?? '—'}</TableCell>
-                    <TableCell>{formatDate(cotizacion.fecha)}</TableCell>
-                    <TableCell>
+                    <TableCell data-mobile-hidden>
+                      {cotizacion.cliente?.ruc ?? "—"}
+                    </TableCell>
+                    <TableCell data-mobile-hidden>
+                      {formatDate(cotizacion.fecha)}
+                    </TableCell>
+                    <TableCell data-mobile-keep>
                       {cotizacion.total
                         ? formatMoney(Number(cotizacion.total))
-                        : '—'}
+                        : "—"}
                     </TableCell>
-                    <TableCell>
+                    <TableCell data-mobile-keep>
                       {cotizacion.estado ? (
                         <Badge
                           variant={
                             estadoVariant[
                               cotizacion.estado as keyof typeof estadoVariant
-                            ] ?? 'outline'
+                            ] ?? "outline"
                           }
                         >
                           {cotizacion.estado}
                         </Badge>
                       ) : (
-                        '—'
+                        "—"
                       )}
                     </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={async () => {
-                            try {
-                              const dismiss = toast.loading('Generando PDF...');
-                              const response = await tallerApi.get(
-                                `/cotizacion/${cotizacion.idCotizacion}/cotizacion-pdf`,
-                                { responseType: 'blob' }
-                              );
-                              const blob = new Blob([response.data], {
-                                type: 'application/pdf',
-                              });
-                              const urlBlob = window.URL.createObjectURL(blob);
-                              const link = document.createElement('a');
-                              link.href = urlBlob;
-                              link.download = `cotizacion-${
-                                cotizacion.codigoCotizacion ||
-                                cotizacion.idCotizacion
-                              }.pdf`;
-                              document.body.appendChild(link);
-                              link.click();
-                              document.body.removeChild(link);
-                              window.URL.revokeObjectURL(urlBlob);
-                              toast.dismiss(dismiss);
-                              toast.success('PDF generado correctamente');
-                            } catch (error: any) {
-                              const message =
-                                error?.response?.data?.message ||
-                                'Error al generar PDF';
-                              toast.error(message);
-                            }
-                          }}
-                        >
-                          <FileText className="mr-2 h-4 w-4" /> PDF
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            navigate(
-                              `/admin/cotizaciones/${cotizacion.idCotizacion}`
-                            )
-                          }
-                        >
-                          <Eye className="mr-2 h-4 w-4" /> Ver
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            navigate(
-                              `/admin/cotizaciones/${cotizacion.idCotizacion}/editar`
-                            )
-                          }
-                        >
-                          <Pencil className="mr-2 h-4 w-4" /> Editar
-                        </Button>
+                    <TableCell
+                      className="text-right"
+                      data-mobile-keep
+                      data-mobile-actions
+                    >
+                      <div className="flex w-full justify-end">
+                        <CotizacionRowActions cotizacion={cotizacion} />
                       </div>
                     </TableCell>
                   </TableRow>
@@ -362,16 +315,16 @@ export default function CotizacionesPage() {
             totalItems={totalFiltrados}
             onPageChange={(newPage) => {
               const params = new URLSearchParams(searchParams);
-              if (newPage > 1) params.set('page', newPage.toString());
-              else params.delete('page');
+              if (newPage > 1) params.set("page", newPage.toString());
+              else params.delete("page");
               setSearchParams(params, { replace: true });
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              window.scrollTo({ top: 0, behavior: "smooth" });
             }}
             onPageSizeChange={(newSize) => {
               const params = new URLSearchParams(searchParams);
-              params.delete('page');
-              if (newSize !== 10) params.set('pageSize', newSize.toString());
-              else params.delete('pageSize');
+              params.delete("page");
+              if (newSize !== 10) params.set("pageSize", newSize.toString());
+              else params.delete("pageSize");
               setSearchParams(params, { replace: true });
             }}
           />

@@ -1,13 +1,13 @@
-import { useMemo, useState } from 'react';
-import { Plus, Search, Edit, Trash2 } from '@/shared/icons';
+import { useMemo, useState } from "react";
+import { Plus, Search, Edit, Trash2 } from "@/shared/icons";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@/shared/components/ui/card';
-import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
+} from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
 import {
   Table,
   TableBody,
@@ -15,19 +15,19 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared/components/ui/table';
+} from "@/shared/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/shared/components/ui/dropdown-menu';
-import { Pagination } from '@/shared/components/ui/pagination';
-import { useMotivoCita } from '../hook/useMotivoCita';
-import { patchMotivoCitaAction } from '../actions/patch-motivo-cita';
-import { useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
-import type { MotivoCita } from '../types/motivo-cita.interface';
+} from "@/shared/components/ui/dropdown-menu";
+import { Pagination } from "@/shared/components/ui/pagination";
+import { useMotivoCita } from "../hook/useMotivoCita";
+import { patchMotivoCitaAction } from "../actions/patch-motivo-cita";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import type { MotivoCita } from "../types/motivo-cita.interface";
 import {
   Dialog,
   DialogContent,
@@ -35,11 +35,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/shared/components/ui/dialog';
-import { Label } from '@/shared/components/ui/label';
-import { Textarea } from '@/shared/components/ui/textarea';
-import { postMotivoCitaAction } from '../actions/post-motivo-cita';
-import { motivoCitaApi } from '../api/motivo-cita.api';
+} from "@/shared/components/ui/dialog";
+import { Label } from "@/shared/components/ui/label";
+import { Textarea } from "@/shared/components/ui/textarea";
+import { postMotivoCitaAction } from "../actions/post-motivo-cita";
+import { inactivateMotivoCitaAction } from "../actions/inactivate-motivo-cita";
 
 export default function MotivosCitaPage() {
   const queryClient = useQueryClient();
@@ -47,14 +47,18 @@ export default function MotivosCitaPage() {
   const [pageSize, setPageSize] = useState(10);
   const limit = pageSize;
   const offset = (page - 1) * pageSize;
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingMotivo, setEditingMotivo] = useState<MotivoCita | null>(null);
-  const [formData, setFormData] = useState({ descripcion: '' });
+  const [formData, setFormData] = useState({ descripcion: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { motivosCita, totalItems = 0, isLoading } = useMotivoCita({
+  const {
+    motivosCita,
+    totalItems = 0,
+    isLoading,
+  } = useMotivoCita({
     usePagination: true,
     limit,
     offset,
@@ -66,49 +70,45 @@ export default function MotivosCitaPage() {
     if (!term) return items;
 
     return items.filter((motivo) => {
-      const descripcion = motivo.descripcion?.toLowerCase() ?? '';
+      const descripcion = motivo.descripcion?.toLowerCase() ?? "";
       return descripcion.includes(term);
     });
   }, [motivosCita, searchTerm]);
 
   const handleDelete = async (id: number) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar este motivo de cita?')) {
+    if (
+      !confirm("¿Estás seguro de que deseas inactivar este motivo de cita?")
+    ) {
       return;
     }
     try {
-      // Intentar eliminar usando DELETE endpoint si existe, sino usar patch
-      try {
-        await motivoCitaApi.delete(`/${id}`);
-      } catch (deleteError: any) {
-        // Si DELETE no existe, intentar con PATCH para marcar como inactivo
-        // Por ahora solo intentamos DELETE
-        throw deleteError;
-      }
-      toast.success('Motivo de cita eliminado');
-      await queryClient.invalidateQueries({ queryKey: ['motivosCita'] });
+      await inactivateMotivoCitaAction(id);
+      toast.success("Motivo de cita inactivado");
+      await queryClient.invalidateQueries({ queryKey: ["motivosCita"] });
     } catch (error: any) {
       const message =
-        error?.response?.data?.message || 'No se pudo eliminar el motivo de cita';
+        error?.response?.data?.message ||
+        "No se pudo inactivar el motivo de cita";
       toast.error(message);
     }
   };
 
   const handleCreate = async () => {
     if (!formData.descripcion.trim()) {
-      toast.error('La descripción es requerida');
+      toast.error("La descripción es requerida");
       return;
     }
 
     setIsSubmitting(true);
     try {
       await postMotivoCitaAction({ descripcion: formData.descripcion.trim() });
-      toast.success('Motivo de cita creado exitosamente');
+      toast.success("Motivo de cita creado exitosamente");
       setIsCreateDialogOpen(false);
-      setFormData({ descripcion: '' });
-      await queryClient.invalidateQueries({ queryKey: ['motivosCita'] });
+      setFormData({ descripcion: "" });
+      await queryClient.invalidateQueries({ queryKey: ["motivosCita"] });
     } catch (error: any) {
       const message =
-        error?.response?.data?.message || 'No se pudo crear el motivo de cita';
+        error?.response?.data?.message || "No se pudo crear el motivo de cita";
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -117,7 +117,7 @@ export default function MotivosCitaPage() {
 
   const handleEdit = async () => {
     if (!editingMotivo || !formData.descripcion.trim()) {
-      toast.error('La descripción es requerida');
+      toast.error("La descripción es requerida");
       return;
     }
 
@@ -126,14 +126,15 @@ export default function MotivosCitaPage() {
       await patchMotivoCitaAction(editingMotivo.idMotivoCita, {
         descripcion: formData.descripcion.trim(),
       });
-      toast.success('Motivo de cita actualizado exitosamente');
+      toast.success("Motivo de cita actualizado exitosamente");
       setIsEditDialogOpen(false);
       setEditingMotivo(null);
-      setFormData({ descripcion: '' });
-      await queryClient.invalidateQueries({ queryKey: ['motivosCita'] });
+      setFormData({ descripcion: "" });
+      await queryClient.invalidateQueries({ queryKey: ["motivosCita"] });
     } catch (error: any) {
       const message =
-        error?.response?.data?.message || 'No se pudo actualizar el motivo de cita';
+        error?.response?.data?.message ||
+        "No se pudo actualizar el motivo de cita";
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -195,8 +196,8 @@ export default function MotivosCitaPage() {
           ) : filteredMotivos.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               {searchTerm
-                ? 'No se encontraron motivos que coincidan con la búsqueda'
-                : 'No hay motivos de cita registrados'}
+                ? "No se encontraron motivos que coincidan con la búsqueda"
+                : "No hay motivos de cita registrados"}
             </div>
           ) : (
             <Table>
@@ -208,7 +209,10 @@ export default function MotivosCitaPage() {
               </TableHeader>
               <TableBody>
                 {filteredMotivos.map((motivo) => (
-                  <TableRow key={motivo.idMotivoCita} className="table-row-hover">
+                  <TableRow
+                    key={motivo.idMotivoCita}
+                    className="table-row-hover"
+                  >
                     <TableCell>{motivo.descripcion}</TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
@@ -219,7 +223,9 @@ export default function MotivosCitaPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => openEditDialog(motivo)}>
+                          <DropdownMenuItem
+                            onClick={() => openEditDialog(motivo)}
+                          >
                             <Edit className="mr-2 h-4 w-4" />
                             Editar
                           </DropdownMenuItem>
@@ -247,7 +253,7 @@ export default function MotivosCitaPage() {
             totalItems={totalItems}
             onPageChange={(newPage) => {
               setPage(newPage);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              window.scrollTo({ top: 0, behavior: "smooth" });
             }}
             onPageSizeChange={(newSize) => {
               setPageSize(newSize);
@@ -285,13 +291,13 @@ export default function MotivosCitaPage() {
               variant="outline"
               onClick={() => {
                 setIsCreateDialogOpen(false);
-                setFormData({ descripcion: '' });
+                setFormData({ descripcion: "" });
               }}
             >
               Cancelar
             </Button>
             <Button onClick={handleCreate} disabled={isSubmitting}>
-              {isSubmitting ? 'Creando...' : 'Crear'}
+              {isSubmitting ? "Creando..." : "Crear"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -326,13 +332,13 @@ export default function MotivosCitaPage() {
               onClick={() => {
                 setIsEditDialogOpen(false);
                 setEditingMotivo(null);
-                setFormData({ descripcion: '' });
+                setFormData({ descripcion: "" });
               }}
             >
               Cancelar
             </Button>
             <Button onClick={handleEdit} disabled={isSubmitting}>
-              {isSubmitting ? 'Guardando...' : 'Guardar'}
+              {isSubmitting ? "Guardando..." : "Guardar"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -340,4 +346,3 @@ export default function MotivosCitaPage() {
     </div>
   );
 }
-

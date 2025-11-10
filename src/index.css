@@ -173,3 +173,54 @@ Todos los colores en HSL para theming perfecto y accesibilidad ISO/WCAG.
     @apply bg-background text-foreground;
   }
 }
+
+@layer base {
+  @media (max-width: 768px) {
+    .responsive-table {
+      font-size: 0.875rem;
+      table-layout: fixed;
+    }
+
+    .responsive-table th,
+    .responsive-table td {
+      padding-left: 0.75rem;
+      padding-right: 0.75rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .responsive-table
+      th:nth-child(n + 4):not(:last-child):not([data-mobile-keep]),
+    .responsive-table
+      td:nth-child(n + 4):not(:last-child):not([data-mobile-keep]) {
+      display: none;
+    }
+
+    .responsive-table th[data-mobile-hidden],
+    .responsive-table td[data-mobile-hidden] {
+      display: none;
+    }
+
+    .table-actions-mobile {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.25rem;
+    }
+
+    .responsive-table th[data-mobile-actions],
+    .responsive-table td[data-mobile-actions] {
+      white-space: normal;
+      overflow: visible;
+      text-overflow: unset;
+      min-width: 3.25rem;
+      padding-right: 0.5rem;
+    }
+
+    .responsive-table td[data-mobile-actions] {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+  }
+}

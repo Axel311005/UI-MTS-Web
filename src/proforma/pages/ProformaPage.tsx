@@ -1,16 +1,16 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
-import { Plus, Pencil, FileText, Receipt, Filter } from 'lucide-react';
-import { Button } from '@/shared/components/ui/button';
-import { toast } from 'sonner';
-import { ProformaApi } from '../api/proforma.api';
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router";
+import { Plus, Pencil, FileText, Receipt, Filter } from "lucide-react";
+import { Button } from "@/shared/components/ui/button";
+import { toast } from "sonner";
+import { ProformaApi } from "../api/proforma.api";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/shared/components/ui/card';
+} from "@/shared/components/ui/card";
 import {
   Table,
   TableBody,
@@ -18,86 +18,86 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared/components/ui/table';
-import { Pagination } from '@/shared/components/ui/pagination';
-import { ProformaSearchBar } from '../ui/ProformaSearchBar';
-import { ProformaFilters } from '../ui/ProformaFilters';
-import { useProforma } from '../hook/useProforma';
-import type { Proforma } from '../types/proforoma.interface';
-import { useQuery } from '@tanstack/react-query';
-import { SearchProformasAction } from '../actions/search-proformas-action';
-import type { PaginatedResponse } from '@/shared/types/pagination';
+} from "@/shared/components/ui/table";
+import { Pagination } from "@/shared/components/ui/pagination";
+import { ProformaSearchBar } from "../ui/ProformaSearchBar";
+import { ProformaFilters } from "../ui/ProformaFilters";
+import { useProforma } from "../hook/useProforma";
+import type { Proforma } from "../types/proforoma.interface";
+import { useQuery } from "@tanstack/react-query";
+import { SearchProformasAction } from "../actions/search-proformas-action";
+import type { PaginatedResponse } from "@/shared/types/pagination";
 
 export default function ProformasPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);
 
-  const page = parseInt(searchParams.get('page') || '1', 10);
-  const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
+  const page = parseInt(searchParams.get("page") || "1", 10);
+  const pageSize = parseInt(searchParams.get("pageSize") || "10", 10);
   const limit = pageSize;
   const offset = (page - 1) * pageSize;
 
   // Leer parámetros de búsqueda/filtros desde la URL
-  const codigoLike = searchParams.get('codigoLike')?.trim() || '';
-  const codigoProforma = searchParams.get('codigo_proforma')?.trim() || '';
-  const clienteNombre = searchParams.get('clienteNombre')?.trim() || '';
-  const aseguradoraNombre = searchParams.get('aseguradoraNombre')?.trim() || '';
-  const vehiculoPlaca = searchParams.get('vehiculoPlaca')?.trim() || '';
-  const vehiculoMarca = searchParams.get('vehiculoMarca')?.trim() || '';
-  const numeroTramite = searchParams.get('numeroTramite')?.trim() || '';
-  const moneda = searchParams.get('moneda')?.trim() || '';
-  const observacionLike = searchParams.get('observacionLike')?.trim() || '';
-  const tramiteEstado = searchParams.get('tramiteEstado')?.trim() || '';
-  const hasFactura = searchParams.get('hasFactura')?.trim() || '';
-  const fechaInicio = searchParams.get('dateFrom')?.trim() || '';
-  const fechaFin = searchParams.get('dateTo')?.trim() || '';
-  const minTotal = searchParams.get('minTotal')?.trim() || '';
-  const maxTotal = searchParams.get('maxTotal')?.trim() || '';
+  const codigoLike = searchParams.get("codigoLike")?.trim() || "";
+  const codigoProforma = searchParams.get("codigo_proforma")?.trim() || "";
+  const clienteNombre = searchParams.get("clienteNombre")?.trim() || "";
+  const aseguradoraNombre = searchParams.get("aseguradoraNombre")?.trim() || "";
+  const vehiculoPlaca = searchParams.get("vehiculoPlaca")?.trim() || "";
+  const vehiculoMarca = searchParams.get("vehiculoMarca")?.trim() || "";
+  const numeroTramite = searchParams.get("numeroTramite")?.trim() || "";
+  const moneda = searchParams.get("moneda")?.trim() || "";
+  const observacionLike = searchParams.get("observacionLike")?.trim() || "";
+  const tramiteEstado = searchParams.get("tramiteEstado")?.trim() || "";
+  const hasFactura = searchParams.get("hasFactura")?.trim() || "";
+  const fechaInicio = searchParams.get("dateFrom")?.trim() || "";
+  const fechaFin = searchParams.get("dateTo")?.trim() || "";
+  const minTotal = searchParams.get("minTotal")?.trim() || "";
+  const maxTotal = searchParams.get("maxTotal")?.trim() || "";
 
   // Leer IDs desde sessionStorage
   const [clienteId, setClienteId] = useState(() => {
-    const stored = sessionStorage.getItem('proforma_filters_clienteId');
-    return stored ? stored : '';
+    const stored = sessionStorage.getItem("proforma_filters_clienteId");
+    return stored ? stored : "";
   });
   const [aseguradoraId, setAseguradoraId] = useState(() => {
-    const stored = sessionStorage.getItem('proforma_filters_aseguradoraId');
-    return stored ? stored : '';
+    const stored = sessionStorage.getItem("proforma_filters_aseguradoraId");
+    return stored ? stored : "";
   });
   const [monedaId, setMonedaId] = useState(() => {
-    const stored = sessionStorage.getItem('proforma_filters_monedaId');
-    return stored ? stored : '';
+    const stored = sessionStorage.getItem("proforma_filters_monedaId");
+    return stored ? stored : "";
   });
   const [vehiculoId, setVehiculoId] = useState(() => {
-    const stored = sessionStorage.getItem('proforma_filters_vehiculoId');
-    return stored ? stored : '';
+    const stored = sessionStorage.getItem("proforma_filters_vehiculoId");
+    return stored ? stored : "";
   });
   const [tramiteId, setTramiteId] = useState(() => {
-    const stored = sessionStorage.getItem('proforma_filters_tramiteId');
-    return stored ? stored : '';
+    const stored = sessionStorage.getItem("proforma_filters_tramiteId");
+    return stored ? stored : "";
   });
 
   // Sincronizar IDs con sessionStorage cuando cambien los searchParams
   useEffect(() => {
     const storedClienteId = sessionStorage.getItem(
-      'proforma_filters_clienteId'
+      "proforma_filters_clienteId"
     );
-    if (storedClienteId !== clienteId) setClienteId(storedClienteId || '');
+    if (storedClienteId !== clienteId) setClienteId(storedClienteId || "");
     const storedAseguradoraId = sessionStorage.getItem(
-      'proforma_filters_aseguradoraId'
+      "proforma_filters_aseguradoraId"
     );
     if (storedAseguradoraId !== aseguradoraId)
-      setAseguradoraId(storedAseguradoraId || '');
-    const storedMonedaId = sessionStorage.getItem('proforma_filters_monedaId');
-    if (storedMonedaId !== monedaId) setMonedaId(storedMonedaId || '');
+      setAseguradoraId(storedAseguradoraId || "");
+    const storedMonedaId = sessionStorage.getItem("proforma_filters_monedaId");
+    if (storedMonedaId !== monedaId) setMonedaId(storedMonedaId || "");
     const storedVehiculoId = sessionStorage.getItem(
-      'proforma_filters_vehiculoId'
+      "proforma_filters_vehiculoId"
     );
-    if (storedVehiculoId !== vehiculoId) setVehiculoId(storedVehiculoId || '');
+    if (storedVehiculoId !== vehiculoId) setVehiculoId(storedVehiculoId || "");
     const storedTramiteId = sessionStorage.getItem(
-      'proforma_filters_tramiteId'
+      "proforma_filters_tramiteId"
     );
-    if (storedTramiteId !== tramiteId) setTramiteId(storedTramiteId || '');
+    if (storedTramiteId !== tramiteId) setTramiteId(storedTramiteId || "");
   }, [searchParams]);
 
   const hasAnyFilter = useMemo(
@@ -123,7 +123,7 @@ export default function ProformasPage() {
         fechaFin,
         minTotal,
         maxTotal,
-      ].some((v) => v !== undefined && v !== null && String(v).trim() !== ''),
+      ].some((v) => v !== undefined && v !== null && String(v).trim() !== ""),
     [
       codigoLike,
       codigoProforma,
@@ -161,7 +161,7 @@ export default function ProformasPage() {
   const { data: proformasFiltradasResponse, isLoading: isLoadingSearch } =
     useQuery<PaginatedResponse<Proforma>>({
       queryKey: [
-        'proformas.search',
+        "proformas.search",
         codigoLike,
         codigoProforma,
         clienteNombre,
@@ -202,7 +202,7 @@ export default function ProformasPage() {
           id_moneda: monedaId ? Number(monedaId) : undefined,
           observacionLike: observacionLike || undefined,
           tramiteEstado: tramiteEstado || undefined,
-          hasFactura: hasFactura ? hasFactura === 'true' : undefined,
+          hasFactura: hasFactura ? hasFactura === "true" : undefined,
           dateFrom: fechaInicio || undefined,
           dateTo: fechaFin || undefined,
           minTotal: minTotal || undefined,
@@ -238,7 +238,7 @@ export default function ProformasPage() {
     if (totalFinal === 0) {
       if (page !== 1) {
         const params = new URLSearchParams(searchParams);
-        params.delete('page');
+        params.delete("page");
         setSearchParams(params, { replace: true });
       }
       return;
@@ -246,8 +246,8 @@ export default function ProformasPage() {
     if (page > computedTotal) {
       const last = Math.max(1, computedTotal);
       const params = new URLSearchParams(searchParams);
-      if (last > 1) params.set('page', last.toString());
-      else params.delete('page');
+      if (last > 1) params.set("page", last.toString());
+      else params.delete("page");
       setSearchParams(params, { replace: true });
     }
   }, [
@@ -261,13 +261,13 @@ export default function ProformasPage() {
 
   const handleGenerarPDF = async (id: number) => {
     try {
-      const dismiss = toast.loading('Generando PDF...');
+      const dismiss = toast.loading("Generando PDF...");
       const response = await ProformaApi.get(`/${id}/proforma-pdf`, {
-        responseType: 'blob',
+        responseType: "blob",
       });
-      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const blob = new Blob([response.data], { type: "application/pdf" });
       const urlBlob = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = urlBlob;
       const proforma = proformasFinales.find((p) => p.idProforma === id);
       link.download = `proforma-${proforma?.codigoProforma || id}.pdf`;
@@ -276,9 +276,9 @@ export default function ProformasPage() {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(urlBlob);
       toast.dismiss(dismiss);
-      toast.success('PDF generado correctamente');
+      toast.success("PDF generado correctamente");
     } catch (error: any) {
-      const message = error?.response?.data?.message || 'Error al generar PDF';
+      const message = error?.response?.data?.message || "Error al generar PDF";
       toast.error(message);
     }
   };
@@ -294,7 +294,7 @@ export default function ProformasPage() {
           <h1 className="text-3xl font-bold">Proformas</h1>
           <p className="text-muted-foreground">Gestión de proformas</p>
         </div>
-        <Button onClick={() => navigate('/admin/proformas/nueva')}>
+        <Button onClick={() => navigate("/admin/proformas/nueva")}>
           <Plus className="mr-2 h-4 w-4" />
           Nueva Proforma
         </Button>
@@ -311,7 +311,7 @@ export default function ProformasPage() {
           className="flex items-center gap-2"
         >
           <Filter className="h-4 w-4" />
-          {showFilters ? 'Ocultar' : 'Mostrar'} Filtros
+          {showFilters ? "Ocultar" : "Mostrar"} Filtros
         </Button>
       </div>
 
@@ -329,7 +329,7 @@ export default function ProformasPage() {
                 <TableHead>Trámite</TableHead>
                 <TableHead>Consecutivo</TableHead>
                 <TableHead>Moneda</TableHead>
-                <TableHead>Total</TableHead>
+                <TableHead data-mobile-keep>Total</TableHead>
                 <TableHead>Observaciones</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
@@ -356,41 +356,41 @@ export default function ProformasPage() {
                 proformasFinales.map((p) => {
                   const total = Number(p.totalEstimado ?? 0);
                   const monedaName = (
-                    p.moneda?.descripcion ?? ''
+                    p.moneda?.descripcion ?? ""
                   ).toUpperCase();
                   const formattedTotal = (() => {
-                    if (!Number.isFinite(total)) return '—';
-                    if (monedaName === 'DOLARES') {
-                      return new Intl.NumberFormat('en-US', {
-                        style: 'currency',
-                        currency: 'USD',
+                    if (!Number.isFinite(total)) return "—";
+                    if (monedaName === "DOLARES") {
+                      return new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: "USD",
                         maximumFractionDigits: 2,
                       }).format(total);
                     }
-                    if (monedaName === 'CORDOBAS') {
-                      return new Intl.NumberFormat('es-NI', {
-                        style: 'currency',
-                        currency: 'NIO',
+                    if (monedaName === "CORDOBAS") {
+                      return new Intl.NumberFormat("es-NI", {
+                        style: "currency",
+                        currency: "NIO",
                         maximumFractionDigits: 2,
                       }).format(total);
                     }
-                    return new Intl.NumberFormat('es-ES', {
-                      style: 'currency',
-                      currency: 'USD',
+                    return new Intl.NumberFormat("es-ES", {
+                      style: "currency",
+                      currency: "USD",
                       maximumFractionDigits: 2,
                     }).format(total);
                   })();
                   return (
                     <TableRow key={p.idProforma} className="table-row-hover">
                       <TableCell className="font-medium">
-                        {p.tramiteSeguro?.numeroTramite ?? '—'}
+                        {p.tramiteSeguro?.numeroTramite ?? "—"}
                       </TableCell>
                       <TableCell>
-                        {p.consecutivo?.descripcion ?? p.codigoProforma ?? '—'}
+                        {p.consecutivo?.descripcion ?? p.codigoProforma ?? "—"}
                       </TableCell>
-                      <TableCell>{p.moneda?.descripcion ?? '—'}</TableCell>
-                      <TableCell>{formattedTotal}</TableCell>
-                      <TableCell>{p.observaciones ?? '—'}</TableCell>
+                      <TableCell>{p.moneda?.descripcion ?? "—"}</TableCell>
+                      <TableCell data-mobile-keep>{formattedTotal}</TableCell>
+                      <TableCell>{p.observaciones ?? "—"}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Button
@@ -434,16 +434,16 @@ export default function ProformasPage() {
             pageSize={pageSize}
             onPageChange={(newPage) => {
               const params = new URLSearchParams(searchParams);
-              if (newPage > 1) params.set('page', newPage.toString());
-              else params.delete('page');
+              if (newPage > 1) params.set("page", newPage.toString());
+              else params.delete("page");
               setSearchParams(params, { replace: true });
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              window.scrollTo({ top: 0, behavior: "smooth" });
             }}
             onPageSizeChange={(newSize) => {
               const params = new URLSearchParams(searchParams);
-              params.delete('page');
-              if (newSize !== 10) params.set('pageSize', newSize.toString());
-              else params.delete('pageSize');
+              params.delete("page");
+              if (newSize !== 10) params.set("pageSize", newSize.toString());
+              else params.delete("pageSize");
               setSearchParams(params, { replace: true });
             }}
           />

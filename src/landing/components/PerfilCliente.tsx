@@ -1,17 +1,17 @@
-import { motion } from 'framer-motion';
-import { AlertTriangle, CheckCircle } from 'lucide-react';
+import { motion } from "framer-motion";
+import { AlertTriangle, CheckCircle } from "lucide-react";
 
 export function PerfilCliente() {
   const problemas = [
-    'Chasis doblado o torcido',
-    'Manubrio desalineado',
-    'Suspensión afectada',
-    'Rodamientos desgastados',
+    "Chasis doblado o torcido",
+    "Manubrio desalineado",
+    "Suspensión afectada",
+    "Rodamientos desgastados",
   ];
 
   return (
     <section className="py-20 bg-gradient-to-b from-white via-orange-50/10 to-white">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full px-4 sm:px-6 lg:px-12 xl:px-20 max-w-[min(100vw,1760px)]">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -42,7 +42,9 @@ export function PerfilCliente() {
                 <div className="p-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg flex-shrink-0">
                   <AlertTriangle className="h-6 w-6 text-white" />
                 </div>
-                <span className="text-lg font-semibold text-black font-montserrat">{problema}</span>
+                <span className="text-lg font-semibold text-black font-montserrat">
+                  {problema}
+                </span>
               </motion.div>
             ))}
           </div>
@@ -58,7 +60,8 @@ export function PerfilCliente() {
               <CheckCircle className="h-10 w-10 text-white" />
             </div>
             <p className="text-xl md:text-2xl text-black font-semibold font-montserrat leading-relaxed">
-              Si tu moto presenta alguno de estos problemas, somos la solución que necesitas
+              Si tu moto presenta alguno de estos problemas, somos la solución
+              que necesitas
             </p>
           </motion.div>
         </motion.div>

@@ -1,8 +1,10 @@
-import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { getMotivosCitaAction } from '../actions/get-motivo-cita';
-import type { MotivoCita } from '../types/motivo-cita.interface';
-import type { PaginatedResponse } from '@/shared/types/pagination';
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+
+import { getMotivosCitaAction } from "../actions/get-motivo-cita";
+import type { MotivoCita } from "../types/motivo-cita.interface";
+import type { PaginatedResponse } from "@/shared/types/pagination";
+import { EstadoActivo } from "@/shared/types/status";
 
 interface UseMotivoCitaOptions {
   limit?: number;
@@ -16,22 +18,33 @@ export const useMotivoCita = (options?: UseMotivoCitaOptions) => {
     : undefined;
 
   const query = useQuery<PaginatedResponse<MotivoCita> | MotivoCita[]>({
-    queryKey: ['motivosCita', paginationParams?.limit, paginationParams?.offset],
+    queryKey: [
+      "motivosCita",
+      paginationParams?.limit,
+      paginationParams?.offset,
+      "filtered-activos",
+    ],
     queryFn: () => getMotivosCitaAction(paginationParams),
     staleTime: paginationParams ? 0 : 1000 * 60 * 5,
   });
 
   const motivosCita = useMemo(() => {
     if (!query.data) return [] as MotivoCita[];
-    if (Array.isArray(query.data)) return query.data;
-    return (query.data as PaginatedResponse<MotivoCita>).data || [];
+
+    const items = Array.isArray(query.data)
+      ? query.data
+      : (query.data as PaginatedResponse<MotivoCita>).data || [];
+
+    return items.filter((motivo) => motivo.estado !== EstadoActivo.INACTIVO);
   }, [query.data]);
 
   const totalItems = useMemo(() => {
     if (!query.data) return 0;
-    if (Array.isArray(query.data)) return query.data.length;
-    return (query.data as PaginatedResponse<MotivoCita>).total ?? 0;
-  }, [query.data]);
+    if (Array.isArray(query.data)) return motivosCita.length;
+
+    const total = (query.data as PaginatedResponse<MotivoCita>).total;
+    return typeof total === "number" ? total : motivosCita.length;
+  }, [query.data, motivosCita]);
 
   return {
     motivosCita,
@@ -41,4 +54,3 @@ export const useMotivoCita = (options?: UseMotivoCitaOptions) => {
     refetch: query.refetch,
   };
 };
-

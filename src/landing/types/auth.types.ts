@@ -6,7 +6,7 @@ export interface RegisterPayload {
   clienteData?: {
     primerNombre: string;
     primerApellido: string;
-    ruc: string;
+    ruc: string | null;
     direccion: string;
     telefono: string;
     notas?: string;
@@ -35,4 +35,3 @@ export interface AuthResponse {
     };
   };
 }
-

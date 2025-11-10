@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
-import { Plus, Pencil } from 'lucide-react';
-import { Button } from '@/shared/components/ui/button';
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router";
+import { Plus, Pencil } from "lucide-react";
+import { Button } from "@/shared/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@/shared/components/ui/card';
+} from "@/shared/components/ui/card";
 import {
   Table,
   TableBody,
@@ -15,50 +15,53 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared/components/ui/table';
-import { Badge } from '@/shared/components/ui/badge';
-import { Pagination } from '@/shared/components/ui/pagination';
-import { useTramiteSeguro } from '../hook/useTramiteSeguro';
-import type { TramiteSeguro } from '../types/tramiteSeguro.interface';
-import { TramiteSeguroSearchBar } from '../ui/TramiteSeguroSearchBar';
-import { useDebounce } from '@/shared/hooks/use-debounce';
-import { TramiteSeguroEstado } from '@/shared/types/status';
-import { getClienteNombre, getClienteSearchText } from '@/clientes/utils/cliente.utils';
+} from "@/shared/components/ui/table";
+import { Badge } from "@/shared/components/ui/badge";
+import { Pagination } from "@/shared/components/ui/pagination";
+import { useTramiteSeguro } from "../hook/useTramiteSeguro";
+import type { TramiteSeguro } from "../types/tramiteSeguro.interface";
+import { TramiteSeguroSearchBar } from "../ui/TramiteSeguroSearchBar";
+import { useDebounce } from "@/shared/hooks/use-debounce";
+import { TramiteSeguroEstado } from "@/shared/types/status";
+import {
+  getClienteNombre,
+  getClienteSearchText,
+} from "@/clientes/utils/cliente.utils";
 
 const estadoVariantMap: Record<
   string,
-  'default' | 'secondary' | 'destructive' | 'outline'
+  "default" | "secondary" | "destructive" | "outline"
 > = {
-  [TramiteSeguroEstado.INICIADO]: 'default',
-  [TramiteSeguroEstado.EN_REVISION]: 'secondary',
-  [TramiteSeguroEstado.APROBADO]: 'default',
-  [TramiteSeguroEstado.RECHAZADO]: 'destructive',
-  [TramiteSeguroEstado.CERRADO]: 'outline',
-  [TramiteSeguroEstado.PENDIENTE_DE_PAGO]: 'secondary',
-  EN_REVISION: 'secondary',
+  [TramiteSeguroEstado.INICIADO]: "default",
+  [TramiteSeguroEstado.EN_REVISION]: "secondary",
+  [TramiteSeguroEstado.APROBADO]: "default",
+  [TramiteSeguroEstado.RECHAZADO]: "destructive",
+  [TramiteSeguroEstado.CERRADO]: "outline",
+  [TramiteSeguroEstado.PENDIENTE_DE_PAGO]: "secondary",
+  EN_REVISION: "secondary",
 };
 
 const formatDate = (value?: string | Date | null) => {
-  if (!value) return '—';
-  const date = typeof value === 'string' ? new Date(value) : value;
-  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '—';
+  if (!value) return "—";
+  const date = typeof value === "string" ? new Date(value) : value;
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "—";
   return date.toLocaleDateString();
 };
 
 const normalizeEstado = (estado?: string | null) => {
-  if (!estado) return '—';
-  return estado.replace(/_/g, ' ');
+  if (!estado) return "—";
+  return estado.replace(/_/g, " ");
 };
 
 export default function TramitesSegurosPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const initialSearch = searchParams.get('q') || '';
+  const initialSearch = searchParams.get("q") || "";
   const [searchTerm, setSearchTerm] = useState(initialSearch);
 
   useEffect(() => {
-    const currentParam = searchParams.get('q') || '';
+    const currentParam = searchParams.get("q") || "";
     if (currentParam !== searchTerm) {
       setSearchTerm(currentParam);
     }
@@ -66,8 +69,8 @@ export default function TramitesSegurosPage() {
 
   const debouncedSearch = useDebounce(searchTerm.trim().toLowerCase(), 300);
 
-  const page = parseInt(searchParams.get('page') || '1', 10);
-  const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
+  const page = parseInt(searchParams.get("page") || "1", 10);
+  const pageSize = parseInt(searchParams.get("pageSize") || "10", 10);
   const limit = pageSize;
   const offset = (page - 1) * pageSize;
   const shouldUsePagination = debouncedSearch.length === 0;
@@ -87,12 +90,14 @@ export default function TramitesSegurosPage() {
     if (!debouncedSearch) return items;
 
     return items.filter((tramite) => {
-      const numero = tramite.numeroTramite?.toLowerCase?.() ?? '';
-      const cliente = tramite.cliente ? getClienteSearchText(tramite.cliente) : '';
-      const vehiculo = tramite.vehiculo?.placa?.toLowerCase?.() ?? '';
+      const numero = tramite.numeroTramite?.toLowerCase?.() ?? "";
+      const cliente = tramite.cliente
+        ? getClienteSearchText(tramite.cliente)
+        : "";
+      const vehiculo = tramite.vehiculo?.placa?.toLowerCase?.() ?? "";
       const aseguradora =
-        tramite.aseguradora?.descripcion?.toLowerCase?.() ?? '';
-      const estado = (tramite.estado ?? '').toString().toLowerCase();
+        tramite.aseguradora?.descripcion?.toLowerCase?.() ?? "";
+      const estado = (tramite.estado ?? "").toString().toLowerCase();
 
       return (
         numero.includes(debouncedSearch) ||
@@ -124,7 +129,7 @@ export default function TramitesSegurosPage() {
     if (totalFiltered === 0) {
       if (page !== 1) {
         const params = new URLSearchParams(searchParams);
-        params.delete('page');
+        params.delete("page");
         setSearchParams(params, { replace: true });
       }
       return;
@@ -134,9 +139,9 @@ export default function TramitesSegurosPage() {
       const lastPage = Math.max(1, computedTotalPages);
       const params = new URLSearchParams(searchParams);
       if (lastPage > 1) {
-        params.set('page', lastPage.toString());
+        params.set("page", lastPage.toString());
       } else {
-        params.delete('page');
+        params.delete("page");
       }
       setSearchParams(params, { replace: true });
     }
@@ -150,11 +155,11 @@ export default function TramitesSegurosPage() {
     const params = new URLSearchParams(searchParams);
     const trimmed = value.trim();
     if (trimmed) {
-      params.set('q', trimmed);
+      params.set("q", trimmed);
     } else {
-      params.delete('q');
+      params.delete("q");
     }
-    params.delete('page');
+    params.delete("page");
     setSearchParams(params, { replace: true });
   };
 
@@ -167,7 +172,7 @@ export default function TramitesSegurosPage() {
             Gestión y seguimiento de trámites de seguros
           </p>
         </div>
-        <Button onClick={() => navigate('/admin/tramites-seguros/nuevo')}>
+        <Button onClick={() => navigate("/admin/tramites-seguros/nuevo")}>
           <Plus className="mr-2 h-4 w-4" />
           Nuevo trámite
         </Button>
@@ -191,7 +196,7 @@ export default function TramitesSegurosPage() {
                 <TableHead>Cliente</TableHead>
                 <TableHead>Vehículo</TableHead>
                 <TableHead>Aseguradora</TableHead>
-                <TableHead>Estado</TableHead>
+                <TableHead data-mobile-keep>Estado</TableHead>
                 <TableHead>Inicio</TableHead>
                 <TableHead>Fin</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
@@ -214,22 +219,26 @@ export default function TramitesSegurosPage() {
                     <TableCell className="font-medium">
                       {tramite.numeroTramite}
                     </TableCell>
-                    <TableCell>{tramite.cliente ? getClienteNombre(tramite.cliente) : '—'}</TableCell>
-                    <TableCell>{tramite.vehiculo?.placa ?? '—'}</TableCell>
                     <TableCell>
-                      {tramite.aseguradora?.descripcion ?? '—'}
+                      {tramite.cliente
+                        ? getClienteNombre(tramite.cliente)
+                        : "—"}
                     </TableCell>
+                    <TableCell>{tramite.vehiculo?.placa ?? "—"}</TableCell>
                     <TableCell>
+                      {tramite.aseguradora?.descripcion ?? "—"}
+                    </TableCell>
+                    <TableCell data-mobile-keep>
                       {tramite.estado ? (
                         <Badge
                           variant={
-                            estadoVariantMap[tramite.estado] ?? 'outline'
+                            estadoVariantMap[tramite.estado] ?? "outline"
                           }
                         >
                           {normalizeEstado(tramite.estado)}
                         </Badge>
                       ) : (
-                        '—'
+                        "—"
                       )}
                     </TableCell>
                     <TableCell>{formatDate(tramite.fechaInicio)}</TableCell>
@@ -271,20 +280,20 @@ export default function TramitesSegurosPage() {
             onPageChange={(newPage) => {
               const params = new URLSearchParams(searchParams);
               if (newPage > 1) {
-                params.set('page', newPage.toString());
+                params.set("page", newPage.toString());
               } else {
-                params.delete('page');
+                params.delete("page");
               }
               setSearchParams(params, { replace: true });
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              window.scrollTo({ top: 0, behavior: "smooth" });
             }}
             onPageSizeChange={(newSize) => {
               const params = new URLSearchParams(searchParams);
-              params.delete('page');
+              params.delete("page");
               if (newSize !== 10) {
-                params.set('pageSize', newSize.toString());
+                params.set("pageSize", newSize.toString());
               } else {
-                params.delete('pageSize');
+                params.delete("pageSize");
               }
               setSearchParams(params, { replace: true });
             }}

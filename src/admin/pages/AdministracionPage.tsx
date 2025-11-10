@@ -1,21 +1,21 @@
-import { useState, useMemo } from 'react';
-import { Button } from '@/shared/components/ui/button';
+import { useState, useMemo } from "react";
+import { Button } from "@/shared/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
-} from '@/shared/components/ui/card';
-import { Input } from '@/shared/components/ui/input';
-import { Label } from '@/shared/components/ui/label';
+} from "@/shared/components/ui/card";
+import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/components/ui/select';
+} from "@/shared/components/ui/select";
 import {
   Table,
   TableBody,
@@ -23,10 +23,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared/components/ui/table';
-import { toast } from 'sonner';
-import { tallerApi } from '@/shared/api/tallerApi';
-import { useEmpleado } from '@/empleados/hook/useEmpleado';
+} from "@/shared/components/ui/table";
+import { toast } from "sonner";
+import { tallerApi } from "@/shared/api/tallerApi";
+import { useEmpleado } from "@/empleados/hook/useEmpleado";
 import {
   UserPlus,
   Shield,
@@ -37,18 +37,18 @@ import {
   Edit,
   Trash2,
   Search,
-} from 'lucide-react';
-import { Badge } from '@/shared/components/ui/badge';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+} from "lucide-react";
+import { Badge } from "@/shared/components/ui/badge";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   createEmpleadoAction,
   type CreateEmpleadoPayload,
-} from '@/empleados/actions/post-empleado';
-import { patchEmpleadoAction } from '@/empleados/actions/patch-empleado';
-import { EstadoActivo } from '@/shared/types/status';
-import { useNavigate } from 'react-router';
-import { CustomSearchControl } from '@/shared/components/custom/CustomSearchControl';
-import { useDebounce } from '@/shared/hooks/use-debounce';
+} from "@/empleados/actions/post-empleado";
+import { patchEmpleadoAction } from "@/empleados/actions/patch-empleado";
+import { EstadoActivo } from "@/shared/types/status";
+import { useNavigate } from "react-router";
+import { CustomSearchControl } from "@/shared/components/custom/CustomSearchControl";
+import { useDebounce } from "@/shared/hooks/use-debounce";
 
 interface RegisterEmployeePayload {
   email: string;
@@ -65,37 +65,37 @@ export default function AdministracionPage() {
 
   // Form para crear empleado
   const [empleadoForm, setEmpleadoForm] = useState<CreateEmpleadoPayload>({
-    primerNombre: '',
-    primerApellido: '',
-    cedula: '',
-    telefono: '',
-    direccion: '',
+    primerNombre: "",
+    primerApellido: "",
+    cedula: "",
+    telefono: "",
+    direccion: "",
     activo: EstadoActivo.ACTIVO,
   });
 
   // Form para crear usuario
   const [usuarioForm, setUsuarioForm] = useState({
-    email: '',
-    password: '',
-    empleadoId: '',
+    email: "",
+    password: "",
+    empleadoId: "",
   });
 
-  const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [showPassword, setShowPassword] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Crear empleado
   const createEmpleadoMutation = useMutation({
     mutationFn: createEmpleadoAction,
     onSuccess: (data) => {
-      toast.success('Empleado creado correctamente');
+      toast.success("Empleado creado correctamente");
       setEmpleadoForm({
-        primerNombre: '',
-        primerApellido: '',
-        cedula: '',
-        telefono: '',
-        direccion: '',
+        primerNombre: "",
+        primerApellido: "",
+        cedula: "",
+        telefono: "",
+        direccion: "",
         activo: EstadoActivo.ACTIVO,
       });
       // Auto-seleccionar el empleado recién creado en el formulario de usuario
@@ -105,11 +105,11 @@ export default function AdministracionPage() {
           empleadoId: String(data.idEmpleado),
         }));
       }
-      queryClient.invalidateQueries({ queryKey: ['empleados'] });
+      queryClient.invalidateQueries({ queryKey: ["empleados"] });
     },
     onError: (error: any) => {
       const message =
-        error?.response?.data?.message || 'Error al crear empleado';
+        error?.response?.data?.message || "Error al crear empleado";
       toast.error(message);
     },
   });
@@ -117,18 +117,18 @@ export default function AdministracionPage() {
   // Registrar usuario para empleado
   const registerUsuarioMutation = useMutation({
     mutationFn: async (payload: RegisterEmployeePayload) => {
-      const { data } = await tallerApi.post('/auth/register/employee', payload);
+      const { data } = await tallerApi.post("/auth/register/employee", payload);
       return data;
     },
     onSuccess: () => {
-      toast.success('Usuario creado correctamente');
-      setUsuarioForm({ email: '', password: '', empleadoId: '' });
+      toast.success("Usuario creado correctamente");
+      setUsuarioForm({ email: "", password: "", empleadoId: "" });
       // Refrescar empleados para que se actualice la lista de usuarios
-      queryClient.invalidateQueries({ queryKey: ['empleados'] });
+      queryClient.invalidateQueries({ queryKey: ["empleados"] });
     },
     onError: (error: any) => {
       const message =
-        error?.response?.data?.message || 'Error al crear usuario';
+        error?.response?.data?.message || "Error al crear usuario";
       toast.error(message);
     },
   });
@@ -161,26 +161,37 @@ export default function AdministracionPage() {
   // Búsqueda en frontend
   const debouncedSearch = useDebounce(searchTerm.trim().toLowerCase(), 300);
 
+  const formatTelefono = (value: string) =>
+    value.replace(/\D/g, "").slice(0, 8);
+
+  const handleTelefonoChange = (value: string) => {
+    const cleaned = formatTelefono(value);
+    setEmpleadoForm((prev) => ({
+      ...prev,
+      telefono: cleaned,
+    }));
+  };
+
   // Filtrar empleados basado en la búsqueda
   const filteredEmpleados = useMemo(() => {
     if (!empleados) return [];
     if (!debouncedSearch) return empleados;
 
     return empleados.filter((empleado) => {
-      const nombre = (empleado.primerNombre || '').toLowerCase();
-      const apellido = (empleado.primerApellido || '').toLowerCase();
-      const cedula = (empleado.cedula || '').toLowerCase();
-      const telefono = (empleado.telefono || '').toLowerCase();
-      const direccion = (empleado.direccion || '').toLowerCase();
-      const estado = (empleado.activo || '').toLowerCase();
+      const nombre = (empleado.primerNombre || "").toLowerCase();
+      const apellido = (empleado.primerApellido || "").toLowerCase();
+      const cedula = (empleado.cedula || "").toLowerCase();
+      const telefono = (empleado.telefono || "").toLowerCase();
+      const direccion = (empleado.direccion || "").toLowerCase();
+      const estado = (empleado.activo || "").toLowerCase();
 
       // Buscar email del usuario asociado
       const associatedUser = users?.find((user: any) => {
         if (!user.empleado) return false;
         if (user.empleado.idEmpleado === empleado.idEmpleado) return true;
         if (user.empleado.id === empleado.idEmpleado) return true;
-        const userNombre = `${user.empleado.primerNombre || ''} ${
-          user.empleado.primerApellido || ''
+        const userNombre = `${user.empleado.primerNombre || ""} ${
+          user.empleado.primerApellido || ""
         }`.trim();
         const empleadoNombre =
           `${empleado.primerNombre} ${empleado.primerApellido}`.trim();
@@ -189,7 +200,7 @@ export default function AdministracionPage() {
       const email = (
         associatedUser?.email ||
         empleado.correo ||
-        ''
+        ""
       ).toLowerCase();
 
       return (
@@ -213,12 +224,12 @@ export default function AdministracionPage() {
       });
     },
     onSuccess: () => {
-      toast.success('Empleado marcado como inactivo');
-      queryClient.invalidateQueries({ queryKey: ['empleados'] });
+      toast.success("Empleado marcado como inactivo");
+      queryClient.invalidateQueries({ queryKey: ["empleados"] });
     },
     onError: (error: any) => {
       const message =
-        error?.response?.data?.message || 'Error al eliminar empleado';
+        error?.response?.data?.message || "Error al eliminar empleado";
       toast.error(message);
     },
   });
@@ -226,7 +237,7 @@ export default function AdministracionPage() {
   const handleDeleteEmpleado = (idEmpleado: number) => {
     if (
       window.confirm(
-        '¿Estás seguro de que deseas marcar este empleado como inactivo?'
+        "¿Estás seguro de que deseas marcar este empleado como inactivo?"
       )
     ) {
       deleteEmpleadoMutation.mutate(idEmpleado);
@@ -248,16 +259,16 @@ export default function AdministracionPage() {
       return data;
     },
     onSuccess: () => {
-      toast.success('Roles actualizados correctamente');
-      setSelectedUserId('');
+      toast.success("Roles actualizados correctamente");
+      setSelectedUserId("");
       setSelectedRoles([]);
       // Refrescar empleados para que se actualice la lista de usuarios y la tabla
-      queryClient.invalidateQueries({ queryKey: ['empleados'] });
-      queryClient.refetchQueries({ queryKey: ['empleados'] });
+      queryClient.invalidateQueries({ queryKey: ["empleados"] });
+      queryClient.refetchQueries({ queryKey: ["empleados"] });
     },
     onError: (error: any) => {
       const message =
-        error?.response?.data?.message || 'Error al actualizar roles';
+        error?.response?.data?.message || "Error al actualizar roles";
       toast.error(message);
     },
   });
@@ -278,18 +289,25 @@ export default function AdministracionPage() {
       !empleadoForm.telefono ||
       !empleadoForm.direccion
     ) {
-      toast.error('Todos los campos son requeridos');
+      toast.error("Todos los campos son requeridos");
       return;
     }
     // Validar formato de cédula
     if (!validateCedula(empleadoForm.cedula)) {
       toast.error(
-        'La cédula debe tener el formato: 13 números seguidos de 1 letra (ejemplo: 0010606051003H)'
+        "La cédula debe tener el formato: 13 números seguidos de 1 letra (ejemplo: 0010606051003H)"
       );
       return;
     }
+    const telefonoLimpio = empleadoForm.telefono.replace(/\D/g, "");
+    if (telefonoLimpio.length !== 8) {
+      toast.error("El teléfono debe tener 8 dígitos");
+      return;
+    }
+    const telefonoBackend = `505${telefonoLimpio}`;
     createEmpleadoMutation.mutate({
       ...empleadoForm,
+      telefono: telefonoBackend,
       activo: EstadoActivo.ACTIVO, // Siempre ACTIVO por defecto
     });
   };
@@ -301,13 +319,13 @@ export default function AdministracionPage() {
       !usuarioForm.password ||
       !usuarioForm.empleadoId
     ) {
-      toast.error('Todos los campos son requeridos');
+      toast.error("Todos los campos son requeridos");
       return;
     }
     // Limpiar y validar email
     const emailLimpio = usuarioForm.email.trim().toLowerCase();
-    if (!emailLimpio || !emailLimpio.includes('@')) {
-      toast.error('El email no es válido');
+    if (!emailLimpio || !emailLimpio.includes("@")) {
+      toast.error("El email no es válido");
       return;
     }
     registerUsuarioMutation.mutate({
@@ -319,7 +337,7 @@ export default function AdministracionPage() {
 
   const handleUpdateRoles = () => {
     if (!selectedUserId || selectedRoles.length === 0) {
-      toast.error('Selecciona un usuario y al menos un rol');
+      toast.error("Selecciona un usuario y al menos un rol");
       return;
     }
     // Convertir roles a minúsculas y limpiar espacios antes de enviarlos
@@ -329,11 +347,11 @@ export default function AdministracionPage() {
 
     // Validar que los roles sean válidos según el backend
     const rolesValidos = [
-      'gerente',
-      'admin',
-      'vendedor',
-      'cliente',
-      'superuser',
+      "gerente",
+      "admin",
+      "vendedor",
+      "cliente",
+      "superuser",
     ];
     const rolesInvalidos = rolesEnMinusculas.filter(
       (role) => !rolesValidos.includes(role)
@@ -342,8 +360,8 @@ export default function AdministracionPage() {
     if (rolesInvalidos.length > 0) {
       toast.error(
         `Roles inválidos: ${rolesInvalidos.join(
-          ', '
-        )}. Roles válidos: ${rolesValidos.join(', ')}`
+          ", "
+        )}. Roles válidos: ${rolesValidos.join(", ")}`
       );
       return;
     }
@@ -419,11 +437,11 @@ export default function AdministracionPage() {
                   onChange={(e) => {
                     let value = e.target.value;
                     // Eliminar espacios y caracteres especiales
-                    value = value.replace(/[^0-9A-Za-z]/g, '');
+                    value = value.replace(/[^0-9A-Za-z]/g, "");
 
                     // Separar números y letras
-                    const numbers = value.match(/[0-9]/g)?.join('') || '';
-                    const letters = value.match(/[A-Za-z]/g)?.join('') || '';
+                    const numbers = value.match(/[0-9]/g)?.join("") || "";
+                    const letters = value.match(/[A-Za-z]/g)?.join("") || "";
 
                     // Si hay menos de 13 números, solo permitir números (no letras)
                     if (numbers.length < 13) {
@@ -454,26 +472,29 @@ export default function AdministracionPage() {
                     {empleadoForm.cedula.length < 14
                       ? `Faltan ${14 - empleadoForm.cedula.length} caracteres`
                       : /^[0-9]{13}[A-Z]$/.test(empleadoForm.cedula)
-                      ? '✓ Formato correcto'
-                      : 'Formato: 13 números + 1 letra'}
+                      ? "✓ Formato correcto"
+                      : "Formato: 13 números + 1 letra"}
                   </p>
                 )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="telefono">Teléfono *</Label>
-                <Input
-                  id="telefono"
-                  type="text"
-                  placeholder="50583895193"
-                  value={empleadoForm.telefono}
-                  onChange={(e) =>
-                    setEmpleadoForm({
-                      ...empleadoForm,
-                      telefono: e.target.value,
-                    })
-                  }
-                  required
-                />
+                <div className="relative">
+                  <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">
+                    +505
+                  </div>
+                  <Input
+                    id="telefono"
+                    type="tel"
+                    inputMode="numeric"
+                    placeholder="83895193"
+                    value={empleadoForm.telefono}
+                    onChange={(e) => handleTelefonoChange(e.target.value)}
+                    className="pl-14"
+                    maxLength={8}
+                    required
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="direccion">Dirección *</Label>
@@ -497,8 +518,8 @@ export default function AdministracionPage() {
                 disabled={createEmpleadoMutation.isPending}
               >
                 {createEmpleadoMutation.isPending
-                  ? 'Creando...'
-                  : 'Crear Empleado'}
+                  ? "Creando..."
+                  : "Crear Empleado"}
               </Button>
             </form>
           </CardContent>
@@ -535,7 +556,7 @@ export default function AdministracionPage() {
                 <div className="relative">
                   <Input
                     id="password"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     placeholder="ClaveTemporal123"
                     value={usuarioForm.password}
                     onChange={(e) =>
@@ -615,8 +636,8 @@ export default function AdministracionPage() {
                 }
               >
                 {registerUsuarioMutation.isPending
-                  ? 'Creando...'
-                  : 'Crear Usuario'}
+                  ? "Creando..."
+                  : "Crear Usuario"}
               </Button>
             </form>
           </CardContent>
@@ -646,11 +667,11 @@ export default function AdministracionPage() {
                     const roles = Array.isArray(user.roles) ? user.roles : [];
                     // Roles válidos según el backend
                     const rolesValidos = [
-                      'gerente',
-                      'admin',
-                      'vendedor',
-                      'cliente',
-                      'superuser',
+                      "gerente",
+                      "admin",
+                      "vendedor",
+                      "cliente",
+                      "superuser",
                     ];
                     // Convertir a minúsculas, limpiar espacios y filtrar solo roles válidos
                     const rolesFiltrados = roles
@@ -673,14 +694,14 @@ export default function AdministracionPage() {
                   ) : users && users.length > 0 ? (
                     users.map((user: any) => {
                       const empleadoName = user.empleado
-                        ? `${user.empleado.primerNombre || ''} ${
-                            user.empleado.primerApellido || ''
+                        ? `${user.empleado.primerNombre || ""} ${
+                            user.empleado.primerApellido || ""
                           }`.trim()
-                        : '';
+                        : "";
                       const rolesText =
                         user.roles && user.roles.length > 0
-                          ? user.roles.join(', ')
-                          : 'Sin roles';
+                          ? user.roles.join(", ")
+                          : "Sin roles";
                       const displayText = empleadoName
                         ? `${user.email} - ${empleadoName} (${rolesText})`
                         : `${user.email} (${rolesText})`;
@@ -702,7 +723,7 @@ export default function AdministracionPage() {
               <div className="space-y-2">
                 <Label>Roles</Label>
                 <div className="space-y-2">
-                  {['vendedor', 'gerente'].map((role) => {
+                  {["vendedor", "gerente"].map((role) => {
                     const roleLower = role.toLowerCase();
                     return (
                       <div
@@ -742,8 +763,8 @@ export default function AdministracionPage() {
               disabled={updateRolesMutation.isPending || !selectedUserId}
             >
               {updateRolesMutation.isPending
-                ? 'Actualizando...'
-                : 'Actualizar Roles'}
+                ? "Actualizando..."
+                : "Actualizar Roles"}
             </Button>
           </CardContent>
         </Card>
@@ -803,8 +824,8 @@ export default function AdministracionPage() {
                       // Verificar por id
                       if (user.empleado.id === empleado.idEmpleado) return true;
                       // Verificar por nombre y apellido (fallback)
-                      const userNombre = `${user.empleado.primerNombre || ''} ${
-                        user.empleado.primerApellido || ''
+                      const userNombre = `${user.empleado.primerNombre || ""} ${
+                        user.empleado.primerApellido || ""
                       }`.trim();
                       const empleadoNombre =
                         `${empleado.primerNombre} ${empleado.primerApellido}`.trim();
@@ -813,7 +834,7 @@ export default function AdministracionPage() {
                       );
                     });
                     const email =
-                      associatedUser?.email || empleado.correo || '—';
+                      associatedUser?.email || empleado.correo || "—";
                     const roles = associatedUser?.roles || [];
 
                     return (
@@ -838,18 +859,18 @@ export default function AdministracionPage() {
                             <span className="text-muted-foreground">—</span>
                           )}
                         </TableCell>
-                        <TableCell>{empleado.telefono || '—'}</TableCell>
+                        <TableCell>{empleado.telefono || "—"}</TableCell>
                         <TableCell>
                           <Badge
                             variant={
                               empleado.activo === EstadoActivo.ACTIVO
-                                ? 'default'
-                                : 'secondary'
+                                ? "default"
+                                : "secondary"
                             }
                           >
                             {empleado.activo === EstadoActivo.ACTIVO
-                              ? 'Activo'
-                              : 'Inactivo'}
+                              ? "Activo"
+                              : "Inactivo"}
                           </Badge>
                         </TableCell>
                         <TableCell>

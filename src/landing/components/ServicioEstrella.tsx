@@ -1,85 +1,85 @@
-import { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Card, CardContent } from '@/shared/components/ui/card';
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { ChevronLeft, ChevronRight, Minus, Plus } from "lucide-react";
 
 const servicios = [
   {
     id: 1,
-    title: 'Alineación de Chasis',
+    title: "Alineación de Chasis",
     description:
-      'Tecnología hidráulica de precisión para recuperar la geometría original',
-    image: '/Tecnologia-hidraulica-de-presicion.jpg',
+      "Tecnología hidráulica de precisión para recuperar la geometría original",
+    image: "/Tecnologia-hidraulica-de-presicion.jpg",
     features: [
-      'Alinear ejes delantero y trasero',
-      'Corregir desviaciones del chasis',
-      'Recuperar la geometría original de fábrica',
-      'Mejorar estabilidad y seguridad',
+      "Alinear ejes delantero y trasero",
+      "Corregir desviaciones del chasis",
+      "Recuperar la geometría original de fábrica",
+      "Mejorar estabilidad y seguridad",
     ],
   },
   {
     id: 2,
-    title: 'Electromecánica',
+    title: "Electromecánica",
     description:
-      'Diagnóstico y reparación del sistema eléctrico y mecánico interconectados',
-    image: '/Electro.jpg',
+      "Diagnóstico y reparación del sistema eléctrico y mecánico interconectados",
+    image: "/Electro.jpg",
     features: [
-      'Diagnóstico de reparación del sistema eléctrico y mecánico interconectados',
-      'Inspección y desmontaje de la moto',
-      'Limpieza',
-      'Medición y evaluación',
-      'Reparación o remplazo',
-      'Ajuste y montaje',
+      "Diagnóstico de reparación del sistema eléctrico y mecánico interconectados",
+      "Inspección y desmontaje de la moto",
+      "Limpieza",
+      "Medición y evaluación",
+      "Reparación o remplazo",
+      "Ajuste y montaje",
     ],
   },
   {
     id: 3,
-    title: 'Escaneado y Reparación Eléctrica',
-    description: 'Diagnóstico completo del sistema eléctrico de tu moto',
-    image: '/Imagen-de-herramientas-de-taller.jpg',
+    title: "Escaneado y Reparación Eléctrica",
+    description: "Diagnóstico completo del sistema eléctrico de tu moto",
+    image: "/Imagen-de-herramientas-de-taller.jpg",
     features: [
-      'Diagnóstico',
-      'Revisión de la moto por dentro',
-      'Localización de daños y reparación',
-      'Pruebas y ajustes de la moto',
-      'Entrega',
+      "Diagnóstico",
+      "Revisión de la moto por dentro",
+      "Localización de daños y reparación",
+      "Pruebas y ajustes de la moto",
+      "Entrega",
     ],
   },
   {
     id: 4,
-    title: 'Overhaul',
-    description: 'Desmontaje completo y reconstrucción profesional',
-    image: '/Imagen-del-taller.jpg',
+    title: "Overhaul",
+    description: "Desmontaje completo y reconstrucción profesional",
+    image: "/Imagen-del-taller.jpg",
     features: [
-      'Desmontaje completo',
-      'Limpieza y análisis',
-      'Rectificación y reparación',
-      'Remplazo de piezas (costo del cliente)',
-      'Reensamblaje',
-      'Pruebas finales',
-      'Entrega de la moto',
+      "Desmontaje completo",
+      "Limpieza y análisis",
+      "Rectificación y reparación",
+      "Remplazo de piezas (costo del cliente)",
+      "Reensamblaje",
+      "Pruebas finales",
+      "Entrega de la moto",
     ],
   },
   {
     id: 5,
-    title: 'Tecnología Hidráulica',
-    description: 'Equipos profesionales para alineación perfecta',
-    image: '/Otra-imagen.jpg',
+    title: "Tecnología Hidráulica",
+    description: "Equipos profesionales para alineación perfecta",
+    image: "/Otra-imagen.jpg",
     features: [
-      'Equipos de última generación',
-      'Precisión milimétrica',
-      'Tecnología hidráulica profesional',
+      "Equipos de última generación",
+      "Precisión milimétrica",
+      "Tecnología hidráulica profesional",
     ],
   },
   {
     id: 6,
-    title: 'Personal Capacitado',
-    description: 'Técnicos especializados en chasis de motos',
-    image: '/personal-capacitado.png',
+    title: "Personal Capacitado",
+    description: "Técnicos especializados en chasis de motos",
+    image: "/personal-capacitado.png",
     features: [
-      'Técnicos certificados',
-      'Años de experiencia',
-      'Especialización en motos',
+      "Técnicos certificados",
+      "Años de experiencia",
+      "Especialización en motos",
     ],
   },
 ];
@@ -90,6 +90,9 @@ const preloadedImages = new Set<string>();
 
 export function ServicioEstrella() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [expandedServiceId, setExpandedServiceId] = useState<number | null>(
+    null
+  );
   const imgRefs = useRef<Map<string, HTMLImageElement>>(new Map());
 
   // Pre-cargar todas las imágenes una sola vez y cachearlas
@@ -106,13 +109,13 @@ export function ServicioEstrella() {
       img.onerror = () => {
         // Si falla, pre-cargar fallback
         if (
-          src !== '/Moto Hero.png' &&
-          !preloadedImages.has('/Moto Hero.png')
+          src !== "/Moto Hero.png" &&
+          !preloadedImages.has("/Moto Hero.png")
         ) {
           const fallbackImg = new Image();
-          fallbackImg.src = '/Moto Hero.png';
-          imageCache.set('/Moto Hero.png', fallbackImg);
-          preloadedImages.add('/Moto Hero.png');
+          fallbackImg.src = "/Moto Hero.png";
+          imageCache.set("/Moto Hero.png", fallbackImg);
+          preloadedImages.add("/Moto Hero.png");
         }
       };
     };
@@ -123,24 +126,28 @@ export function ServicioEstrella() {
     });
 
     // Pre-cargar fallback
-    if (!preloadedImages.has('/Moto Hero.png')) {
-      preloadImage('/Moto Hero.png');
+    if (!preloadedImages.has("/Moto Hero.png")) {
+      preloadImage("/Moto Hero.png");
     }
   }, []);
 
   const nextSlide = () => {
     setCurrentIndex((prev) => (prev + 1) % servicios.length);
+    setExpandedServiceId(null);
   };
 
   const prevSlide = () => {
     setCurrentIndex((prev) => (prev - 1 + servicios.length) % servicios.length);
+    setExpandedServiceId(null);
   };
 
   const goToSlide = (index: number) => {
     setCurrentIndex(index);
+    setExpandedServiceId(null);
   };
 
   const currentServicio = servicios[currentIndex];
+  const isExpanded = expandedServiceId === currentServicio.id;
 
   return (
     <section className="py-6 sm:py-8 md:py-10 lg:py-12 bg-gradient-to-b from-black via-neutral-950 to-black relative overflow-hidden">
@@ -160,7 +167,7 @@ export function ServicioEstrella() {
         ></div>
       </div>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="mx-auto w-full px-4 sm:px-6 lg:px-12 xl:px-20 max-w-[min(100vw,1760px)] relative z-10">
         {/* Header compacto */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -235,8 +242,8 @@ export function ServicioEstrella() {
                       decoding="async"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        if (target.src !== '/Moto Hero.png') {
-                          target.src = '/Moto Hero.png';
+                        if (target.src !== "/Moto Hero.png") {
+                          target.src = "/Moto Hero.png";
                         }
                       }}
                     />
@@ -259,8 +266,20 @@ export function ServicioEstrella() {
                         whileHover={{ scale: 1.1, rotate: 90 }}
                         whileTap={{ scale: 0.9 }}
                         aria-label="Ver detalles"
+                        aria-expanded={isExpanded}
+                        onClick={() =>
+                          setExpandedServiceId((prev) =>
+                            prev === currentServicio.id
+                              ? null
+                              : currentServicio.id
+                          )
+                        }
                       >
-                        <Plus className="h-4 w-4 sm:h-5 sm:w-5 text-white drop-shadow-lg" />
+                        {isExpanded ? (
+                          <Minus className="h-4 w-4 sm:h-5 sm:w-5 text-white drop-shadow-lg" />
+                        ) : (
+                          <Plus className="h-4 w-4 sm:h-5 sm:w-5 text-white drop-shadow-lg" />
+                        )}
                       </motion.button>
                     </div>
                   </div>
@@ -276,23 +295,24 @@ export function ServicioEstrella() {
 
                     {/* Features List compacta */}
                     <ul className="space-y-1.5 sm:space-y-2 flex-1">
-                      {currentServicio.features
-                        .slice(0, 2)
-                        .map((feature, idx) => (
-                          <li
-                            key={idx}
-                            className="flex items-start gap-2 text-xs sm:text-sm text-white/80 font-montserrat group-hover:text-white/90 transition-colors"
-                          >
-                            <div className="mt-1 flex-shrink-0">
-                              <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-orange-500 group-hover:bg-orange-400 transition-colors"></div>
-                            </div>
-                            <span className="break-words leading-snug line-clamp-2">
-                              {feature}
-                            </span>
-                          </li>
-                        ))}
-                      {currentServicio.features.length > 2 && (
-                        <li className="text-[10px] sm:text-xs text-white/50 italic font-montserrat pl-3 sm:pl-4 group-hover:text-white/60 transition-colors">
+                      {(isExpanded
+                        ? currentServicio.features
+                        : currentServicio.features.slice(0, 2)
+                      ).map((feature, idx) => (
+                        <li
+                          key={`${currentServicio.id}-feature-${idx}`}
+                          className="flex items-start gap-2 text-xs sm:text-sm text-white/80 font-montserrat group-hover:text-white/90 transition-colors"
+                        >
+                          <div className="mt-1 flex-shrink-0">
+                            <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-orange-500 group-hover:bg-orange-400 transition-colors"></div>
+                          </div>
+                          <span className="break-words leading-snug">
+                            {feature}
+                          </span>
+                        </li>
+                      ))}
+                      {!isExpanded && currentServicio.features.length > 2 && (
+                        <li className="text-[10px] sm:text-xs text-white/60 italic font-montserrat pl-3 sm:pl-4 group-hover:text-white/70 transition-colors">
                           +{currentServicio.features.length - 2} más...
                         </li>
                       )}
@@ -331,8 +351,8 @@ export function ServicioEstrella() {
                   onClick={() => goToSlide(index)}
                   className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 ${
                     isActive
-                      ? 'w-6 sm:w-8 bg-orange-500 shadow-[0_0_8px_rgba(255,165,0,0.4)]'
-                      : 'w-1.5 sm:w-2 bg-white/40 hover:bg-white/60 hover:w-2.5 sm:hover:w-3'
+                      ? "w-6 sm:w-8 bg-orange-500 shadow-[0_0_8px_rgba(255,165,0,0.4)]"
+                      : "w-1.5 sm:w-2 bg-white/40 hover:bg-white/60 hover:w-2.5 sm:hover:w-3"
                   }`}
                   aria-label={`Go to slide ${index + 1}`}
                 />

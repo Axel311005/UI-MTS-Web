@@ -1,36 +1,36 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/shared/components/ui/button';
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/shared/components/ui/button";
 import {
   Calendar,
   DollarSign,
   ArrowRight,
   ChevronLeft,
   ChevronRight,
-} from 'lucide-react';
-import { useNavigate } from 'react-router';
-import { useLandingAuthStore } from '../store/landing-auth.store';
+} from "lucide-react";
+import { useNavigate } from "react-router";
+import { useLandingAuthStore } from "../store/landing-auth.store";
 
 const heroSlides = [
   {
     id: 1,
-    title: 'ALINEACION DE CHASIS',
-    subtitle: 'Servicio Profesional de Alineación',
+    title: "ALINEACION DE CHASIS",
+    subtitle: "Servicio Profesional de Alineación",
     description:
-      'Especialistas en alineación de chasis y mantenimiento profesional para tu moto',
-    price: 'Servicio Premium',
-    priceSubtext: 'Consulta nuestros servicios y seguimiento en tiempo real',
-    image: '/Moto Hero.png',
+      "Especialistas en alineación de chasis y mantenimiento profesional para tu moto",
+    price: "Servicio Premium",
+    priceSubtext: "Consulta nuestros servicios y seguimiento en tiempo real",
+    image: "/Moto Hero.png",
   },
   {
     id: 2,
-    title: 'TECNOLOGÍA HIDRÁULICA',
-    subtitle: 'Alineación de Precisión',
+    title: "TECNOLOGÍA HIDRÁULICA",
+    subtitle: "Alineación de Precisión",
     description:
-      'Equipos profesionales para recuperar la geometría original de tu moto',
-    price: 'Servicio Garantizado',
-    priceSubtext: 'Tecnología de última generación para tu moto',
-    image: '/fotografia-del-taller.jpg',
+      "Equipos profesionales para recuperar la geometría original de tu moto",
+    price: "Servicio Garantizado",
+    priceSubtext: "Tecnología de última generación para tu moto",
+    image: "/fotografia-del-taller.jpg",
   },
 ];
 
@@ -41,17 +41,17 @@ export function HeroSection() {
 
   const handleCita = () => {
     if (!isAuthenticated) {
-      navigate('/login?redirect=/cita');
+      navigate("/login?redirect=/cita");
     } else {
-      navigate('/cita');
+      navigate("/cita");
     }
   };
 
   const handleCotizacion = () => {
     if (!isAuthenticated) {
-      navigate('/login?redirect=/cotizacion');
+      navigate("/login?redirect=/cotizacion");
     } else {
-      navigate('/cotizacion');
+      navigate("/cotizacion");
     }
   };
 
@@ -96,7 +96,7 @@ export function HeroSection() {
       { threshold: 0.1 }
     );
 
-    const section = document.querySelector('[data-hero-section]');
+    const section = document.querySelector("[data-hero-section]");
     if (section) {
       observer.observe(section);
     }
@@ -140,7 +140,7 @@ export function HeroSection() {
               transition={{
                 duration: 8,
                 repeat: Infinity,
-                ease: 'easeInOut',
+                ease: "easeInOut",
               }}
             />
             <motion.div
@@ -152,7 +152,7 @@ export function HeroSection() {
               transition={{
                 duration: 10,
                 repeat: Infinity,
-                ease: 'easeInOut',
+                ease: "easeInOut",
                 delay: 2,
               }}
             />
@@ -161,14 +161,14 @@ export function HeroSection() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center min-h-screen py-20 md:py-32">
+      <div className="relative z-10 w-full px-4 sm:px-6 lg:px-12 xl:px-20">
+        <div className="mx-auto grid w-full max-w-[min(100vw,1760px)] grid-cols-1 gap-8 md:gap-12 lg:grid-cols-2 items-center min-h-screen py-20 md:py-32">
           {/* Left Side - Text Content */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-white"
+            className="text-white max-w-xl lg:max-w-2xl"
           >
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -248,7 +248,7 @@ export function HeroSection() {
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative"
+            className="relative flex justify-center"
           >
             <motion.div
               animate={{
@@ -257,14 +257,14 @@ export function HeroSection() {
               transition={{
                 duration: 4,
                 repeat: Infinity,
-                ease: 'easeInOut',
+                ease: "easeInOut",
               }}
               className="relative z-10"
             >
               <img
                 src={currentHero.image}
                 alt={`${currentHero.subtitle} - ${currentHero.description}`}
-                className="w-full h-auto max-w-2xl mx-auto drop-shadow-2xl"
+                className="w-full h-auto max-w-2xl lg:max-w-3xl xl:max-w-4xl drop-shadow-2xl"
                 loading="eager"
                 fetchPriority="high"
               />
@@ -280,7 +280,7 @@ export function HeroSection() {
               transition={{
                 duration: 6,
                 repeat: Infinity,
-                ease: 'easeInOut',
+                ease: "easeInOut",
               }}
             />
           </motion.div>
@@ -312,8 +312,8 @@ export function HeroSection() {
             onClick={() => goToSlide(index)}
             className={`h-2 rounded-full transition-all duration-300 ${
               index === currentSlide
-                ? 'w-8 bg-orange-500'
-                : 'w-2 bg-white/40 hover:bg-white/60'
+                ? "w-8 bg-orange-500"
+                : "w-2 bg-white/40 hover:bg-white/60"
             }`}
             aria-label={`Go to slide ${index + 1}`}
           />
@@ -330,12 +330,12 @@ export function HeroSection() {
         <motion.div
           className="w-6 h-12 border-2 border-white/40 rounded-full flex justify-center backdrop-blur-sm bg-white/10"
           animate={{ y: [0, 10, 0] }}
-          transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+          transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
         >
           <motion.div
             className="w-2 h-3 bg-white/70 rounded-full mt-2"
             animate={{ y: [0, 12, 0] }}
-            transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+            transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
           />
         </motion.div>
       </motion.div>

@@ -1,13 +1,13 @@
-import { useEffect, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
-import { Plus, Pencil } from 'lucide-react';
-import { Button } from '@/shared/components/ui/button';
+import { useEffect, useMemo } from "react";
+import { useNavigate, useSearchParams } from "react-router";
+import { Plus, Pencil } from "lucide-react";
+import { Button } from "@/shared/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@/shared/components/ui/card';
+} from "@/shared/components/ui/card";
 import {
   Table,
   TableBody,
@@ -15,42 +15,42 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared/components/ui/table';
-import { Badge } from '@/shared/components/ui/badge';
-import { Pagination } from '@/shared/components/ui/pagination';
-import { useRecepcion } from '../hook/useRecepcion';
-import { RecepcionSearchBar } from '../ui/RecepcionSearchBar';
-import type { Recepcion } from '../types/recepcion.interface';
-import { useDebounce } from '@/shared/hooks/use-debounce';
+} from "@/shared/components/ui/table";
+import { Badge } from "@/shared/components/ui/badge";
+import { Pagination } from "@/shared/components/ui/pagination";
+import { useRecepcion } from "../hook/useRecepcion";
+import { RecepcionSearchBar } from "../ui/RecepcionSearchBar";
+import type { Recepcion } from "../types/recepcion.interface";
+import { useDebounce } from "@/shared/hooks/use-debounce";
 
 const estadoVariant: Record<
   string,
-  'default' | 'secondary' | 'destructive' | 'outline'
+  "default" | "secondary" | "destructive" | "outline"
 > = {
-  PENDIENTE: 'secondary',
-  EN_PROCESO: 'default',
-  'EN PROCESO': 'default',
-  FINALIZADO: 'outline',
-  ENTREGADO: 'default',
+  PENDIENTE: "secondary",
+  EN_PROCESO: "default",
+  "EN PROCESO": "default",
+  FINALIZADO: "outline",
+  ENTREGADO: "default",
 };
 
 const formatDate = (value?: string | Date | null) => {
-  if (!value) return '—';
-  const d = typeof value === 'string' ? new Date(value) : value;
+  if (!value) return "—";
+  const d = typeof value === "string" ? new Date(value) : value;
   return d instanceof Date && !Number.isNaN(d.getTime())
     ? d.toLocaleDateString()
-    : '—';
+    : "—";
 };
 
 export default function RecepcionesPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const initialSearch = searchParams.get('q') || '';
+  const initialSearch = searchParams.get("q") || "";
   const debounced = useDebounce(initialSearch.trim().toLowerCase(), 300);
 
-  const page = parseInt(searchParams.get('page') || '1', 10);
-  const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
+  const page = parseInt(searchParams.get("page") || "1", 10);
+  const pageSize = parseInt(searchParams.get("pageSize") || "10", 10);
   const limit = pageSize;
   const offset = (page - 1) * pageSize;
   const shouldUsePagination = debounced.length === 0;
@@ -69,13 +69,13 @@ export default function RecepcionesPage() {
     const list = recepciones ?? [];
     if (!debounced) return list;
     return list.filter((r) => {
-      const placa = r.vehiculo?.placa?.toLowerCase?.() ?? '';
-      const empleado = `${r.empleado?.primerNombre ?? ''} ${
-        r.empleado?.primerApellido ?? ''
+      const placa = r.vehiculo?.placa?.toLowerCase?.() ?? "";
+      const empleado = `${r.empleado?.primerNombre ?? ""} ${
+        r.empleado?.primerApellido ?? ""
       }`
         .trim()
         .toLowerCase();
-      const estado = (r.estado ?? '').toString().toLowerCase();
+      const estado = (r.estado ?? "").toString().toLowerCase();
       return (
         placa.includes(debounced) ||
         empleado.includes(debounced) ||
@@ -100,7 +100,7 @@ export default function RecepcionesPage() {
     if (totalFiltered === 0) {
       if (page !== 1) {
         const params = new URLSearchParams(searchParams);
-        params.delete('page');
+        params.delete("page");
         setSearchParams(params, { replace: true });
       }
       return;
@@ -108,8 +108,8 @@ export default function RecepcionesPage() {
     if (page > computedTotal) {
       const last = Math.max(1, computedTotal);
       const params = new URLSearchParams(searchParams);
-      if (last > 1) params.set('page', last.toString());
-      else params.delete('page');
+      if (last > 1) params.set("page", last.toString());
+      else params.delete("page");
       setSearchParams(params, { replace: true });
     }
   }, [isLoading, page, pageSize, searchParams, setSearchParams, totalFiltered]);
@@ -126,7 +126,7 @@ export default function RecepcionesPage() {
             Gestión de recepciones de vehículos
           </p>
         </div>
-        <Button onClick={() => navigate('/admin/recepciones/nueva')}>
+        <Button onClick={() => navigate("/admin/recepciones/nueva")}>
           <Plus className="mr-2 h-4 w-4" /> Nueva recepción
         </Button>
       </div>
@@ -150,7 +150,7 @@ export default function RecepcionesPage() {
                 <TableHead>Empleado</TableHead>
                 <TableHead>Fecha Recepción</TableHead>
                 <TableHead>Entrega Estimada</TableHead>
-                <TableHead>Estado</TableHead>
+                <TableHead data-mobile-keep>Estado</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -166,29 +166,29 @@ export default function RecepcionesPage() {
                 paginated.map((r) => (
                   <TableRow key={r.idRecepcion} className="table-row-hover">
                     <TableCell className="font-medium">
-                      {r.codigoRecepcion ?? '—'}
+                      {r.codigoRecepcion ?? "—"}
                     </TableCell>
-                    <TableCell>{r.vehiculo?.placa ?? '—'}</TableCell>
+                    <TableCell>{r.vehiculo?.placa ?? "—"}</TableCell>
                     <TableCell>
-                      {`${r.empleado?.primerNombre ?? ''} ${
-                        r.empleado?.primerApellido ?? ''
-                      }`.trim() || '—'}
+                      {`${r.empleado?.primerNombre ?? ""} ${
+                        r.empleado?.primerApellido ?? ""
+                      }`.trim() || "—"}
                     </TableCell>
                     <TableCell>{formatDate(r.fechaRecepcion)}</TableCell>
                     <TableCell>{formatDate(r.fechaEntregaEstimada)}</TableCell>
-                    <TableCell>
+                    <TableCell data-mobile-keep>
                       {r.estado ? (
                         <Badge
                           variant={
                             estadoVariant[r.estado] ??
-                            estadoVariant[r.estado.replace(/\s+/g, '_')] ??
-                            'outline'
+                            estadoVariant[r.estado.replace(/\s+/g, "_")] ??
+                            "outline"
                           }
                         >
                           {r.estado}
                         </Badge>
                       ) : (
-                        '—'
+                        "—"
                       )}
                     </TableCell>
                     <TableCell className="text-right">
@@ -225,16 +225,16 @@ export default function RecepcionesPage() {
             totalItems={totalFiltered}
             onPageChange={(newPage) => {
               const params = new URLSearchParams(searchParams);
-              if (newPage > 1) params.set('page', newPage.toString());
-              else params.delete('page');
+              if (newPage > 1) params.set("page", newPage.toString());
+              else params.delete("page");
               setSearchParams(params, { replace: true });
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              window.scrollTo({ top: 0, behavior: "smooth" });
             }}
             onPageSizeChange={(newSize) => {
               const params = new URLSearchParams(searchParams);
-              params.delete('page');
-              if (newSize !== 10) params.set('pageSize', newSize.toString());
-              else params.delete('pageSize');
+              params.delete("page");
+              if (newSize !== 10) params.set("pageSize", newSize.toString());
+              else params.delete("pageSize");
               setSearchParams(params, { replace: true });
             }}
           />

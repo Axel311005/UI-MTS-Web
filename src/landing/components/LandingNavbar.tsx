@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router';
-import { motion } from 'framer-motion';
-import { Button } from '@/shared/components/ui/button';
-import { Menu, X, LogOut, User } from 'lucide-react';
-import { useLandingAuthStore } from '../store/landing-auth.store';
-import { useAuthStore } from '@/auth/store/auth.store';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router";
+import { motion } from "framer-motion";
+import { Button } from "@/shared/components/ui/button";
+import { Menu, X, LogOut, User } from "lucide-react";
+import { useLandingAuthStore } from "../store/landing-auth.store";
+import { useAuthStore } from "@/auth/store/auth.store";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +12,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/shared/components/ui/dropdown-menu';
+} from "@/shared/components/ui/dropdown-menu";
 
 export function LandingNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -24,7 +24,7 @@ export function LandingNavbar() {
     logout();
     // También limpiar el auth store del panel si está activo
     logoutPanel();
-    navigate('/');
+    navigate("/");
     setMobileMenuOpen(false);
   };
 
@@ -32,14 +32,13 @@ export function LandingNavbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-sm border-b border-orange-500/20">
       {/* Top bar */}
       <div className="bg-black border-b border-orange-500/10">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-end h-8">
-          </div>
+        <div className="mx-auto w-full px-4 sm:px-6 lg:px-12 xl:px-20 max-w-[min(100vw,1760px)]">
+          <div className="flex items-center justify-end h-8"></div>
         </div>
       </div>
-      
+
       {/* Main nav */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full px-4 sm:px-6 lg:px-12 xl:px-20 max-w-[min(100vw,1760px)]">
         <div className="flex items-center justify-between h-20">
           <Link to="/" className="flex items-center">
             <motion.img
@@ -84,6 +83,7 @@ export function LandingNavbar() {
                 </Link>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
+                    {/* Este botón ya estaba perfecto para tu tema oscuro */}
                     <Button
                       variant="ghost"
                       size="sm"
@@ -95,23 +95,32 @@ export function LandingNavbar() {
                       </span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
+
+                  <DropdownMenuContent
+                    align="end"
+                    className="w-56 bg-black border border-zinc-800 text-gray-200 font-montserrat"
+                  >
                     <DropdownMenuLabel>
                       <div className="flex flex-col">
-                        <span className="text-sm font-medium text-black font-montserrat">
-                          {user?.nombre || 'Cliente'}
+                        <span className="text-sm font-medium text-gray-200">
+                          {user?.nombre || "Cliente"}
                         </span>
                         {user?.email && (
-                          <span className="text-xs text-black/60 font-montserrat">
+                          /* 3. Cabecera: Texto de email cambiado de negro/60 a gris oscuro */
+                          <span className="text-xs text-gray-400">
                             {user.email}
                           </span>
                         )}
                       </div>
                     </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
+
+                    {/* 4. Separador: Color añadido para que sea visible en fondo oscuro */}
+                    <DropdownMenuSeparator className="bg-zinc-700" />
+
+                    {/* Esta parte ya estaba perfecta */}
                     <DropdownMenuItem
                       onClick={handleLogout}
-                      className="text-black focus:bg-orange-500/10 focus:text-orange-600 cursor-pointer transition-all duration-200 hover:bg-orange-500/10 font-montserrat"
+                      className="text-gray-200 focus:bg-orange-500/10 focus:text-orange-600 cursor-pointer transition-all duration-200 hover:bg-orange-500/10 hover:text-orange-600 font-montserrat"
                     >
                       <LogOut className="mr-2 h-4 w-4" />
                       <span className="font-medium">Cerrar sesión</span>
@@ -124,7 +133,7 @@ export function LandingNavbar() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => navigate('/login')}
+                  onClick={() => navigate("/login")}
                   className="border-white/40 text-white hover:bg-white/10"
                 >
                   Iniciar Sesión
@@ -132,7 +141,7 @@ export function LandingNavbar() {
                 <Button
                   size="sm"
                   className="bg-orange-500 hover:bg-orange-600 text-white"
-                  onClick={() => navigate('/register')}
+                  onClick={() => navigate("/register")}
                 >
                   Registrarse
                 </Button>
@@ -157,7 +166,7 @@ export function LandingNavbar() {
         {mobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
+            animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden py-4 space-y-4 border-t border-orange-500/20 bg-black"
           >
@@ -216,7 +225,7 @@ export function LandingNavbar() {
                   size="sm"
                   className="w-full border-white/40 text-white hover:bg-white/10"
                   onClick={() => {
-                    navigate('/login');
+                    navigate("/login");
                     setMobileMenuOpen(false);
                   }}
                 >
@@ -226,7 +235,7 @@ export function LandingNavbar() {
                   size="sm"
                   className="w-full bg-orange-500 hover:bg-orange-600 text-white"
                   onClick={() => {
-                    navigate('/register');
+                    navigate("/register");
                     setMobileMenuOpen(false);
                   }}
                 >

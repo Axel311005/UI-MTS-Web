@@ -1,13 +1,13 @@
-import { MapPin, Phone, Clock } from 'lucide-react';
-import { Link } from 'react-router';
-import { motion } from 'framer-motion';
+import { MapPin, Phone, Clock } from "lucide-react";
+import { Link } from "react-router";
+import { motion } from "framer-motion";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
     <footer className="bg-black text-white">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="mx-auto w-full px-4 sm:px-6 lg:px-12 xl:px-20 max-w-[min(100vw,1760px)] py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {/* Información del taller */}
           <motion.div
@@ -19,7 +19,9 @@ export function Footer() {
             <h3 className="text-2xl font-bold mb-4 text-orange-500 font-montserrat">
               MST MOTO SERVICIOS TERRY
             </h3>
-            <p className="text-white/70 mb-4 font-montserrat">¡TU MOTO COMO NUEVA!</p>
+            <p className="text-white/70 mb-4 font-montserrat">
+              ¡TU MOTO COMO NUEVA!
+            </p>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <MapPin className="h-5 w-5 text-orange-500" />
@@ -54,7 +56,9 @@ export function Footer() {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            <h3 className="text-xl font-semibold mb-4 font-montserrat">Enlaces Rápidos</h3>
+            <h3 className="text-xl font-semibold mb-4 font-montserrat">
+              Enlaces Rápidos
+            </h3>
             <ul className="space-y-2">
               <li>
                 <Link
@@ -100,7 +104,9 @@ export function Footer() {
             className="space-y-4"
           >
             <div>
-              <h3 className="text-xl font-semibold mb-4 font-montserrat">Ubicación</h3>
+              <h3 className="text-xl font-semibold mb-4 font-montserrat">
+                Ubicación
+              </h3>
               <div className="rounded-lg overflow-hidden shadow-lg border-2 border-orange-500/20">
                 <div className="relative w-full h-48 bg-black/20 rounded-lg overflow-hidden">
                   <iframe
@@ -129,7 +135,9 @@ export function Footer() {
               </div>
             </div>
             <div>
-              <h3 className="text-xl font-semibold mb-4 font-montserrat">Síguenos</h3>
+              <h3 className="text-xl font-semibold mb-4 font-montserrat">
+                Síguenos
+              </h3>
               <div className="flex gap-4">
                 <motion.a
                   href="https://www.tiktok.com/@taller.terry"

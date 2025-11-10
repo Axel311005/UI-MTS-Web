@@ -1,32 +1,32 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Card, CardContent } from '@/shared/components/ui/card';
-import { Star, Quote, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { Star, Quote, ChevronLeft, ChevronRight } from "lucide-react";
 
 const testimonios = [
   {
-    nombre: 'Carlos M.',
-    texto: 'Excelente atención, mi moto quedó como nueva.',
+    nombre: "Carlos M.",
+    texto: "Excelente atención, mi moto quedó como nueva.",
     rating: 5,
   },
   {
-    nombre: 'Luis G.',
-    texto: 'Servicio rápido y profesional.',
+    nombre: "Luis G.",
+    texto: "Servicio rápido y profesional.",
     rating: 5,
   },
   {
-    nombre: 'María R.',
-    texto: 'Muy satisfecha con el trabajo realizado. Recomendado 100%.',
+    nombre: "María R.",
+    texto: "Muy satisfecha con el trabajo realizado. Recomendado 100%.",
     rating: 5,
   },
   {
-    nombre: 'Juan P.',
-    texto: 'El mejor taller de motos que he conocido. Muy profesionales.',
+    nombre: "Juan P.",
+    texto: "El mejor taller de motos que he conocido. Muy profesionales.",
     rating: 5,
   },
   {
-    nombre: 'Ana S.',
-    texto: 'Servicio de calidad y atención personalizada. Excelente trabajo.',
+    nombre: "Ana S.",
+    texto: "Servicio de calidad y atención personalizada. Excelente trabajo.",
     rating: 5,
   },
 ];
@@ -39,7 +39,9 @@ export function Testimonios() {
   };
 
   const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + testimonios.length) % testimonios.length);
+    setCurrentIndex(
+      (prev) => (prev - 1 + testimonios.length) % testimonios.length
+    );
   };
 
   const goToSlide = (index: number) => {
@@ -50,7 +52,7 @@ export function Testimonios() {
 
   return (
     <section className="py-6 sm:py-8 md:py-10 lg:py-12 bg-white relative overflow-hidden">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="mx-auto w-full px-4 sm:px-6 lg:px-12 xl:px-20 max-w-[min(100vw,1760px)] relative z-10">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -120,12 +122,14 @@ export function Testimonios() {
 
                     {/* Stars */}
                     <div className="flex justify-center gap-1 mb-3 sm:mb-4">
-                      {Array.from({ length: currentTestimonio.rating }).map((_, i) => (
-                        <Star
-                          key={i}
-                          className="h-4 w-4 sm:h-5 sm:w-5 fill-orange-500 text-orange-500"
-                        />
-                      ))}
+                      {Array.from({ length: currentTestimonio.rating }).map(
+                        (_, i) => (
+                          <Star
+                            key={i}
+                            className="h-4 w-4 sm:h-5 sm:w-5 fill-orange-500 text-orange-500"
+                          />
+                        )
+                      )}
                     </div>
 
                     {/* Author Name */}
@@ -149,8 +153,8 @@ export function Testimonios() {
                   onClick={() => goToSlide(index)}
                   className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 ${
                     isActive
-                      ? 'w-6 sm:w-8 bg-orange-500 shadow-[0_0_8px_rgba(255,165,0,0.4)]'
-                      : 'w-1.5 sm:w-2 bg-orange-500/40 hover:bg-orange-500/60 hover:w-2.5 sm:hover:w-3'
+                      ? "w-6 sm:w-8 bg-orange-500 shadow-[0_0_8px_rgba(255,165,0,0.4)]"
+                      : "w-1.5 sm:w-2 bg-orange-500/40 hover:bg-orange-500/60 hover:w-2.5 sm:hover:w-3"
                   }`}
                   aria-label={`Go to slide ${index + 1}`}
                 />

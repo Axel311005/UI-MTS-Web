@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion';
-import { BookOpen } from 'lucide-react';
+import { motion } from "framer-motion";
+import { BookOpen } from "lucide-react";
 
 export function SeccionEducativa() {
   return (
@@ -9,8 +9,8 @@ export function SeccionEducativa() {
         <div className="absolute top-20 left-10 w-72 h-72 bg-orange-500 rounded-full blur-3xl"></div>
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-orange-500 rounded-full blur-3xl"></div>
       </div>
-      
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+
+      <div className="mx-auto w-full px-4 sm:px-6 lg:px-12 xl:px-20 max-w-[min(100vw,1760px)] relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}

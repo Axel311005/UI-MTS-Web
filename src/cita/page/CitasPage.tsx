@@ -1,14 +1,14 @@
-import { useMemo, useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
-import { Plus, Pencil, Eye } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { Button } from '@/shared/components/ui/button';
+import { useMemo, useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router";
+import { Plus } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/shared/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@/shared/components/ui/card';
+} from "@/shared/components/ui/card";
 import {
   Table,
   TableBody,
@@ -16,60 +16,61 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared/components/ui/table';
-import { Badge } from '@/shared/components/ui/badge';
-import { Pagination } from '@/shared/components/ui/pagination';
+} from "@/shared/components/ui/table";
+import { Badge } from "@/shared/components/ui/badge";
+import { Pagination } from "@/shared/components/ui/pagination";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/components/ui/select';
-import { useCita } from '../hook/useCita';
-import { CitaSearchBar } from '../ui/CitaSearchBar';
-import type { Cita } from '../types/cita.interface';
-import { useDebounce } from '@/shared/hooks/use-debounce';
-import { CitaEstado } from '@/shared/types/status';
-import { getClienteNombre } from '@/clientes/utils/cliente.utils';
-import { SearchCitasAction } from '../actions/search-citas-action';
-import type { PaginatedResponse } from '@/shared/types/pagination';
+} from "@/shared/components/ui/select";
+import { useCita } from "../hook/useCita";
+import { CitaSearchBar } from "../ui/CitaSearchBar";
+import type { Cita } from "../types/cita.interface";
+import { useDebounce } from "@/shared/hooks/use-debounce";
+import { CitaEstado } from "@/shared/types/status";
+import { getClienteNombre } from "@/clientes/utils/cliente.utils";
+import { SearchCitasAction } from "../actions/search-citas-action";
+import type { PaginatedResponse } from "@/shared/types/pagination";
+import { CitaRowActions } from "../ui/CitaRowActions";
 
 const estadoVariant: Record<
   CitaEstado,
-  'default' | 'secondary' | 'outline' | 'destructive'
+  "default" | "secondary" | "outline" | "destructive"
 > = {
-  [CitaEstado.PROGRAMADA]: 'default',
-  [CitaEstado.CONFIRMADA]: 'secondary',
-  [CitaEstado.EN_PROCESO]: 'outline',
-  [CitaEstado.FINALIZADA]: 'default',
-  [CitaEstado.CANCELADA]: 'destructive',
+  [CitaEstado.PROGRAMADA]: "default",
+  [CitaEstado.CONFIRMADA]: "secondary",
+  [CitaEstado.EN_PROCESO]: "outline",
+  [CitaEstado.FINALIZADA]: "default",
+  [CitaEstado.CANCELADA]: "destructive",
 };
 
 const formatDate = (value?: string | Date | null) => {
-  if (!value) return '—';
-  const d = typeof value === 'string' ? new Date(value) : value;
+  if (!value) return "—";
+  const d = typeof value === "string" ? new Date(value) : value;
   return d instanceof Date && !Number.isNaN(d.getTime())
-    ? d.toLocaleString('es-ES', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
+    ? d.toLocaleString("es-ES", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
       })
-    : '—';
+    : "—";
 };
 
 export default function CitasPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const initialSearch = searchParams.get('q') || '';
+  const initialSearch = searchParams.get("q") || "";
   const [searchTerm, setSearchTerm] = useState(initialSearch);
-  const estadoFilter = searchParams.get('estado') || '';
+  const estadoFilter = searchParams.get("estado") || "";
 
   useEffect(() => {
-    const currentParam = searchParams.get('q') || '';
+    const currentParam = searchParams.get("q") || "";
     if (currentParam !== searchTerm) {
       setSearchTerm(currentParam);
     }
@@ -77,12 +78,12 @@ export default function CitasPage() {
 
   const debouncedSearch = useDebounce(searchTerm.trim(), 300);
 
-  const page = parseInt(searchParams.get('page') || '1', 10);
-  const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
+  const page = parseInt(searchParams.get("page") || "1", 10);
+  const pageSize = parseInt(searchParams.get("pageSize") || "10", 10);
   const limit = pageSize;
   const offset = (page - 1) * pageSize;
   const hasSearch = Boolean(
-    debouncedSearch.length > 0 || (estadoFilter && estadoFilter !== 'all')
+    debouncedSearch.length > 0 || (estadoFilter && estadoFilter !== "all")
   );
 
   const {
@@ -99,12 +100,12 @@ export default function CitasPage() {
   const { data: citasFiltradasResponse, isLoading: isLoadingSearch } = useQuery<
     PaginatedResponse<Cita>
   >({
-    queryKey: ['citas.search', debouncedSearch, estadoFilter, limit, offset],
+    queryKey: ["citas.search", debouncedSearch, estadoFilter, limit, offset],
     queryFn: () =>
       SearchCitasAction({
         q: debouncedSearch || undefined,
         estado:
-          estadoFilter && estadoFilter !== 'all'
+          estadoFilter && estadoFilter !== "all"
             ? (estadoFilter as CitaEstado)
             : undefined,
         limit,
@@ -149,7 +150,7 @@ export default function CitasPage() {
     if (totalFiltrados === 0) {
       if (page !== 1) {
         const params = new URLSearchParams(searchParams);
-        params.delete('page');
+        params.delete("page");
         setSearchParams(params, { replace: true });
       }
       return;
@@ -159,9 +160,9 @@ export default function CitasPage() {
       const lastPage = Math.max(1, computedTotalPages);
       const params = new URLSearchParams(searchParams);
       if (lastPage > 1) {
-        params.set('page', lastPage.toString());
+        params.set("page", lastPage.toString());
       } else {
-        params.delete('page');
+        params.delete("page");
       }
       setSearchParams(params, { replace: true });
     }
@@ -183,7 +184,7 @@ export default function CitasPage() {
             Gestión de citas agendadas por clientes
           </p>
         </div>
-        <Button onClick={() => navigate('/admin/citas/nueva')}>
+        <Button onClick={() => navigate("/admin/citas/nueva")}>
           <Plus className="mr-2 h-4 w-4" /> Nueva Cita
         </Button>
       </div>
@@ -195,15 +196,15 @@ export default function CitasPage() {
           placeholder="Buscar por cliente, vehículo, motivo o canal"
         />
         <Select
-          value={estadoFilter || 'all'}
+          value={estadoFilter || "all"}
           onValueChange={(value) => {
             const params = new URLSearchParams(searchParams);
-            if (value && value !== 'all') {
-              params.set('estado', value);
+            if (value && value !== "all") {
+              params.set("estado", value);
             } else {
-              params.delete('estado');
+              params.delete("estado");
             }
-            params.delete('page'); // Resetear a página 1
+            params.delete("page"); // Resetear a página 1
             setSearchParams(params, { replace: true });
           }}
         >
@@ -214,7 +215,7 @@ export default function CitasPage() {
             <SelectItem value="all">Todos los estados</SelectItem>
             {Object.values(CitaEstado).map((estado) => (
               <SelectItem key={estado} value={estado}>
-                {estado.replace('_', ' ')}
+                {estado.replace("_", " ")}
               </SelectItem>
             ))}
           </SelectContent>
@@ -229,14 +230,20 @@ export default function CitasPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Vehículo</TableHead>
-                <TableHead>Motivo</TableHead>
-                <TableHead>Fecha Inicio</TableHead>
-                <TableHead>Fecha Fin</TableHead>
-                <TableHead>Canal</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
+                <TableHead data-mobile-keep>Cliente</TableHead>
+                <TableHead data-mobile-hidden>Vehículo</TableHead>
+                <TableHead data-mobile-hidden>Motivo</TableHead>
+                <TableHead data-mobile-keep>Fecha Inicio</TableHead>
+                <TableHead data-mobile-hidden>Fecha Fin</TableHead>
+                <TableHead data-mobile-hidden>Canal</TableHead>
+                <TableHead data-mobile-keep>Estado</TableHead>
+                <TableHead
+                  className="w-0 text-right"
+                  data-mobile-keep
+                  data-mobile-actions
+                >
+                  Acciones
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -250,54 +257,47 @@ export default function CitasPage() {
               {!isLoadingData &&
                 displayedCitas.map((cita: Cita) => (
                   <TableRow key={cita.idCita} className="table-row-hover">
-                    <TableCell className="font-medium">
-                      {cita.cliente ? getClienteNombre(cita.cliente) : '—'}
+                    <TableCell className="font-medium" data-mobile-keep>
+                      {cita.cliente ? getClienteNombre(cita.cliente) : "—"}
                     </TableCell>
-                    <TableCell>
+                    <TableCell data-mobile-hidden>
                       {cita.vehiculo?.placa
                         ? `${cita.vehiculo.placa} — ${cita.vehiculo.marca} ${cita.vehiculo.modelo}`
-                        : '—'}
+                        : "—"}
                     </TableCell>
-                    <TableCell>{cita.motivoCita?.descripcion ?? '—'}</TableCell>
-                    <TableCell>{formatDate(cita.fechaInicio)}</TableCell>
-                    <TableCell>{formatDate(cita.fechaFin)}</TableCell>
-                    <TableCell className="uppercase">
-                      {cita.canal ?? '—'}
+                    <TableCell data-mobile-hidden>
+                      {cita.motivoCita?.descripcion ?? "—"}
                     </TableCell>
-                    <TableCell>
+                    <TableCell data-mobile-keep>
+                      {formatDate(cita.fechaInicio)}
+                    </TableCell>
+                    <TableCell data-mobile-hidden>
+                      {formatDate(cita.fechaFin)}
+                    </TableCell>
+                    <TableCell className="uppercase" data-mobile-hidden>
+                      {cita.canal ?? "—"}
+                    </TableCell>
+                    <TableCell data-mobile-keep>
                       {cita.estado ? (
                         <Badge
                           variant={
                             estadoVariant[cita.estado as CitaEstado] ??
-                            'outline'
+                            "outline"
                           }
                         >
-                          {cita.estado.replace('_', ' ')}
+                          {cita.estado.replace("_", " ")}
                         </Badge>
                       ) : (
-                        '—'
+                        "—"
                       )}
                     </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            navigate(`/admin/citas/${cita.idCita}`)
-                          }
-                        >
-                          <Eye className="mr-2 h-4 w-4" /> Ver
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            navigate(`/admin/citas/${cita.idCita}/editar`)
-                          }
-                        >
-                          <Pencil className="mr-2 h-4 w-4" /> Editar
-                        </Button>
+                    <TableCell
+                      className="text-right"
+                      data-mobile-keep
+                      data-mobile-actions
+                    >
+                      <div className="flex w-full justify-end">
+                        <CitaRowActions cita={cita} />
                       </div>
                     </TableCell>
                   </TableRow>
@@ -323,16 +323,16 @@ export default function CitasPage() {
             totalItems={totalFiltrados}
             onPageChange={(newPage) => {
               const params = new URLSearchParams(searchParams);
-              if (newPage > 1) params.set('page', newPage.toString());
-              else params.delete('page');
+              if (newPage > 1) params.set("page", newPage.toString());
+              else params.delete("page");
               setSearchParams(params, { replace: true });
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              window.scrollTo({ top: 0, behavior: "smooth" });
             }}
             onPageSizeChange={(newSize) => {
               const params = new URLSearchParams(searchParams);
-              params.delete('page');
-              if (newSize !== 10) params.set('pageSize', newSize.toString());
-              else params.delete('pageSize');
+              params.delete("page");
+              if (newSize !== 10) params.set("pageSize", newSize.toString());
+              else params.delete("pageSize");
               setSearchParams(params, { replace: true });
             }}
           />

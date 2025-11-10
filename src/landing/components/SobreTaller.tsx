@@ -1,39 +1,39 @@
-import { motion } from 'framer-motion';
-import { MapPin, Phone, Clock } from 'lucide-react';
+import { motion } from "framer-motion";
+import { MapPin, Phone, Clock } from "lucide-react";
 
 export function SobreTaller() {
   const infoItems = [
     {
       icon: MapPin,
-      title: 'Dirección',
-      content: ['Barrio Riguero, Talleres Modernos', '1c n, 1 c abajo'],
+      title: "Dirección",
+      content: ["Barrio Riguero, Talleres Modernos", "1c n, 1 c abajo"],
       isLink: false,
     },
     {
       icon: Phone,
-      title: 'WhatsApp',
-      content: ['+505 84809632'],
-      link: 'https://wa.me/50584809632',
+      title: "WhatsApp",
+      content: ["+505 84809632"],
+      link: "https://wa.me/50584809632",
       isLink: true,
     },
     {
       icon: Clock,
-      title: 'Horario',
-      content: ['Lunes a sábado | 8:00 a.m.', '- 5:00 p.m.'],
+      title: "Horario",
+      content: ["Lunes a sábado | 8:00 a.m.", "- 5:00 p.m."],
       isLink: false,
     },
     {
       icon: Phone, // Placeholder, se reemplazará con SVG en el render
-      title: 'Redes Sociales',
-      content: ['@taller.terry'],
-      link: 'https://www.tiktok.com/@taller.terry',
+      title: "Redes Sociales",
+      content: ["@taller.terry"],
+      link: "https://www.tiktok.com/@taller.terry",
       isLink: true,
     },
   ];
 
   return (
     <section className="py-20 bg-gradient-to-b from-white to-orange-50/20">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full px-4 sm:px-6 lg:px-12 xl:px-20 max-w-[min(100vw,1760px)]">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -46,9 +46,7 @@ export function SobreTaller() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             className="text-sm uppercase tracking-wider text-orange-500 mb-4 font-montserrat font-semibold"
-          >
-            GRAB MOTO BEST RIDE
-          </motion.p>
+          ></motion.p>
           <h2 className="text-4xl md:text-5xl font-bold text-black mb-4 font-montserrat">
             MST MOTO SERVICIOS TERRY
           </h2>
@@ -60,7 +58,7 @@ export function SobreTaller() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {infoItems.map((item, index) => {
             const Icon = item.icon;
-            const isTikTok = item.title === 'Redes Sociales';
+            const isTikTok = item.title === "Redes Sociales";
             return (
               <motion.div
                 key={item.title}
@@ -88,12 +86,12 @@ export function SobreTaller() {
                       )}
                     </div>
                   </div>
-                  
+
                   {/* Title */}
                   <h3 className="font-bold text-black text-lg mb-4 text-center font-montserrat">
                     {item.title}
                   </h3>
-                  
+
                   {/* Content */}
                   <div className="space-y-1">
                     {item.content.map((line, lineIndex) => (

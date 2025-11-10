@@ -1,34 +1,34 @@
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@/shared/components/ui/card';
-import { Wrench, Settings } from 'lucide-react';
+} from "@/shared/components/ui/card";
+import { Wrench, Settings } from "lucide-react";
 
 export function ServiciosMantenimiento() {
   const mantenimientoMenor = [
-    'Cambio de aceite',
-    'Limpieza de carburador',
-    'Engrase de balineras',
-    'Calibración de válvulas',
-    'Ajuste de frenos',
-    'Revisión de luces',
+    "Cambio de aceite",
+    "Limpieza de carburador",
+    "Engrase de balineras",
+    "Calibración de válvulas",
+    "Ajuste de frenos",
+    "Revisión de luces",
   ];
 
   const mantenimientoMayor = [
-    'Todo lo del mantenimiento menor',
-    'Revisión profunda de suspensión',
-    'Kit de cunas del poste',
-    'Revisión completa del motor',
-    'Cambio de filtros',
-    'Revisión de sistema eléctrico',
+    "Todo lo del mantenimiento menor",
+    "Revisión profunda de suspensión",
+    "Kit de cunas del poste",
+    "Revisión completa del motor",
+    "Cambio de filtros",
+    "Revisión de sistema eléctrico",
   ];
 
   return (
     <section className="py-20 bg-gradient-to-b from-white via-orange-50/10 to-white">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full px-4 sm:px-6 lg:px-12 xl:px-20 max-w-[min(100vw,1760px)]">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}

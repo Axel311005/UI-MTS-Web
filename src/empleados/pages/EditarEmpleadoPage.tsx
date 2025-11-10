@@ -1,15 +1,28 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
-import { useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Save } from 'lucide-react';
-import { toast } from 'sonner';
-import { Button } from '@/shared/components/ui/button';
-import { Skeleton } from '@/shared/components/ui/skeleton';
-import { Input } from '@/shared/components/ui/input';
-import { Label } from '@/shared/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { getEmpleadoById } from '../actions/get-empleado-by-id';
-import { patchEmpleadoAction } from '../actions/patch-empleado';
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft, Save } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/shared/components/ui/button";
+import { Skeleton } from "@/shared/components/ui/skeleton";
+import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
+import { getEmpleadoById } from "../actions/get-empleado-by-id";
+import { patchEmpleadoAction } from "../actions/patch-empleado";
+import { EstadoActivo } from "@/shared/types/status";
 
 export default function EditarEmpleadoPage() {
   const navigate = useNavigate();
@@ -20,11 +33,12 @@ export default function EditarEmpleadoPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
-    primerNombre: '',
-    primerApellido: '',
-    cedula: '',
-    telefono: '',
-    direccion: '',
+    primerNombre: "",
+    primerApellido: "",
+    cedula: "",
+    telefono: "",
+    direccion: "",
+    activo: EstadoActivo.ACTIVO as EstadoActivo,
   });
 
   // Validar formato de cédula
@@ -37,16 +51,20 @@ export default function EditarEmpleadoPage() {
   // Formatear cédula mientras se escribe
   const handleCedulaChange = (value: string) => {
     // Solo permitir números y letras
-    const cleaned = value.replace(/[^0-9A-Za-z]/g, '');
+    const cleaned = value.replace(/[^0-9A-Za-z]/g, "");
     // Si tiene más de 13 caracteres y el último es una letra, mantenerlo
     if (cleaned.length <= 13) {
       // Solo números hasta 13 caracteres
-      const numbers = cleaned.replace(/[^0-9]/g, '').slice(0, 13);
+      const numbers = cleaned.replace(/[^0-9]/g, "").slice(0, 13);
       setFormData({ ...formData, cedula: numbers });
     } else if (cleaned.length === 14) {
       // 13 números + 1 letra
-      const numbers = cleaned.slice(0, 13).replace(/[^0-9]/g, '');
-      const letter = cleaned.slice(13).replace(/[^A-Za-z]/g, '').toUpperCase().slice(0, 1);
+      const numbers = cleaned.slice(0, 13).replace(/[^0-9]/g, "");
+      const letter = cleaned
+        .slice(13)
+        .replace(/[^A-Za-z]/g, "")
+        .toUpperCase()
+        .slice(0, 1);
       if (numbers.length === 13 && letter.length === 1) {
         setFormData({ ...formData, cedula: numbers + letter });
       }
@@ -55,53 +73,56 @@ export default function EditarEmpleadoPage() {
 
   // Formatear teléfono (solo 8 dígitos)
   const handleTelefonoChange = (value: string) => {
-    const cleaned = value.replace(/\D/g, '').slice(0, 8);
+    const cleaned = value.replace(/\D/g, "").slice(0, 8);
     setFormData({ ...formData, telefono: cleaned });
   };
 
   useEffect(() => {
     if (!params.id) {
-      toast.error('ID de empleado no proporcionado');
-      navigate('/admin/administracion');
+      toast.error("ID de empleado no proporcionado");
+      navigate("/admin/administracion");
       return;
     }
 
     if (!Number.isFinite(empleadoId)) {
-      toast.error('ID de empleado inválido');
-      navigate('/admin/administracion');
+      toast.error("ID de empleado inválido");
+      navigate("/admin/administracion");
       return;
     }
 
     const loadEmpleado = async () => {
       setLoading(true);
-      const dismiss = toast.loading('Cargando empleado...');
+      const dismiss = toast.loading("Cargando empleado...");
       try {
         const empleado = await getEmpleadoById(empleadoId);
         // Convertir teléfono del backend (50587781633) al formato frontend (87781633)
         const telefonoFrontend = (() => {
-          const tel = empleado.telefono ?? '';
-          if (tel.startsWith('505') && tel.length === 11) {
+          const tel = empleado.telefono ?? "";
+          if (tel.startsWith("505") && tel.length === 11) {
             return tel.slice(3); // Remover "505" del inicio
           }
           return tel;
         })();
 
         setFormData({
-          primerNombre: empleado.primerNombre ?? '',
-          primerApellido: empleado.primerApellido ?? '',
-          cedula: empleado.cedula ?? '',
+          primerNombre: empleado.primerNombre ?? "",
+          primerApellido: empleado.primerApellido ?? "",
+          cedula: empleado.cedula ?? "",
           telefono: telefonoFrontend,
-          direccion: empleado.direccion ?? '',
+          direccion: empleado.direccion ?? "",
+          activo:
+            (empleado.activo as EstadoActivo | undefined) ??
+            EstadoActivo.ACTIVO,
         });
       } catch (error: any) {
         const raw = error?.response?.data;
         const message =
           raw?.message ||
-          (typeof raw === 'string' ? raw : undefined) ||
+          (typeof raw === "string" ? raw : undefined) ||
           (error instanceof Error ? error.message : undefined) ||
-          'No se pudo cargar el empleado';
+          "No se pudo cargar el empleado";
         toast.error(message);
-        navigate('/admin/administracion');
+        navigate("/admin/administracion");
       } finally {
         toast.dismiss(dismiss);
         setLoading(false);
@@ -122,26 +143,25 @@ export default function EditarEmpleadoPage() {
       !formData.telefono ||
       !formData.direccion
     ) {
-      toast.error('Todos los campos son requeridos');
+      toast.error("Todos los campos son requeridos");
       return;
     }
 
     // Validar formato de cédula
     if (!validateCedula(formData.cedula)) {
       toast.error(
-        'La cédula debe tener el formato: 13 números seguidos de 1 letra (ejemplo: 0010606051003H)'
+        "La cédula debe tener el formato: 13 números seguidos de 1 letra (ejemplo: 0010606051003H)"
       );
       return;
     }
 
     setSaving(true);
-    const dismiss = toast.loading('Actualizando empleado...');
+    const dismiss = toast.loading("Actualizando empleado...");
     try {
       // Convertir teléfono de formato frontend (87781633) a backend (50587781633)
-      const telefonoLimpio = formData.telefono.replace(/\D/g, '');
-      const telefonoBackend = telefonoLimpio.length === 8
-        ? `505${telefonoLimpio}`
-        : telefonoLimpio;
+      const telefonoLimpio = formData.telefono.replace(/\D/g, "");
+      const telefonoBackend =
+        telefonoLimpio.length === 8 ? `505${telefonoLimpio}` : telefonoLimpio;
 
       await patchEmpleadoAction(empleadoId, {
         primerNombre: formData.primerNombre.trim(),
@@ -149,23 +169,24 @@ export default function EditarEmpleadoPage() {
         cedula: formData.cedula.trim(),
         telefono: telefonoBackend,
         direccion: formData.direccion.trim(),
+        activo: formData.activo,
       });
 
-      toast.success('Empleado actualizado correctamente');
+      toast.success("Empleado actualizado correctamente");
 
       await queryClient.invalidateQueries({
-        queryKey: ['empleados'],
+        queryKey: ["empleados"],
         exact: false,
       });
 
-      navigate('/admin/administracion');
+      navigate("/admin/administracion");
     } catch (error: any) {
       const raw = error?.response?.data;
       const message =
         raw?.message ||
-        (typeof raw === 'string' ? raw : undefined) ||
+        (typeof raw === "string" ? raw : undefined) ||
         (error instanceof Error ? error.message : undefined) ||
-        'No se pudo actualizar el empleado';
+        "No se pudo actualizar el empleado";
       toast.error(message);
     } finally {
       toast.dismiss(dismiss);
@@ -196,7 +217,7 @@ export default function EditarEmpleadoPage() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => navigate('/admin/administracion')}
+          onClick={() => navigate("/admin/administracion")}
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
@@ -279,17 +300,37 @@ export default function EditarEmpleadoPage() {
               />
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="estado">Estado *</Label>
+              <Select
+                value={formData.activo}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, activo: value as EstadoActivo })
+                }
+              >
+                <SelectTrigger id="estado">
+                  <SelectValue placeholder="Selecciona estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={EstadoActivo.ACTIVO}>Activo</SelectItem>
+                  <SelectItem value={EstadoActivo.INACTIVO}>
+                    Inactivo
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="flex justify-end gap-2">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate('/admin/administracion')}
+                onClick={() => navigate("/admin/administracion")}
               >
                 Cancelar
               </Button>
               <Button type="submit" disabled={saving}>
                 <Save className="h-4 w-4 mr-2" />
-                {saving ? 'Guardando...' : 'Guardar Cambios'}
+                {saving ? "Guardando..." : "Guardar Cambios"}
               </Button>
             </div>
           </form>
@@ -298,4 +339,3 @@ export default function EditarEmpleadoPage() {
     </div>
   );
 }
-
