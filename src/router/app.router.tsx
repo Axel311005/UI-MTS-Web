@@ -109,6 +109,11 @@ const VerDetallesCitaPage = lazy(() =>
     default: m.default,
   }))
 );
+const MotivosCitaPage = lazy(() =>
+  import('@/cita/pages/MotivosCitaPage').then((m) => ({
+    default: m.default,
+  }))
+);
 // Recepciones
 const RecepcionesPage = lazy(() =>
   import('@/recepcion/page/RecepcionPage').then((m) => ({
@@ -932,6 +937,11 @@ export const appRouter = createBrowserRouter([
                 path: 'existencia-bodega/:id',
                 element: <Navigate to="/admin/existencia-bodega" replace />,
                 handle: { crumb: 'Existencia' },
+              },
+              {
+                path: 'motivos-cita',
+                element: <MotivosCitaPage />,
+                handle: { crumb: 'Motivos de Cita' },
               },
               {
                 path: 'administracion',

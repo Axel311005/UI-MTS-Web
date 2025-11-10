@@ -10,7 +10,6 @@ import {
 } from '@/shared/components/ui/card';
 import { CitaForm, type CitaFormValues } from '../ui/CitaForm';
 import { postCitaAction } from '../actions/post-cita';
-import { postMotivoCitaAction } from '../actions/post-motivo-cita';
 
 export default function NuevaCitaPage() {
   const navigate = useNavigate();
@@ -18,19 +17,11 @@ export default function NuevaCitaPage() {
 
   const handleSubmit = async (data: CitaFormValues) => {
     try {
-      // Siempre crear un nuevo motivo con la descripción proporcionada
-      const nuevoMotivo = await postMotivoCitaAction({
-        descripcion: data.motivoDescripcion.trim(),
-      });
-
-      // Invalidar la lista de motivos para que se actualice
-      await queryClient.invalidateQueries({ queryKey: ['motivosCita'] });
-
-      // Crear la cita con el motivo recién creado
+      // Crear la cita con el motivo seleccionado
       await postCitaAction({
         idCliente: data.idCliente,
         idVehiculo: data.idVehiculo,
-        idMotivoCita: nuevoMotivo.idMotivoCita,
+        idMotivoCita: data.idMotivoCita,
         fechaInicio: data.fechaInicio,
         estado: data.estado,
         canal: data.canal,

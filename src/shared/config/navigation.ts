@@ -109,6 +109,12 @@ export const navigationConfig: MenuItem[] = [
     userTypes: ['gerente', 'vendedor'],
   },
   {
+    title: 'Motivos de Cita',
+    url: '/admin/motivos-cita',
+    icon: Calendar,
+    userTypes: ['gerente', 'superuser'],
+  },
+  {
     title: 'Bodegas',
     url: '/admin/bodegas',
     icon: Warehouse,

@@ -13,11 +13,12 @@ import { CitaEstado } from '@/shared/types/status';
 import { useVehiculo } from '@/vehiculo/hook/useVehiculo';
 import { EstadoActivo } from '@/shared/types/status';
 import { ClienteSelect } from '@/facturas/ui/ClienteSelect';
+import { useMotivoCita } from '../hook/useMotivoCita';
 
 export type CitaFormValues = {
   idCliente: number;
   idVehiculo: number;
-  motivoDescripcion: string; // Descripción del motivo (siempre se crea un nuevo motivo)
+  idMotivoCita: number; // ID del motivo seleccionado
   fechaInicio: string; // datetime-local format
   estado: CitaEstado;
   canal: 'web' | 'telefono' | 'presencial';
@@ -51,6 +52,7 @@ export function CitaForm({
   onCancel,
 }: CitaFormProps) {
   const { vehiculos } = useVehiculo({ usePagination: false });
+  const { motivosCita } = useMotivoCita({ usePagination: false });
 
 
   const activeVehiculos = useMemo(
@@ -64,7 +66,7 @@ export function CitaForm({
   const [values, setValues] = useState<CitaFormValues>({
     idCliente: defaultValues?.idCliente ?? 0,
     idVehiculo: defaultValues?.idVehiculo ?? 0,
-    motivoDescripcion: defaultValues?.motivoDescripcion ?? '',
+    idMotivoCita: defaultValues?.idMotivoCita ?? 0,
     fechaInicio: defaultValues?.fechaInicio ?? defaultDateTime,
     estado: defaultValues?.estado ?? CitaEstado.PROGRAMADA,
     canal: defaultValues?.canal ?? 'web',
@@ -81,8 +83,8 @@ export function CitaForm({
       e.idCliente = 'Seleccione un cliente';
     if (!values.idVehiculo || values.idVehiculo <= 0)
       e.idVehiculo = 'Seleccione un vehículo';
-    if (!values.motivoDescripcion || values.motivoDescripcion.trim() === '')
-      e.motivoDescripcion = 'La descripción del motivo es requerida';
+    if (!values.idMotivoCita || values.idMotivoCita <= 0)
+      e.idMotivoCita = 'Seleccione un motivo de cita';
     if (!values.fechaInicio) e.fechaInicio = 'La fecha es requerida';
 
     setErrors(e);
@@ -95,7 +97,7 @@ export function CitaForm({
     onSubmit({
       idCliente: Number(values.idCliente),
       idVehiculo: Number(values.idVehiculo),
-      motivoDescripcion: values.motivoDescripcion.trim(),
+      idMotivoCita: Number(values.idMotivoCita),
       fechaInicio: new Date(values.fechaInicio).toISOString(),
       estado: values.estado,
       canal: values.canal,
@@ -145,13 +147,23 @@ export function CitaForm({
           <Label>
             Motivo de Cita <span className="text-destructive">*</span>
           </Label>
-          <Input
-            placeholder="Ej: Mantenimiento preventivo, Reparación de frenos, etc."
-            value={values.motivoDescripcion}
-            onChange={(e) => update({ motivoDescripcion: e.target.value })}
-          />
-          {errors.motivoDescripcion && (
-            <p className="text-sm text-destructive">{errors.motivoDescripcion}</p>
+          <Select
+            value={values.idMotivoCita > 0 ? String(values.idMotivoCita) : ''}
+            onValueChange={(v) => update({ idMotivoCita: Number(v) })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccione un motivo de cita" />
+            </SelectTrigger>
+            <SelectContent>
+              {(motivosCita ?? []).map((motivo) => (
+                <SelectItem key={motivo.idMotivoCita} value={String(motivo.idMotivoCita)}>
+                  {motivo.descripcion}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.idMotivoCita && (
+            <p className="text-sm text-destructive">{errors.idMotivoCita}</p>
           )}
         </div>
 

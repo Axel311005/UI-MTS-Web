@@ -13,7 +13,6 @@ import { Button } from '@/shared/components/ui/button';
 import { CitaForm, type CitaFormValues } from '../ui/CitaForm';
 import { getCitaByIdAction } from '../actions/get-cita-by-id';
 import { patchCitaAction } from '../actions/patch-cita';
-import { postMotivoCitaAction } from '../actions/post-motivo-cita';
 
 const toDateTimeLocal = (value: unknown): string => {
   if (!value) return '';
@@ -68,24 +67,10 @@ export default function EditarCitasPage() {
       return;
     }
     try {
-      // Si la descripción cambió, crear un nuevo motivo o actualizar el existente
-      let idMotivoCita = cita?.motivoCita?.idMotivoCita;
-
-      if (data.motivoDescripcion.trim() !== cita?.motivoCita?.descripcion) {
-        // La descripción cambió, crear un nuevo motivo
-        const nuevoMotivo = await postMotivoCitaAction({
-          descripcion: data.motivoDescripcion.trim(),
-        });
-        idMotivoCita = nuevoMotivo.idMotivoCita;
-
-        // Invalidar la lista de motivos
-        await queryClient.invalidateQueries({ queryKey: ['motivosCita'] });
-      }
-
       await patchCitaAction(idCita, {
         idCliente: data.idCliente,
         idVehiculo: data.idVehiculo,
-        idMotivoCita: idMotivoCita!,
+        idMotivoCita: data.idMotivoCita,
         fechaInicio: data.fechaInicio,
         estado: data.estado,
         canal: data.canal,
@@ -152,7 +137,7 @@ export default function EditarCitasPage() {
               defaultValues={{
                 idCliente: cita.cliente?.idCliente,
                 idVehiculo: cita.vehiculo?.idVehiculo,
-                motivoDescripcion: cita.motivoCita?.descripcion ?? '',
+                idMotivoCita: cita.motivoCita?.idMotivoCita,
                 fechaInicio: toDateTimeLocal(cita.fechaInicio),
                 estado: cita.estado,
                 canal: cita.canal,
