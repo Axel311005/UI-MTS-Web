@@ -5,8 +5,6 @@ import {
   Calendar,
   DollarSign,
   ArrowRight,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 import { useNavigate } from "react-router";
 
@@ -37,6 +35,15 @@ export function HeroSection() {
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
 
+  const normalizeUrl = (p: string) => {
+    try {
+      // Ensure spaces and special chars are encoded for robust loading on refresh/prod
+      return encodeURI(p);
+    } catch {
+      return p;
+    }
+  };
+
   const handleCita = () => {
     navigate("/cita");
   };
@@ -53,15 +60,7 @@ export function HeroSection() {
     return () => clearInterval(interval);
   }, []);
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide(
-      (prev) => (prev - 1 + heroSlides.length) % heroSlides.length
-    );
-  };
+  // Arrows removed; navigation via dots and auto-rotate only
 
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
@@ -114,7 +113,7 @@ export function HeroSection() {
             <div
               className="absolute inset-0 bg-cover bg-center bg-no-repeat"
               style={{
-                backgroundImage: `url(${currentHero.image})`,
+                backgroundImage: `url(${normalizeUrl(currentHero.image)})`,
               }}
             >
               <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/70"></div>
@@ -252,11 +251,21 @@ export function HeroSection() {
               className="relative z-10"
             >
               <img
-                src={currentHero.image}
+                src={normalizeUrl(currentHero.image)}
                 alt={`${currentHero.subtitle} - ${currentHero.description}`}
                 className="w-full h-auto max-w-2xl lg:max-w-3xl xl:max-w-4xl drop-shadow-2xl"
                 loading="eager"
                 fetchPriority="high"
+                onError={(e) => {
+                  // Fallbacks if an asset fails to load after refresh
+                  const target = e.currentTarget as HTMLImageElement;
+                  if (target.src !== normalizeUrl('/Moto Hero.png') && target.src !== normalizeUrl('/fotografia-del-taller.png')) {
+                    // Try primary known assets in order
+                    target.src = normalizeUrl('/Moto Hero.png');
+                  } else {
+                    target.src = normalizeUrl('/logo-mts-trans.png');
+                  }
+                }}
               />
             </motion.div>
 
@@ -277,22 +286,7 @@ export function HeroSection() {
         </div>
       </div>
 
-      {/* Navigation Arrows */}
-      <button
-        onClick={prevSlide}
-        className="absolute left-2 sm:left-4 sm:top-1/2 top-1/3 sm:-translate-y-1/2 translate-y-0 z-10 sm:z-20 p-3 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-md transition-all duration-300 group"
-        aria-label="Previous slide"
-      >
-        <ChevronLeft className="h-6 w-6 text-white group-hover:text-orange-500" />
-      </button>
-
-      <button
-        onClick={nextSlide}
-        className="absolute right-2 sm:right-4 sm:top-1/2 top-1/3 sm:-translate-y-1/2 translate-y-0 z-10 sm:z-20 p-3 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-md transition-all duration-300 group"
-        aria-label="Next slide"
-      >
-        <ChevronRight className="h-6 w-6 text-white group-hover:text-orange-500" />
-      </button>
+      {/* Navigation Arrows removed on mobile and desktop to avoid accidental taps near CTAs */}
 
       {/* Pagination Dots */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">

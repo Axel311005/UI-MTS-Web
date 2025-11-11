@@ -5,28 +5,31 @@ import { Star, Quote, ChevronLeft, ChevronRight } from "lucide-react";
 
 const testimonios = [
   {
-    nombre: "Carlos M.",
-    texto: "Excelente atención, mi moto quedó como nueva.",
+    nombre: "Felipe González",
+    texto:
+      "Muy buen servicio de asesoramiento, el técnico fue muy acertado en el diagnóstico y el encargado amable en su trato. Obtuve un descuento en mano de obra por la compra de repuesto.",
     rating: 5,
   },
   {
-    nombre: "Luis G.",
-    texto: "Servicio rápido y profesional.",
+    nombre: "Moises Ocampo",
+    texto: "Excelente taller, personal capacitado, muy profesional.",
     rating: 5,
   },
   {
-    nombre: "María R.",
-    texto: "Muy satisfecha con el trabajo realizado. Recomendado 100%.",
+    nombre: "Octavio Alberto Morales Mendoza",
+    texto:
+      "Excelente atención. El servicio mecánico y mantenimiento es muy superior incluso al que me ofrecieron en el taller de la empresa donde obtuve mi motocicleta.",
     rating: 5,
   },
   {
-    nombre: "Juan P.",
-    texto: "El mejor taller de motos que he conocido. Muy profesionales.",
+    nombre: "Benjamin",
+    texto: "Excelente servicio, rápido, confiables y buen trato.",
     rating: 5,
   },
   {
-    nombre: "Ana S.",
-    texto: "Servicio de calidad y atención personalizada. Excelente trabajo.",
+    nombre: "Juan Pérez",
+    texto:
+      "Para revisión de motos, un buen lugar. Siempre que vengan pregunten por el propietario, les atenderá con gusto.",
     rating: 5,
   },
 ];
