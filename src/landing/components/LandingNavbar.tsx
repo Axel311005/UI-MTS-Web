@@ -59,7 +59,8 @@ export function LandingNavbar() {
             <motion.img
               src="/logo-mts-trans.png"
               alt="MTS - Taller de Motos - Logo"
-              className="h-12 w-auto"
+               className="w-auto"
+               style={{ height: "115px" }} // puedes ajustar el valor aquí
               whileHover={{ scale: 1.05 }}
             />
           </Link>

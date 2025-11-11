@@ -35,15 +35,6 @@ export function HeroSection() {
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const normalizeUrl = (p: string) => {
-    try {
-      // Ensure spaces and special chars are encoded for robust loading on refresh/prod
-      return encodeURI(p);
-    } catch {
-      return p;
-    }
-  };
-
   const handleCita = () => {
     navigate("/cita");
   };
@@ -113,7 +104,7 @@ export function HeroSection() {
             <div
               className="absolute inset-0 bg-cover bg-center bg-no-repeat"
               style={{
-                backgroundImage: `url(${normalizeUrl(currentHero.image)})`,
+                backgroundImage: `url(${currentHero.image})`,
               }}
             >
               <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/70"></div>
@@ -251,21 +242,11 @@ export function HeroSection() {
               className="relative z-10"
             >
               <img
-                src={normalizeUrl(currentHero.image)}
+                src={currentHero.image}
                 alt={`${currentHero.subtitle} - ${currentHero.description}`}
                 className="w-full h-auto max-w-2xl lg:max-w-3xl xl:max-w-4xl drop-shadow-2xl"
                 loading="eager"
                 fetchPriority="high"
-                onError={(e) => {
-                  // Fallbacks if an asset fails to load after refresh
-                  const target = e.currentTarget as HTMLImageElement;
-                  if (target.src !== normalizeUrl('/Moto Hero.png') && target.src !== normalizeUrl('/fotografia-del-taller.png')) {
-                    // Try primary known assets in order
-                    target.src = normalizeUrl('/Moto Hero.png');
-                  } else {
-                    target.src = normalizeUrl('/logo-mts-trans.png');
-                  }
-                }}
               />
             </motion.div>
 
