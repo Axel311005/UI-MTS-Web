@@ -37,7 +37,7 @@ interface DetalleLinea {
 }
 
 export function CotizacionForm() {
-  const { user: landingUser, isAuthenticated: landingIsAuthenticated } = useLandingAuthStore();
+  const { user: landingUser } = useLandingAuthStore();
   const authUser = useAuthStore((s) => s.user);
   const [localUser, setLocalUser] = useState<{ id: number; email: string; clienteId?: number; nombre?: string } | null>(null);
   
