@@ -181,7 +181,7 @@ export default function RegisterPage() {
 
       if (token && cliente) {
         // Guardar en el store de landing
-        setAuth(token, {
+        const landingUser = {
           id: Number(userData.id) || 0,
           email: emailLimpio,
           clienteId: cliente.idCliente,
@@ -189,7 +189,22 @@ export default function RegisterPage() {
             [cliente.primerNombre, cliente.primerApellido]
               .filter(Boolean)
               .join(" ") || (cliente as any).ruc || 'Cliente',
-        });
+        };
+        
+        setAuth(token, landingUser);
+        
+        // También sincronizar con el store principal si es necesario
+        // (para que funcione correctamente cuando se inicia sesión desde el panel)
+        try {
+          localStorage.setItem('user', JSON.stringify({
+            id: userData.id,
+            email: emailLimpio,
+            cliente: cliente,
+            roles: [],
+          }));
+        } catch (error) {
+          console.warn('Error al sincronizar con store principal:', error);
+        }
         
         toast.success("Registro exitoso. Bienvenido!");
         navigate(redirect);

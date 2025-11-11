@@ -16,9 +16,22 @@ import {
 
 export function LandingNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { isAuthenticated, user, logout } = useLandingAuthStore();
+  const { isAuthenticated: landingIsAuthenticated, user: landingUser, logout } = useLandingAuthStore();
+  const authUser = useAuthStore((s) => s.user);
   const logoutPanel = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
+  
+  // Obtener usuario desde landingUser o desde authUser como fallback
+  const user = landingUser || (authUser?.cliente ? {
+    id: Number(authUser.id) || 0,
+    email: authUser.email || '',
+    clienteId: (authUser.cliente as any)?.id || (authUser.cliente as any)?.idCliente,
+    nombre: authUser.cliente?.primerNombre 
+      ? `${authUser.cliente.primerNombre} ${authUser.cliente.primerApellido || ''}`.trim()
+      : authUser.cliente?.ruc || 'Cliente',
+  } : null);
+  
+  const isAuthenticated = landingIsAuthenticated || (!!authUser?.cliente);
 
   const handleLogout = () => {
     logout();

@@ -9,7 +9,6 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useNavigate } from "react-router";
-import { useLandingAuthStore } from "../store/landing-auth.store";
 
 const heroSlides = [
   {
@@ -36,23 +35,14 @@ const heroSlides = [
 
 export function HeroSection() {
   const navigate = useNavigate();
-  const { isAuthenticated } = useLandingAuthStore();
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const handleCita = () => {
-    if (!isAuthenticated) {
-      navigate("/login?redirect=/cita");
-    } else {
-      navigate("/cita");
-    }
+    navigate("/cita");
   };
 
   const handleCotizacion = () => {
-    if (!isAuthenticated) {
-      navigate("/login?redirect=/cotizacion");
-    } else {
-      navigate("/cotizacion");
-    }
+    navigate("/cotizacion");
   };
 
   // Auto-rotate slides

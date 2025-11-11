@@ -30,6 +30,7 @@ import { es } from 'date-fns/locale/es';
 import { io, Socket } from 'socket.io-client';
 import { SOCKET_URL_CLIENTE } from '@/shared/config/socket.config';
 import { useLandingAuthStore } from '../store/landing-auth.store';
+import { useAuthStore } from '@/auth/store/auth.store';
 
 const estadoConfig: Record<
   string,
@@ -75,7 +76,9 @@ export function SeguimientoForm() {
   const [socketId, setSocketId] = useState<string | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const isSearchingRef = useRef(false);
-  const { token } = useLandingAuthStore();
+  const { token: landingToken } = useLandingAuthStore();
+  const authToken = useAuthStore((s) => s.token);
+  const token = landingToken || authToken;
 
   // Conectar WebSocket cuando hay un seguimiento cargado
   useEffect(() => {

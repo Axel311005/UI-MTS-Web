@@ -9,24 +9,58 @@ interface LandingProtectedRouteProps {
 }
 
 export function LandingProtectedRoute({ children }: LandingProtectedRouteProps) {
-  const { isAuthenticated, user, token } = useLandingAuthStore();
+  const { isAuthenticated: landingIsAuthenticated, user: landingUser, token: landingToken } = useLandingAuthStore();
+  const authUser = useAuthStore((s) => s.user);
+  const authToken = useAuthStore((s) => s.token);
   const authStatus = useAuthStore((s) => s.authStatus);
   const hasPanelAccess = useAuthStore((s) => s.hasPanelAccess);
   const location = useLocation();
   const [isChecking, setIsChecking] = useState(true);
 
+  // Obtener usuario desde landingUser o desde authUser como fallback
+  const user = landingUser || (authUser?.cliente ? {
+    id: Number(authUser.id) || 0,
+    email: authUser.email || '',
+    clienteId: (authUser.cliente as any)?.id || (authUser.cliente as any)?.idCliente,
+    nombre: authUser.cliente?.primerNombre 
+      ? `${authUser.cliente.primerNombre} ${authUser.cliente.primerApellido || ''}`.trim()
+      : authUser.cliente?.ruc || 'Cliente',
+  } : null);
+  
+  const token = landingToken || authToken;
+  const isAuthenticated = landingIsAuthenticated || (!!authUser?.cliente && !!authToken);
+
   // Verificar token en localStorage como fallback
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedToken = localStorage.getItem('token');
-      const storedUser = localStorage.getItem('landing-user');
+      const storedLandingUser = localStorage.getItem('landing-user');
+      const storedUser = localStorage.getItem('user');
       
       // Si hay token pero el store no está autenticado, verificar
       if (storedToken && (!isAuthenticated || !user)) {
         try {
-          if (storedUser) {
-            const parsedUser = JSON.parse(storedUser);
+          // Primero intentar landing-user
+          if (storedLandingUser) {
+            const parsedUser = JSON.parse(storedLandingUser);
             useLandingAuthStore.getState().setAuth(storedToken, parsedUser);
+          } 
+          // Si no hay landing-user pero hay user (del panel) y es cliente, sincronizar
+          else if (storedUser) {
+            const parsedAuthUser = JSON.parse(storedUser);
+            if (parsedAuthUser?.cliente) {
+              const clienteId = (parsedAuthUser.cliente as any)?.id || (parsedAuthUser.cliente as any)?.idCliente;
+              const clienteNombre = parsedAuthUser.cliente?.primerNombre 
+                ? `${parsedAuthUser.cliente.primerNombre} ${parsedAuthUser.cliente.primerApellido || ''}`.trim()
+                : parsedAuthUser.cliente?.ruc || 'Cliente';
+              
+              useLandingAuthStore.getState().setAuth(storedToken, {
+                id: Number(parsedAuthUser.id) || 0,
+                email: parsedAuthUser.email || '',
+                clienteId: clienteId,
+                nombre: clienteNombre,
+              });
+            }
           }
         } catch {
           // Si hay error, limpiar
@@ -60,7 +94,7 @@ export function LandingProtectedRoute({ children }: LandingProtectedRouteProps) 
 
   // Verificar autenticación: del store o del localStorage como fallback
   const hasToken = token || (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
-  const hasUser = user || (typeof window !== 'undefined' ? localStorage.getItem('landing-user') : null);
+  const hasUser = user || (typeof window !== 'undefined' ? (localStorage.getItem('landing-user') || localStorage.getItem('user')) : null);
   const isActuallyAuthenticated = isAuthenticated || (!!hasToken && !!hasUser);
 
   // Si no está autenticado en landing, redirigir al login

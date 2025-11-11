@@ -37,7 +37,7 @@ interface DetalleLinea {
 }
 
 export function CotizacionForm() {
-  const { user: landingUser } = useLandingAuthStore();
+  const { user: landingUser, isAuthenticated: landingIsAuthenticated } = useLandingAuthStore();
   const authUser = useAuthStore((s) => s.user);
   
   // Obtener clienteId desde landingUser o desde authUser como fallback
@@ -51,6 +51,17 @@ export function CotizacionForm() {
   } : null);
   
   const [items, setItems] = useState<ItemCotizable[]>([]);
+  
+  // Debug: verificar que el usuario se detecte correctamente
+  useEffect(() => {
+    if (!user?.clienteId && (landingIsAuthenticated || authUser?.cliente)) {
+      console.warn('CotizacionForm: Usuario autenticado pero sin clienteId', {
+        landingUser,
+        authUser,
+        user
+      });
+    }
+  }, [user, landingIsAuthenticated, authUser, landingUser]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [lineas, setLineas] = useState<DetalleLinea[]>([]);

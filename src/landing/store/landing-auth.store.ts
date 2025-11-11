@@ -46,7 +46,8 @@ export const useLandingAuthStore = create<LandingAuthState>()(
               localStorage.setItem('landing-user', JSON.stringify(user));
             }
           }
-          set({ token, user, isAuthenticated: true });
+          // Actualizar el estado de forma síncrona para asegurar que se propague inmediatamente
+          set({ token, user, isAuthenticated: !!user && !!token });
         },
         logout: () => {
           if (typeof window !== 'undefined') {
