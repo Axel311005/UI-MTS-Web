@@ -352,7 +352,7 @@ export const FacturasPage = () => {
                         {factura.moneda?.descripcion ?? "—"}
                       </TableCell>
                       <TableCell className="font-semibold" data-mobile-keep>
-                        {formatMoney(factura.total)}
+                        {formatMoney(factura.total, factura.moneda?.descripcion)}
                       </TableCell>
                       <TableCell data-mobile-keep>
                         <Badge variant={getEstadoBadgeVariant(estadoNorm)}>

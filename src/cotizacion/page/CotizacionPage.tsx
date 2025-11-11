@@ -186,7 +186,7 @@ export default function CotizacionesPage() {
         />
         <Select
           value={estadoFilter || "all"}
-          onValueChange={(value) => {
+          onValueChange={(value: string) => {
             const params = new URLSearchParams(searchParams);
             if (value && value !== "all") {
               params.set("estado", value);
@@ -265,7 +265,8 @@ export default function CotizacionesPage() {
                     </TableCell>
                     <TableCell data-mobile-keep>
                       {cotizacion.total
-                        ? formatMoney(Number(cotizacion.total))
+                        ? // Cotizaciones in admin panel should display prices in Córdobas
+                          formatMoney(Number(cotizacion.total), 'CORDOBAS')
                         : "—"}
                     </TableCell>
                     <TableCell data-mobile-keep>

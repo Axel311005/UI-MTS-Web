@@ -191,12 +191,34 @@ export default function FacturaRowActions({ factura }: Props) {
           Ver detalles
         </DropdownMenuItem>
         {hasPdfAccess && (
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger disabled={isDownloadingPdf}>
-              <FileText className="mr-2 h-4 w-4" />
-              Generar PDF
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
+          <>
+            {/* On larger screens keep the submenu, on small screens render items directly so
+                they are always visible / accessible (fixes mobile where subcontent could be off-screen) */}
+            <div className="hidden sm:block">
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger disabled={isDownloadingPdf}>
+                  <FileText className="mr-2 h-4 w-4" />
+                  Generar PDF
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  <DropdownMenuItem
+                    onClick={handleDownloadReciboPdf}
+                    disabled={isDownloadingPdf}
+                  >
+                    <Receipt className="mr-2 h-4 w-4" />
+                    Descargar Recibo
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={handleDownloadFacturaPdf}
+                    disabled={isDownloadingPdf}
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    Descargar Factura
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+            </div>
+            <div className="sm:hidden">
               <DropdownMenuItem
                 onClick={handleDownloadReciboPdf}
                 disabled={isDownloadingPdf}
@@ -211,8 +233,8 @@ export default function FacturaRowActions({ factura }: Props) {
                 <FileText className="mr-2 h-4 w-4" />
                 Descargar Factura
               </DropdownMenuItem>
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
+            </div>
+          </>
         )}
         <DropdownMenuItem onClick={onEdit}>
           <Edit className="mr-2 h-4 w-4" />

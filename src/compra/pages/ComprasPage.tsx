@@ -276,7 +276,7 @@ export function ComprasPage() {
                     <TableCell data-mobile-hidden>{compra.bodega?.descripcion ?? "—"}</TableCell>
                     <TableCell data-mobile-hidden>{compra.moneda?.descripcion ?? "—"}</TableCell>
                     <TableCell className="font-semibold" data-mobile-keep>
-                      {formatMoney(compra.total)}
+                      {formatMoney(compra.total, compra.moneda?.descripcion)}
                     </TableCell>
                     <TableCell data-mobile-keep>
                       <Badge
