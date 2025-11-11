@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/shared/components/ui/card";
-import { Star, Quote, ChevronLeft, ChevronRight } from "lucide-react";
+import { Star, Quote, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
 
 const testimonios = [
   {
@@ -70,6 +70,22 @@ export function Testimonios() {
           <p className="text-xs sm:text-sm md:text-base text-black/70 max-w-2xl mx-auto font-montserrat leading-relaxed px-2">
             Testimonios reales de clientes satisfechos
           </p>
+
+          {/* Google Reviews badge + link */}
+          <div className="mt-2 flex items-center justify-center gap-3">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full border border-orange-500/30 bg-orange-500/10 text-[11px] sm:text-xs text-black/80 font-montserrat">
+              Opiniones de Google Maps
+            </span>
+            <a
+              href="https://www.google.com/maps/place/Moto+Servicio+Terry+MST/@12.1340162,-86.255832,17z/data=!3m1!4b1!4m6!3m5!1s0x8f73fe0112794ff3:0xe35932f6a89fdac9!8m2!3d12.1340162!4d-86.2532517!16s%2Fg%2F12hqhfkqv?entry=ttu&g_ep=EgoyMDI1MTEwNS4wIKXMDSoASAFQAw%3D%3D"
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              className="inline-flex items-center gap-1 text-[11px] sm:text-xs text-orange-600 hover:text-orange-700 underline decoration-dotted underline-offset-2"
+            >
+              Ver en Google
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          </div>
         </motion.div>
 
         {/* Carousel Container */}
@@ -165,6 +181,10 @@ export function Testimonios() {
             })}
           </div>
         </div>
+      </div>
+      {/* Attribution */}
+      <div className="mt-3 text-center text-[10px] sm:text-[11px] text-black/50 font-montserrat">
+        Fuente: reseñas públicas en Google Maps
       </div>
     </section>
   );
