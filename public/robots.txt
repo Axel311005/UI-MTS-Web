@@ -1,14 +1,44 @@
+# robots.txt para MTS - Taller de Motos
+
+# Permitir todos los bots
 User-agent: *
 Allow: /
 Allow: /seguimiento
 Allow: /cotizacion
 Allow: /cita
 
-# Disallow admin and private routes
+# Bloquear rutas privadas y administrativas
 Disallow: /admin/
 Disallow: /api/
 Disallow: /login
 Disallow: /register
+Disallow: /_next/
+Disallow: /static/
+
+# Configuración específica para Google
+User-agent: Googlebot
+Allow: /
+Allow: /seguimiento
+Allow: /cotizacion
+Allow: /cita
+Disallow: /admin/
+Disallow: /api/
+Disallow: /login
+Disallow: /register
+
+# Configuración para Bing
+User-agent: Bingbot
+Allow: /
+Allow: /seguimiento
+Allow: /cotizacion
+Allow: /cita
+Disallow: /admin/
+Disallow: /api/
+Disallow: /login
+Disallow: /register
+
+# Crawl-delay (opcional, en segundos)
+Crawl-delay: 1
 
 # Sitemap
 Sitemap: https://mts.com/sitemap.xml
