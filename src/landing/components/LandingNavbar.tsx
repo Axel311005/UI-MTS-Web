@@ -147,7 +147,7 @@ export function LandingNavbar() {
                   variant="outline"
                   size="sm"
                   onClick={() => navigate("/login")}
-                  className="border-2 border-white/60 text-white hover:bg-white/20 hover:border-white/80 bg-transparent font-semibold transition-all duration-200"
+                  className="border-2 border-white/60 text-white hover:bg-orange-500/20 hover:border-orange-500 hover:text-orange-400 bg-transparent font-semibold transition-all duration-300 shadow-lg hover:shadow-orange-500/30"
                 >
                   Iniciar Sesión
                 </Button>
@@ -236,7 +236,7 @@ export function LandingNavbar() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full border-2 border-white/70 text-white hover:bg-white/20 hover:border-white bg-transparent font-semibold transition-all duration-200 min-h-[44px] touch-manipulation"
+                  className="w-full border-2 border-white/70 text-white hover:bg-orange-500/20 hover:border-orange-500 hover:text-orange-400 bg-transparent font-semibold transition-all duration-300 shadow-lg hover:shadow-orange-500/30 min-h-[44px] touch-manipulation"
                   onClick={() => {
                     navigate("/login");
                     setMobileMenuOpen(false);
