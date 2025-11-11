@@ -288,13 +288,16 @@ export default function ProformasPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+      <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Proformas</h1>
-          <p className="text-muted-foreground">Gestión de proformas</p>
+          <h1 className="text-2xl sm:text-3xl font-bold">Proformas</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-0.5 sm:mt-1">Gestión de proformas</p>
         </div>
-        <Button onClick={() => navigate("/admin/proformas/nueva")}>
+        <Button 
+          onClick={() => navigate("/admin/proformas/nueva")}
+          className="w-full sm:w-auto h-10 sm:h-11 text-sm sm:text-base touch-manipulation min-h-[44px]"
+        >
           <Plus className="mr-2 h-4 w-4" />
           Nueva Proforma
         </Button>

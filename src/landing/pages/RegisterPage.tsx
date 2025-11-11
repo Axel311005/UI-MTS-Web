@@ -188,7 +188,7 @@ export default function RegisterPage() {
           nombre:
             [cliente.primerNombre, cliente.primerApellido]
               .filter(Boolean)
-              .join(" ") || cliente.ruc || 'Cliente',
+              .join(" ") || (cliente as any).ruc || 'Cliente',
         });
         
         toast.success("Registro exitoso. Bienvenido!");

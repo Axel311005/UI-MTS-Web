@@ -24,7 +24,6 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const login = useAuthStore((s) => s.login);
   const setLandingAuth = useLandingAuthStore((s) => s.setAuth);
 
   // Validar email

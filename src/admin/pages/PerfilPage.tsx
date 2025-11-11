@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 import { Badge } from '@/shared/components/ui/badge';
 import { Separator } from '@/shared/components/ui/separator';
-import { User, Mail, Shield, Building2, Calendar, CheckCircle, XCircle } from 'lucide-react';
+import { User, Mail, Shield, Building2, CheckCircle, XCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function PerfilPage() {
@@ -35,16 +35,17 @@ export default function PerfilPage() {
     }
     // Si hay cliente
     if (user.cliente) {
-      if (user.cliente.nombreCompleto) {
-        return user.cliente.nombreCompleto;
-      }
       // Construir desde primerNombre y primerApellido si están disponibles
       const nombres = [
-        (user.cliente as any).primerNombre,
-        (user.cliente as any).primerApellido,
+        user.cliente.primerNombre,
+        user.cliente.primerApellido,
       ].filter(Boolean);
       if (nombres.length > 0) {
         return nombres.join(' ');
+      }
+      // Fallback al RUC si no hay nombres
+      if (user.cliente.ruc) {
+        return user.cliente.ruc;
       }
     }
     // Fallback al email
@@ -218,7 +219,12 @@ export default function PerfilPage() {
                     <div className="space-y-1">
                       <p className="text-sm font-medium text-muted-foreground">Nombre Completo</p>
                       <p className="text-sm font-medium">
-                        {clienteInfo.nombreCompleto || 'No disponible'}
+                        {[
+                          clienteInfo.primerNombre,
+                          clienteInfo.primerApellido,
+                        ]
+                          .filter(Boolean)
+                          .join(' ') || clienteInfo.ruc || 'No disponible'}
                       </p>
                     </div>
                     <div className="space-y-1">

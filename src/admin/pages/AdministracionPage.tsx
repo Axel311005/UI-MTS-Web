@@ -365,30 +365,30 @@ export default function AdministracionPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
       <div>
-        <h1 className="text-3xl font-bold">Administración</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl font-bold">Administración</h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
           Gestiona usuarios y roles del sistema
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
         {/* Crear Empleado */}
         <Card className="card-elegant">
-          <CardHeader>
+          <CardHeader className="p-4 sm:p-6">
             <div className="flex items-center gap-2">
-              <UserPlus className="h-5 w-5 text-primary" />
-              <CardTitle>Crear Empleado</CardTitle>
+              <UserPlus className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <CardTitle className="text-base sm:text-lg">Crear Empleado</CardTitle>
             </div>
-            <CardDescription>
+            <CardDescription className="text-xs sm:text-sm">
               Registra un nuevo empleado en el sistema
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleCreateEmpleado} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="primerNombre">Primer Nombre *</Label>
+          <CardContent className="p-4 sm:p-6 pt-0">
+            <form onSubmit={handleCreateEmpleado} className="space-y-3 sm:space-y-4">
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="primerNombre" className="text-sm">Primer Nombre *</Label>
                 <Input
                   id="primerNombre"
                   type="text"
@@ -400,11 +400,12 @@ export default function AdministracionPage() {
                       primerNombre: e.target.value,
                     })
                   }
+                  className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="primerApellido">Primer Apellido *</Label>
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="primerApellido" className="text-sm">Primer Apellido *</Label>
                 <Input
                   id="primerApellido"
                   type="text"
@@ -416,11 +417,12 @@ export default function AdministracionPage() {
                       primerApellido: e.target.value,
                     })
                   }
+                  className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="cedula">Cédula *</Label>
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="cedula" className="text-sm">Cédula *</Label>
                 <Input
                   id="cedula"
                   type="text"
@@ -455,6 +457,7 @@ export default function AdministracionPage() {
 
                     setEmpleadoForm({ ...empleadoForm, cedula: value });
                   }}
+                  className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
                   required
                   pattern="[0-9]{13}[A-Z]"
                   title="Formato: 13 números seguidos de 1 letra (ejemplo: 0010606051003H)"
@@ -469,10 +472,10 @@ export default function AdministracionPage() {
                   </p>
                 )}
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="telefono">Teléfono *</Label>
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="telefono" className="text-sm">Teléfono *</Label>
                 <div className="relative">
-                  <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">
+                  <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs sm:text-sm font-medium text-muted-foreground">
                     +505
                   </div>
                   <Input
@@ -482,14 +485,14 @@ export default function AdministracionPage() {
                     placeholder="83895193"
                     value={empleadoForm.telefono}
                     onChange={(e) => handleTelefonoChange(e.target.value)}
-                    className="pl-14"
+                    className="pl-14 h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
                     maxLength={8}
                     required
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="direccion">Dirección *</Label>
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="direccion" className="text-sm">Dirección *</Label>
                 <Input
                   id="direccion"
                   type="text"
@@ -501,12 +504,13 @@ export default function AdministracionPage() {
                       direccion: e.target.value,
                     })
                   }
+                  className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
                   required
                 />
               </div>
               <Button
                 type="submit"
-                className="w-full"
+                className="w-full h-10 sm:h-11 text-sm sm:text-base touch-manipulation min-h-[44px]"
                 disabled={createEmpleadoMutation.isPending}
               >
                 {createEmpleadoMutation.isPending
@@ -519,19 +523,19 @@ export default function AdministracionPage() {
 
         {/* Registrar Usuario para Empleado */}
         <Card className="card-elegant">
-          <CardHeader>
+          <CardHeader className="p-4 sm:p-6">
             <div className="flex items-center gap-2">
-              <UserCheck className="h-5 w-5 text-primary" />
-              <CardTitle>Crear Usuario</CardTitle>
+              <UserCheck className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <CardTitle className="text-base sm:text-lg">Crear Usuario</CardTitle>
             </div>
-            <CardDescription>
+            <CardDescription className="text-xs sm:text-sm">
               Crea un usuario para un empleado existente
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleRegisterUsuario} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email *</Label>
+          <CardContent className="p-4 sm:p-6 pt-0">
+            <form onSubmit={handleRegisterUsuario} className="space-y-3 sm:space-y-4">
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="email" className="text-sm">Email *</Label>
                 <Input
                   id="email"
                   type="email"
@@ -540,11 +544,12 @@ export default function AdministracionPage() {
                   onChange={(e) =>
                     setUsuarioForm({ ...usuarioForm, email: e.target.value })
                   }
+                  className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Contraseña Temporal *</Label>
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="password" className="text-sm">Contraseña Temporal *</Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -557,14 +562,14 @@ export default function AdministracionPage() {
                         password: e.target.value,
                       })
                     }
-                    className="pr-10"
+                    className="pr-10 h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
                     required
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent touch-manipulation min-h-[40px] min-w-[40px]"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
@@ -575,15 +580,15 @@ export default function AdministracionPage() {
                   </Button>
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="empleadoId">Empleado *</Label>
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="empleadoId" className="text-sm">Empleado *</Label>
                 <Select
                   value={usuarioForm.empleadoId}
                   onValueChange={(value) =>
                     setUsuarioForm({ ...usuarioForm, empleadoId: value })
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-10 sm:h-11 text-sm sm:text-base">
                     <SelectValue placeholder="Selecciona un empleado" />
                   </SelectTrigger>
                   <SelectContent>
@@ -622,7 +627,7 @@ export default function AdministracionPage() {
               </div>
               <Button
                 type="submit"
-                className="w-full"
+                className="w-full h-10 sm:h-11 text-sm sm:text-base touch-manipulation min-h-[44px]"
                 disabled={
                   registerUsuarioMutation.isPending || !usuarioForm.empleadoId
                 }
@@ -637,18 +642,18 @@ export default function AdministracionPage() {
 
         {/* Actualizar Roles */}
         <Card className="card-elegant">
-          <CardHeader>
+          <CardHeader className="p-4 sm:p-6">
             <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
-              <CardTitle>Actualizar Roles</CardTitle>
+              <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <CardTitle className="text-base sm:text-lg">Actualizar Roles</CardTitle>
             </div>
-            <CardDescription>
+            <CardDescription className="text-xs sm:text-sm">
               Cambia los roles de un usuario existente
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="userId">Usuario</Label>
+          <CardContent className="p-4 sm:p-6 pt-0 space-y-3 sm:space-y-4">
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="userId" className="text-sm">Usuario</Label>
               <Select
                 value={selectedUserId}
                 onValueChange={(value) => {
@@ -669,7 +674,7 @@ export default function AdministracionPage() {
                   }
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-10 sm:h-11 text-sm sm:text-base">
                   <SelectValue placeholder="Selecciona un usuario" />
                 </SelectTrigger>
                 <SelectContent className="max-h-[300px]">
@@ -693,7 +698,7 @@ export default function AdministracionPage() {
                         : `${user.email} (${rolesText})`;
                       return (
                         <SelectItem key={user.id} value={user.id}>
-                          {displayText}
+                          <span className="text-xs sm:text-sm break-words">{displayText}</span>
                         </SelectItem>
                       );
                     })
@@ -706,8 +711,8 @@ export default function AdministracionPage() {
               </Select>
             </div>
             {selectedUserId && (
-              <div className="space-y-2">
-                <Label>Roles</Label>
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label className="text-sm">Roles</Label>
                 <div className="space-y-2">
                   {["vendedor"].map((role) => {
                     const roleLower = role.toLowerCase();
@@ -729,11 +734,11 @@ export default function AdministracionPage() {
                               );
                             }
                           }}
-                          className="rounded border-gray-300"
+                          className="rounded border-gray-300 h-4 w-4 touch-manipulation"
                         />
                         <Label
                           htmlFor={roleLower}
-                          className="font-normal cursor-pointer"
+                          className="font-normal cursor-pointer text-sm sm:text-base"
                         >
                           {role.charAt(0).toUpperCase() + role.slice(1)}
                         </Label>
@@ -745,7 +750,7 @@ export default function AdministracionPage() {
             )}
             <Button
               onClick={handleUpdateRoles}
-              className="w-full"
+              className="w-full h-10 sm:h-11 text-sm sm:text-base touch-manipulation min-h-[44px]"
               disabled={updateRolesMutation.isPending || !selectedUserId}
             >
               {updateRolesMutation.isPending
@@ -758,46 +763,48 @@ export default function AdministracionPage() {
 
       {/* Lista de Empleados */}
       <Card className="card-elegant">
-        <CardHeader>
+        <CardHeader className="p-4 sm:p-6">
           <div className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-primary" />
-            <CardTitle>Empleados</CardTitle>
+            <Users className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+            <CardTitle className="text-base sm:text-lg">Empleados</CardTitle>
           </div>
-          <CardDescription>Lista de empleados del sistema</CardDescription>
+          <CardDescription className="text-xs sm:text-sm">Lista de empleados del sistema</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 sm:p-6 pt-0">
           {isLoadingEmpleados ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-8 text-muted-foreground text-sm sm:text-base">
               Cargando empleados...
             </div>
           ) : (
             <>
               <div className="mb-4">
-                <div className="relative w-full max-w-md">
+                <div className="relative w-full max-w-full sm:max-w-md">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
                   <CustomSearchControl
                     value={searchTerm}
                     onChange={setSearchTerm}
                     onKeyDown={setSearchTerm}
                     placeholder="Buscar por nombre, apellido, cédula, teléfono, email o estado"
-                    className="pl-10"
+                    className="pl-10 h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
                     ariaLabel="Buscar empleados"
                     clearable
                   />
                 </div>
               </div>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Apellido</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Rol</TableHead>
-                    <TableHead>Teléfono</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
+              <div className="rounded-md border max-h-[600px] overflow-y-auto overflow-x-auto -mx-2 sm:mx-0">
+                <div className="min-w-full inline-block">
+                  <Table className="responsive-table">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead data-mobile-keep>Nombre</TableHead>
+                        <TableHead data-mobile-hidden>Apellido</TableHead>
+                        <TableHead data-mobile-keep>Email</TableHead>
+                        <TableHead data-mobile-keep>Rol</TableHead>
+                        <TableHead data-mobile-hidden>Teléfono</TableHead>
+                        <TableHead data-mobile-keep>Estado</TableHead>
+                        <TableHead className="text-right" data-mobile-keep data-mobile-actions>Acciones</TableHead>
+                      </TableRow>
+                    </TableHeader>
                 <TableBody>
                   {filteredEmpleados?.map((empleado) => {
                     // Buscar el usuario asociado a este empleado
@@ -825,10 +832,19 @@ export default function AdministracionPage() {
 
                     return (
                       <TableRow key={empleado.idEmpleado}>
-                        <TableCell>{empleado.primerNombre}</TableCell>
-                        <TableCell>{empleado.primerApellido}</TableCell>
-                        <TableCell>{email}</TableCell>
-                        <TableCell>
+                        <TableCell data-mobile-keep className="font-medium">
+                          <div className="flex flex-col">
+                            <span>{empleado.primerNombre}</span>
+                            <span className="text-xs text-muted-foreground sm:hidden">
+                              {empleado.primerApellido}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell data-mobile-hidden>{empleado.primerApellido}</TableCell>
+                        <TableCell data-mobile-keep className="text-xs sm:text-sm">
+                          <span className="break-all">{email}</span>
+                        </TableCell>
+                        <TableCell data-mobile-keep>
                           {roles.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
                               {roles.map((role: string) => (
@@ -842,25 +858,28 @@ export default function AdministracionPage() {
                               ))}
                             </div>
                           ) : (
-                            <span className="text-muted-foreground">—</span>
+                            <span className="text-muted-foreground text-xs">—</span>
                           )}
                         </TableCell>
-                        <TableCell>{empleado.telefono || "—"}</TableCell>
-                        <TableCell>
+                        <TableCell data-mobile-hidden className="text-xs sm:text-sm">
+                          {empleado.telefono || "—"}
+                        </TableCell>
+                        <TableCell data-mobile-keep>
                           <Badge
                             variant={
                               empleado.activo === EstadoActivo.ACTIVO
                                 ? "default"
                                 : "secondary"
                             }
+                            className="text-xs"
                           >
                             {empleado.activo === EstadoActivo.ACTIVO
                               ? "Activo"
                               : "Inactivo"}
                           </Badge>
                         </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
+                        <TableCell className="text-right" data-mobile-keep data-mobile-actions>
+                          <div className="flex items-center justify-end gap-1 sm:gap-2">
                             <Button
                               variant="ghost"
                               size="icon"
@@ -869,9 +888,9 @@ export default function AdministracionPage() {
                                   `/admin/administracion/empleados/${empleado.idEmpleado}/editar`
                                 )
                               }
-                              className="h-8 w-8"
+                              className="h-8 w-8 sm:h-9 sm:w-9 touch-manipulation"
                             >
-                              <Edit className="h-4 w-4" />
+                              <Edit className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                             </Button>
                             <Button
                               variant="ghost"
@@ -883,9 +902,9 @@ export default function AdministracionPage() {
                                 deleteEmpleadoMutation.isPending ||
                                 empleado.activo === EstadoActivo.INACTIVO
                               }
-                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              className="h-8 w-8 sm:h-9 sm:w-9 text-destructive hover:text-destructive touch-manipulation"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                             </Button>
                           </div>
                         </TableCell>
@@ -894,8 +913,10 @@ export default function AdministracionPage() {
                   })}
                 </TableBody>
               </Table>
+                </div>
+              </div>
               {filteredEmpleados.length === 0 && debouncedSearch && (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="text-center py-8 text-muted-foreground text-sm sm:text-base">
                   No se encontraron empleados que coincidan con la búsqueda
                 </div>
               )}

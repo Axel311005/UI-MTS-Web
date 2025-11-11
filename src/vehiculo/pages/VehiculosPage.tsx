@@ -158,7 +158,10 @@ export const VehiculosPage = () => {
             Listado de vehículos registrados
           </p>
         </div>
-        <Button className="w-full sm:w-auto" onClick={() => navigate("/admin/vehiculos/nuevo")}>
+        <Button 
+          className="w-full sm:w-auto h-10 sm:h-11 text-sm sm:text-base touch-manipulation min-h-[44px]" 
+          onClick={() => navigate("/admin/vehiculos/nuevo")}
+        >
           Nuevo vehículo
         </Button>
       </div>

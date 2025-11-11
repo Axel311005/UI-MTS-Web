@@ -213,56 +213,62 @@ export default function EditarEmpleadoPage() {
 
   return (
     <div className="container mx-auto py-6 space-y-6">
-      <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate("/admin/administracion")}
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <h1 className="text-3xl font-bold">Editar Empleado</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/admin/administracion")}
+            className="h-9 w-9 sm:h-10 sm:w-10 touch-manipulation"
+          >
+            <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+          </Button>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Editar Empleado</h1>
+        </div>
       </div>
 
       <Card className="card-elegant">
-        <CardHeader>
-          <CardTitle>Información del Empleado</CardTitle>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-base sm:text-lg">Información del Empleado</CardTitle>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="primerNombre">Primer Nombre *</Label>
+        <CardContent className="p-4 sm:p-6 pt-0">
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="primerNombre" className="text-sm">Primer Nombre *</Label>
                 <Input
                   id="primerNombre"
                   value={formData.primerNombre}
                   onChange={(e) =>
                     setFormData({ ...formData, primerNombre: e.target.value })
                   }
+                  className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="primerApellido">Primer Apellido *</Label>
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="primerApellido" className="text-sm">Primer Apellido *</Label>
                 <Input
                   id="primerApellido"
                   value={formData.primerApellido}
                   onChange={(e) =>
                     setFormData({ ...formData, primerApellido: e.target.value })
                   }
+                  className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
                   required
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="cedula">Cédula *</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="cedula" className="text-sm">Cédula *</Label>
               <Input
                 id="cedula"
                 value={formData.cedula}
                 onChange={(e) => handleCedulaChange(e.target.value)}
                 placeholder="0010606051003H"
                 maxLength={14}
+                className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
                 required
               />
               <p className="text-xs text-muted-foreground">
@@ -270,16 +276,19 @@ export default function EditarEmpleadoPage() {
               </p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="telefono">Teléfono *</Label>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">+505</span>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="telefono" className="text-sm">Teléfono *</Label>
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-xs sm:text-sm text-muted-foreground font-medium pointer-events-none">
+                  +505
+                </div>
                 <Input
                   id="telefono"
                   value={formData.telefono}
                   onChange={(e) => handleTelefonoChange(e.target.value)}
                   placeholder="87781633"
                   maxLength={8}
+                  className="pl-14 h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
                   required
                 />
               </div>
@@ -288,27 +297,28 @@ export default function EditarEmpleadoPage() {
               </p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="direccion">Dirección *</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="direccion" className="text-sm">Dirección *</Label>
               <Input
                 id="direccion"
                 value={formData.direccion}
                 onChange={(e) =>
                   setFormData({ ...formData, direccion: e.target.value })
                 }
+                className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
                 required
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="estado">Estado *</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="estado" className="text-sm">Estado *</Label>
               <Select
                 value={formData.activo}
                 onValueChange={(value) =>
                   setFormData({ ...formData, activo: value as EstadoActivo })
                 }
               >
-                <SelectTrigger id="estado">
+                <SelectTrigger id="estado" className="h-10 sm:h-11 text-sm sm:text-base">
                   <SelectValue placeholder="Selecciona estado" />
                 </SelectTrigger>
                 <SelectContent>
@@ -320,17 +330,23 @@ export default function EditarEmpleadoPage() {
               </Select>
             </div>
 
-            <div className="flex justify-end gap-2">
+            <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-2 pt-2">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => navigate("/admin/administracion")}
+                className="w-full sm:w-auto h-10 sm:h-11 text-sm sm:text-base touch-manipulation min-h-[44px]"
               >
                 Cancelar
               </Button>
-              <Button type="submit" disabled={saving}>
+              <Button 
+                type="submit" 
+                disabled={saving}
+                className="w-full sm:w-auto h-10 sm:h-11 text-sm sm:text-base touch-manipulation min-h-[44px]"
+              >
                 <Save className="h-4 w-4 mr-2" />
-                {saving ? "Guardando..." : "Guardar Cambios"}
+                <span className="hidden sm:inline">{saving ? "Guardando..." : "Guardar Cambios"}</span>
+                <span className="sm:hidden">{saving ? "Guardando..." : "Guardar"}</span>
               </Button>
             </div>
           </form>

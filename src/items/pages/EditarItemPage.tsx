@@ -208,32 +208,44 @@ export default function EditarItemPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="icon" onClick={handleCancel}>
-            <ArrowLeft className="h-5 w-5" />
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center space-x-2 sm:space-x-4">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleCancel}
+            className="h-9 w-9 sm:h-10 sm:w-10 touch-manipulation"
+          >
+            <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              Editar Producto #{params.id}
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">
+              <span className="hidden sm:inline">Editar Producto #{params.id}</span>
+              <span className="sm:hidden">Editar #{params.id}</span>
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
               Modifica la información del producto
             </p>
           </div>
         </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" onClick={handleCancel} disabled={saving}>
+        <div className="flex items-center gap-2 sm:space-x-2">
+          <Button 
+            variant="outline" 
+            onClick={handleCancel} 
+            disabled={saving}
+            className="flex-1 sm:flex-initial h-10 sm:h-11 text-sm sm:text-base touch-manipulation min-h-[44px]"
+          >
             Cancelar
           </Button>
           <Button
             onClick={handleSave}
             disabled={saving}
-            className="button-hover"
+            className="button-hover flex-1 sm:flex-initial h-10 sm:h-11 text-sm sm:text-base touch-manipulation min-h-[44px]"
           >
             <Save className="h-4 w-4 mr-2" />
-            {saving ? 'Guardando...' : 'Guardar Cambios'}
+            <span className="hidden sm:inline">{saving ? 'Guardando...' : 'Guardar Cambios'}</span>
+            <span className="sm:hidden">{saving ? 'Guardando...' : 'Guardar'}</span>
           </Button>
         </div>
       </div>

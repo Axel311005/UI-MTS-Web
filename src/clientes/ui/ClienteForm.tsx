@@ -66,15 +66,15 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <Card className="card-elegant">
-        <CardHeader>
-          <CardTitle>Información General</CardTitle>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-base sm:text-lg">Información General</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="primerNombre">
+        <CardContent className="p-4 sm:p-6 pt-0 space-y-3 sm:space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="primerNombre" className="text-sm">
                 Primer Nombre
               </Label>
               <Input
@@ -82,14 +82,15 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
                 value={values.primerNombre}
                 onChange={(e) => handleChange('primerNombre', e.target.value)}
                 placeholder="Juan"
+                className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
               />
               {errors.primerNombre && (
-                <p className="text-sm text-destructive">{errors.primerNombre}</p>
+                <p className="text-xs sm:text-sm text-destructive">{errors.primerNombre}</p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="primerApellido">
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="primerApellido" className="text-sm">
                 Primer Apellido
               </Label>
               <Input
@@ -97,16 +98,17 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
                 value={values.primerApellido}
                 onChange={(e) => handleChange('primerApellido', e.target.value)}
                 placeholder="Pérez"
+                className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
               />
               {errors.primerApellido && (
-                <p className="text-sm text-destructive">{errors.primerApellido}</p>
+                <p className="text-xs sm:text-sm text-destructive">{errors.primerApellido}</p>
               )}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="ruc">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="ruc" className="text-sm">
                 RUC <span className="text-destructive">*</span>
               </Label>
               <Input
@@ -115,15 +117,16 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
                 onChange={handleRUCChange}
                 placeholder="J9999999999999"
                 maxLength={14}
+                className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
               />
               {errors.ruc && (
-                <p className="text-sm text-destructive">{errors.ruc}</p>
+                <p className="text-xs sm:text-sm text-destructive">{errors.ruc}</p>
               )}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="telefono">Teléfono</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="telefono" className="text-sm">Teléfono</Label>
               <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium pointer-events-none">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs sm:text-sm font-medium pointer-events-none">
                   +505
                 </div>
                 <Input
@@ -132,40 +135,42 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
                   value={values.telefono}
                   onChange={handlePhoneChange}
                   placeholder="87781633"
-                  className="pl-14"
+                  className="pl-14 h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
                   maxLength={8}
                 />
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="direccion">Dirección</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="direccion" className="text-sm">Dirección</Label>
               <Input
                 id="direccion"
                 value={values.direccion}
                 onChange={(e) => handleChange('direccion', e.target.value)}
                 placeholder="Av. Principal 123, Ciudad"
+                className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="notas">Notas</Label>
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label htmlFor="notas" className="text-sm">Notas</Label>
             <Textarea
               id="notas"
               value={values.notas}
               onChange={(e) => handleChange('notas', e.target.value)}
               placeholder="Información adicional sobre el cliente..."
               rows={4}
+              className="text-sm sm:text-base touch-manipulation resize-y"
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="esExonerado">Cliente Exonerado</Label>
-              <p className="text-sm text-muted-foreground">
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-0.5 flex-1">
+              <Label htmlFor="esExonerado" className="text-sm">Cliente Exonerado</Label>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 ¿Este cliente está exonerado de impuestos?
               </p>
             </div>
@@ -175,12 +180,13 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
               onCheckedChange={(checked) =>
                 handleChange('esExonerado', checked)
               }
+              className="touch-manipulation"
             />
           </div>
 
           {values.esExonerado && (
-            <div className="space-y-2">
-              <Label htmlFor="porcentajeExonerado">
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="porcentajeExonerado" className="text-sm">
                 Porcentaje de Exoneración (%)
               </Label>
               <Input
@@ -193,9 +199,10 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
                   handleChange('porcentajeExonerado', e.target.value)
                 }
                 placeholder="0"
+                className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
               />
               {errors.porcentajeExonerado && (
-                <p className="text-sm text-destructive">
+                <p className="text-xs sm:text-sm text-destructive">
                   {errors.porcentajeExonerado}
                 </p>
               )}

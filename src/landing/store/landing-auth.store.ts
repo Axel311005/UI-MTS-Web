@@ -16,7 +16,7 @@ interface LandingAuthState {
 
 export const useLandingAuthStore = create<LandingAuthState>()(
   persist(
-    (set, get) => {
+    (set) => {
       // Inicializar desde localStorage si existe
       const initToken =
         typeof window !== 'undefined' ? localStorage.getItem('token') : null;

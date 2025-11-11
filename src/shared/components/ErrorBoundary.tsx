@@ -1,4 +1,5 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Component } from 'react';
+import type { ErrorInfo, ReactNode } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
@@ -66,8 +67,6 @@ class ErrorBoundaryClass extends Component<Props, State> {
       // Renderizar UI de error por defecto
       return (
         <ErrorFallback
-          error={this.state.error}
-          errorInfo={this.state.errorInfo}
           onReset={this.handleReset}
         />
       );
@@ -78,71 +77,49 @@ class ErrorBoundaryClass extends Component<Props, State> {
 }
 
 interface ErrorFallbackProps {
-  error: Error | null;
-  errorInfo: ErrorInfo | null;
   onReset: () => void;
 }
 
-function ErrorFallback({ error, errorInfo, onReset }: ErrorFallbackProps) {
-  const isDev = import.meta.env.DEV;
-
+function ErrorFallback({ onReset }: ErrorFallbackProps) {
   const handleGoHome = () => {
     window.location.href = '/';
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-destructive/5 p-4">
-      <Card className="w-full max-w-2xl border-destructive/50 shadow-xl">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md border-border shadow-lg">
         <CardHeader className="text-center pb-4">
           <div className="flex justify-center mb-4">
-            <div className="p-3 bg-destructive/10 rounded-full">
-              <AlertTriangle className="h-12 w-12 text-destructive" />
+            <div className="p-3 bg-muted rounded-full">
+              <AlertTriangle className="h-10 w-10 text-destructive" />
             </div>
           </div>
-          <CardTitle className="text-2xl md:text-3xl font-bold text-destructive">
-            ¡Oops! Algo salió mal
+          <CardTitle className="text-xl sm:text-2xl font-bold">
+            Algo salió mal
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4">
           <div className="text-center">
-            <p className="text-muted-foreground mb-4">
-              Lo sentimos, ha ocurrido un error inesperado. Por favor, intenta
-              recargar la página o regresar al inicio.
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Por favor, intenta recargar la página o regresar al inicio.
             </p>
           </div>
 
-          {isDev && error && (
-            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 space-y-2">
-              <p className="font-semibold text-sm text-destructive">
-                Detalles del error (solo en desarrollo):
-              </p>
-              <pre className="text-xs overflow-auto max-h-48 bg-background p-2 rounded border">
-                {error.toString()}
-                {errorInfo?.componentStack && (
-                  <>
-                    {'\n\n'}
-                    {errorInfo.componentStack}
-                  </>
-                )}
-              </pre>
-            </div>
-          )}
-
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center">
             <Button
               onClick={onReset}
               variant="default"
-              className="flex items-center gap-2"
+              className="w-full sm:w-auto h-10 sm:h-11 text-sm sm:text-base touch-manipulation min-h-[44px]"
             >
-              <RefreshCw className="h-4 w-4" />
+              <RefreshCw className="h-4 w-4 mr-2" />
               Intentar de nuevo
             </Button>
             <Button
               onClick={handleGoHome}
               variant="outline"
-              className="flex items-center gap-2"
+              className="w-full sm:w-auto h-10 sm:h-11 text-sm sm:text-base touch-manipulation min-h-[44px]"
             >
-              <Home className="h-4 w-4" />
+              <Home className="h-4 w-4 mr-2" />
               Ir al inicio
             </Button>
           </div>
@@ -160,59 +137,45 @@ export function ErrorBoundary({ children, fallback }: Props) {
 // Componente para usar como errorElement en React Router
 // No puede usar hooks de React Router directamente, así que usamos window.location
 export function RouterErrorBoundary() {
-  const isDev = import.meta.env.DEV;
-
   const handleGoHome = () => {
     window.location.href = '/';
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-destructive/5 p-4">
-      <Card className="w-full max-w-2xl border-destructive/50 shadow-xl">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md border-border shadow-lg">
         <CardHeader className="text-center pb-4">
           <div className="flex justify-center mb-4">
-            <div className="p-3 bg-destructive/10 rounded-full">
-              <AlertTriangle className="h-12 w-12 text-destructive" />
+            <div className="p-3 bg-muted rounded-full">
+              <AlertTriangle className="h-10 w-10 text-destructive" />
             </div>
           </div>
-          <CardTitle className="text-2xl md:text-3xl font-bold text-destructive">
+          <CardTitle className="text-xl sm:text-2xl font-bold">
             Error al cargar la página
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4">
           <div className="text-center">
-            <p className="text-muted-foreground mb-4">
-              No se pudo cargar esta página. Por favor, intenta recargar o
-              regresar al inicio.
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Por favor, intenta recargar la página o regresar al inicio.
             </p>
           </div>
 
-          {isDev && (
-            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 space-y-2">
-              <p className="font-semibold text-sm text-destructive">
-                Detalles del error (solo en desarrollo):
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Revisa la consola del navegador para más detalles.
-              </p>
-            </div>
-          )}
-
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center">
             <Button
               onClick={() => window.location.reload()}
               variant="default"
-              className="flex items-center gap-2"
+              className="w-full sm:w-auto h-10 sm:h-11 text-sm sm:text-base touch-manipulation min-h-[44px]"
             >
-              <RefreshCw className="h-4 w-4" />
+              <RefreshCw className="h-4 w-4 mr-2" />
               Recargar página
             </Button>
             <Button
               onClick={handleGoHome}
               variant="outline"
-              className="flex items-center gap-2"
+              className="w-full sm:w-auto h-10 sm:h-11 text-sm sm:text-base touch-manipulation min-h-[44px]"
             >
-              <Home className="h-4 w-4" />
+              <Home className="h-4 w-4 mr-2" />
               Ir al inicio
             </Button>
           </div>

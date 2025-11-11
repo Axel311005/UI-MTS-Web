@@ -73,15 +73,15 @@ export function ItemForm({
   const isServicio = values.tipo === 'SERVICIO';
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <Card className="card-elegant">
-        <CardHeader>
-          <CardTitle>Información General</CardTitle>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-base sm:text-lg">Información General</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="codigoItem">
+        <CardContent className="p-4 sm:p-6 pt-0 space-y-3 sm:space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="codigoItem" className="text-sm">
                 Código de Item <span className="text-destructive">*</span>
               </Label>
               <Input
@@ -89,21 +89,22 @@ export function ItemForm({
                 value={values.codigoItem}
                 onChange={(e) => handleChange('codigoItem', e.target.value)}
                 placeholder="ITEM-001"
+                className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
               />
               {errors.codigoItem && (
-                <p className="text-sm text-destructive">{errors.codigoItem}</p>
+                <p className="text-xs sm:text-sm text-destructive">{errors.codigoItem}</p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="tipo">
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="tipo" className="text-sm">
                 Tipo <span className="text-destructive">*</span>
               </Label>
               <Select
                 value={values.tipo}
                 onValueChange={(value) => handleChange('tipo', value)}
               >
-                <SelectTrigger id="tipo">
+                <SelectTrigger id="tipo" className="h-10 sm:h-11 text-sm sm:text-base">
                   <SelectValue placeholder="Selecciona un tipo" />
                 </SelectTrigger>
                 <SelectContent>
@@ -112,13 +113,13 @@ export function ItemForm({
                 </SelectContent>
               </Select>
               {errors.tipo && (
-                <p className="text-sm text-destructive">{errors.tipo}</p>
+                <p className="text-xs sm:text-sm text-destructive">{errors.tipo}</p>
               )}
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="descripcion">
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label htmlFor="descripcion" className="text-sm">
               Descripción <span className="text-destructive">*</span>
             </Label>
             <Input
@@ -126,15 +127,16 @@ export function ItemForm({
               value={values.descripcion}
               onChange={(e) => handleChange('descripcion', e.target.value)}
               placeholder="Laptop Dell Inspiron 15"
+              className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
             />
             {errors.descripcion && (
-              <p className="text-sm text-destructive">{errors.descripcion}</p>
+              <p className="text-xs sm:text-sm text-destructive">{errors.descripcion}</p>
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="clasificacionId">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="clasificacionId" className="text-sm">
                 Clasificación <span className="text-destructive">*</span>
               </Label>
               <SearchableSelect
@@ -150,14 +152,14 @@ export function ItemForm({
                 disabled={!clasificacionItems || clasificacionItems.length === 0}
               />
               {errors.clasificacionId && (
-                <p className="text-sm text-destructive">
+                <p className="text-xs sm:text-sm text-destructive">
                   {errors.clasificacionId}
                 </p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="unidadMedidaId">
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="unidadMedidaId" className="text-sm">
                 Unidad de Medida <span className="text-destructive">*</span>
               </Label>
               <SearchableSelect
@@ -171,7 +173,7 @@ export function ItemForm({
                 disabled={!unidadMedidas || unidadMedidas.length === 0}
               />
               {errors.unidadMedidaId && (
-                <p className="text-sm text-destructive">
+                <p className="text-xs sm:text-sm text-destructive">
                   {errors.unidadMedidaId}
                 </p>
               )}
@@ -181,13 +183,13 @@ export function ItemForm({
       </Card>
 
       <Card className="card-elegant">
-        <CardHeader>
-          <CardTitle>Precios</CardTitle>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-base sm:text-lg">Precios</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="precioBaseLocal">
+        <CardContent className="p-4 sm:p-6 pt-0 space-y-3 sm:space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="precioBaseLocal" className="text-sm">
                 Precio Base Local (Gs.){' '}
                 <span className="text-destructive">*</span>
               </Label>
@@ -202,16 +204,17 @@ export function ItemForm({
                 }
                 placeholder="5000000"
                 disabled={isServicio}
+                className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
               />
               {errors.precioBaseLocal && (
-                <p className="text-sm text-destructive">
+                <p className="text-xs sm:text-sm text-destructive">
                   {errors.precioBaseLocal}
                 </p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="precioBaseDolar">
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="precioBaseDolar" className="text-sm">
                 Precio Base Dólar (USD){' '}
                 <span className="text-destructive">*</span>
               </Label>
@@ -226,18 +229,19 @@ export function ItemForm({
                 }
                 placeholder="714.29"
                 disabled={isServicio}
+                className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
               />
               {errors.precioBaseDolar && (
-                <p className="text-sm text-destructive">
+                <p className="text-xs sm:text-sm text-destructive">
                   {errors.precioBaseDolar}
                 </p>
               )}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="precioAdquisicionLocal">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="precioAdquisicionLocal" className="text-sm">
                 Precio Adquisición Local (Gs.)
               </Label>
               <Input
@@ -251,16 +255,17 @@ export function ItemForm({
                 }
                 placeholder="4000000"
                 disabled={isServicio}
+                className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
               />
               {errors.precioAdquisicionLocal && (
-                <p className="text-sm text-destructive">
+                <p className="text-xs sm:text-sm text-destructive">
                   {errors.precioAdquisicionLocal}
                 </p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="precioAdquisicionDolar">
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="precioAdquisicionDolar" className="text-sm">
                 Precio Adquisición Dólar (USD)
               </Label>
               <Input
@@ -274,9 +279,10 @@ export function ItemForm({
                 }
                 placeholder="571.43"
                 disabled={isServicio}
+                className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
               />
               {errors.precioAdquisicionDolar && (
-                <p className="text-sm text-destructive">
+                <p className="text-xs sm:text-sm text-destructive">
                   {errors.precioAdquisicionDolar}
                 </p>
               )}
@@ -286,14 +292,14 @@ export function ItemForm({
       </Card>
 
       <Card className="card-elegant">
-        <CardHeader>
-          <CardTitle>Configuración</CardTitle>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-base sm:text-lg">Configuración</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="esCotizable">Es Cotizable</Label>
-              <p className="text-sm text-muted-foreground">
+        <CardContent className="p-4 sm:p-6 pt-0 space-y-3 sm:space-y-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-0.5 flex-1">
+              <Label htmlFor="esCotizable" className="text-sm">Es Cotizable</Label>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 ¿Este item puede ser cotizado?
               </p>
             </div>
@@ -303,14 +309,15 @@ export function ItemForm({
               onCheckedChange={(checked) =>
                 handleChange('esCotizable', checked)
               }
+              className="touch-manipulation"
             />
           </div>
 
           {showEstadoToggle && (
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="activo">Estado del Item</Label>
-                <p className="text-sm text-muted-foreground">
+            <div className="flex items-center justify-between gap-4">
+              <div className="space-y-0.5 flex-1">
+                <Label htmlFor="activo" className="text-sm">Estado del Item</Label>
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   ¿Este item está activo?
                 </p>
               </div>
@@ -323,6 +330,7 @@ export function ItemForm({
                     checked ? EstadoActivo.ACTIVO : EstadoActivo.INACTIVO
                   )
                 }
+                className="touch-manipulation"
               />
             </div>
           )}

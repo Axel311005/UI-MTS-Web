@@ -116,17 +116,20 @@ export default function RecepcionSeguimientoPage() {
   const showEmpty = !isLoading && totalFiltered === 0;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+      <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-left">
+          <h1 className="text-2xl sm:text-3xl font-bold text-left">
             Seguimiento de Recepciones
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground mt-0.5 sm:mt-1">
             Gestión del seguimiento de recepciones de vehículos
           </p>
         </div>
-        <Button onClick={() => navigate('/recepcion-seguimiento/nueva')}>
+        <Button 
+          onClick={() => navigate('/recepcion-seguimiento/nueva')}
+          className="w-full sm:w-auto h-10 sm:h-11 text-sm sm:text-base touch-manipulation min-h-[44px]"
+        >
           <Plus className="mr-2 h-4 w-4" /> Nuevo seguimiento
         </Button>
       </div>
