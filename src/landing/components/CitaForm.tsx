@@ -25,6 +25,7 @@ import {
 } from '../actions/vehiculo.actions';
 import type { MotivoCita, Vehiculo } from '../types/cita.types';
 import { useLandingAuthStore } from '../store/landing-auth.store';
+import { useAuthStore } from '@/auth/store/auth.store';
 import { useNavigate } from 'react-router';
 
 interface FormData {
@@ -46,7 +47,23 @@ interface VehiculoFormData {
 
 export function CitaForm() {
   const navigate = useNavigate();
-  const { user, isAuthenticated, token } = useLandingAuthStore();
+  const { user: landingUser, isAuthenticated: landingIsAuthenticated, token: landingToken } = useLandingAuthStore();
+  const authUser = useAuthStore((s) => s.user);
+  const authToken = useAuthStore((s) => s.token);
+  
+  // Obtener usuario desde landingUser o desde authUser como fallback
+  const user = landingUser || (authUser?.cliente ? {
+    id: Number(authUser.id) || 0,
+    email: authUser.email || '',
+    clienteId: (authUser.cliente as any)?.id || (authUser.cliente as any)?.idCliente,
+    nombre: authUser.cliente?.primerNombre 
+      ? `${authUser.cliente.primerNombre} ${authUser.cliente.primerApellido || ''}`.trim()
+      : authUser.cliente?.ruc || 'Cliente',
+  } : null);
+  
+  const isAuthenticated = landingIsAuthenticated || (!!authUser?.cliente && !!authToken);
+  const token = landingToken || authToken;
+  
   const [motivos, setMotivos] = useState<MotivoCita[]>([]);
   const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
   const [loading, setLoading] = useState(true);

@@ -26,6 +26,7 @@ import {
 import { landingCotizacionApi } from '../api/landing.api';
 import type { ItemCotizable } from '../types/cotizacion.types';
 import { useLandingAuthStore } from '../store/landing-auth.store';
+import { useAuthStore } from '@/auth/store/auth.store';
 
 interface DetalleLinea {
   idItem: number | null; // null cuando no hay item seleccionado
@@ -36,7 +37,19 @@ interface DetalleLinea {
 }
 
 export function CotizacionForm() {
-  const { user } = useLandingAuthStore();
+  const { user: landingUser } = useLandingAuthStore();
+  const authUser = useAuthStore((s) => s.user);
+  
+  // Obtener clienteId desde landingUser o desde authUser como fallback
+  const user = landingUser || (authUser?.cliente ? {
+    id: Number(authUser.id) || 0,
+    email: authUser.email || '',
+    clienteId: (authUser.cliente as any)?.id || (authUser.cliente as any)?.idCliente,
+    nombre: authUser.cliente?.primerNombre 
+      ? `${authUser.cliente.primerNombre} ${authUser.cliente.primerApellido || ''}`.trim()
+      : authUser.cliente?.ruc || 'Cliente',
+  } : null);
+  
   const [items, setItems] = useState<ItemCotizable[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
