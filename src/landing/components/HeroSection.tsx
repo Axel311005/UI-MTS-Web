@@ -29,7 +29,7 @@ const heroSlides = [
       "Equipos profesionales para recuperar la geometría original de tu moto",
     price: "Servicio Garantizado",
     priceSubtext: "Tecnología de última generación para tu moto",
-    image: "/fotografia-del-taller.jpg",
+    image: "/fotografia-del-taller.png",
   },
 ];
 
