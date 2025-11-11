@@ -402,6 +402,11 @@ const DashboardPage = lazy(() =>
     default: m.default,
   }))
 );
+const PerfilPage = lazy(() =>
+  import('@/admin/pages/PerfilPage').then((m) => ({
+    default: m.default,
+  }))
+);
 
 export const appRouter = createBrowserRouter([
   // Main routes - Landing Page
@@ -558,6 +563,11 @@ export const appRouter = createBrowserRouter([
             path: 'dashboard',
             element: <DashboardPage />,
             handle: { crumb: 'Dashboard' },
+          },
+          {
+            path: 'perfil',
+            element: <PerfilPage />,
+            handle: { crumb: 'Mi Perfil' },
           },
           {
             path: 'facturas',

@@ -18,6 +18,7 @@ import { useLandingAuthStore } from '@/landing/store/landing-auth.store';
 import { toast } from 'sonner';
 import { NotificationCenter } from './NotificationCenter';
 import { useNotifications } from '@/shared/hooks/use-notification';
+import { useNavigate } from 'react-router';
 
 export const AppHeader = () => {
   const { theme, setTheme } = useTheme();
@@ -25,6 +26,7 @@ export const AppHeader = () => {
   const logoutLanding = useLandingAuthStore((s) => s.logout);
   const { notifications, markAsRead, markAllAsRead, removeNotification } =
     useNotifications();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     // Primero limpiar los stores
@@ -33,6 +35,10 @@ export const AppHeader = () => {
     toast.success('Sesión cerrada correctamente');
     // Usar window.location para forzar la navegación completa y evitar interceptación de ProtectedRoute
     window.location.href = '/';
+  };
+
+  const handleProfileClick = () => {
+    navigate('/admin/perfil');
   };
 
   return (
@@ -80,13 +86,13 @@ export const AppHeader = () => {
           </DropdownMenuTrigger>
 
           <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleProfileClick} className="cursor-pointer">
               <User className="h-4 w-4 mr-2" />
               Mi Perfil
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              className="text-destructive"
+              className="text-destructive cursor-pointer"
               onClick={handleLogout}
             >
               <LogOut className="h-4 w-4 mr-2" />
