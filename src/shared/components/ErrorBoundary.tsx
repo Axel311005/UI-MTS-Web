@@ -39,6 +39,30 @@ class ErrorBoundaryClass extends Component<Props, State> {
       console.error('ErrorBoundary caught an error:', error, errorInfo);
     }
 
+    // Detectar errores de chunks dinámicos y recargar automáticamente
+    const errorMessage = error.message || String(error);
+    if (
+      errorMessage.includes('Failed to fetch dynamically imported module') ||
+      errorMessage.includes('Failed to fetch') ||
+      errorMessage.includes('Loading chunk')
+    ) {
+      console.warn('Chunk loading error detected in ErrorBoundary, forcing reload');
+      
+      // Limpiar caché y recargar
+      if ('caches' in window) {
+        caches.keys().then((names) => {
+          names.forEach((name) => {
+            caches.delete(name);
+          });
+        });
+      }
+      
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+      return; // No actualizar el estado, la página se recargará
+    }
+
     // Update state with error details
     this.setState({
       error,
@@ -138,7 +162,28 @@ export function ErrorBoundary({ children, fallback }: Props) {
 // No puede usar hooks de React Router directamente, así que usamos window.location
 export function RouterErrorBoundary() {
   const handleGoHome = () => {
+    // Limpiar caché y redirigir
+    if ('caches' in window) {
+      caches.keys().then((names) => {
+        names.forEach((name) => {
+          caches.delete(name);
+        });
+      });
+    }
     window.location.href = '/';
+  };
+
+  const handleHardReload = () => {
+    // Limpiar caché y recargar
+    if ('caches' in window) {
+      caches.keys().then((names) => {
+        names.forEach((name) => {
+          caches.delete(name);
+        });
+      });
+    }
+    // Forzar recarga sin caché
+    window.location.reload();
   };
 
   return (
@@ -157,13 +202,13 @@ export function RouterErrorBoundary() {
         <CardContent className="space-y-4">
           <div className="text-center">
             <p className="text-sm sm:text-base text-muted-foreground">
-              Por favor, intenta recargar la página o regresar al inicio.
+              No se pudo cargar un módulo necesario. Esto puede deberse a un problema de caché o conexión.
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center">
             <Button
-              onClick={() => window.location.reload()}
+              onClick={handleHardReload}
               variant="default"
               className="w-full sm:w-auto h-10 sm:h-11 text-sm sm:text-base touch-manipulation min-h-[44px]"
             >

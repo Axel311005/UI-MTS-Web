@@ -6,10 +6,15 @@ const queryClient = new QueryClient();
 import { Toaster } from 'sonner';
 import { useEffect, useRef } from 'react';
 import { useAuthStore } from './auth/store/auth.store';
+import { useChunkErrorHandler } from './shared/hooks/useChunkErrorHandler';
+
 export const TallerApp = () => {
   const checkAuthStatus = useAuthStore((s) => s.checkAuthStatus);
   const authStatus = useAuthStore((s) => s.authStatus);
   const hasCheckedRef = useRef(false);
+
+  // Manejar errores de chunks dinámicos (cuando hay un nuevo deploy)
+  useChunkErrorHandler();
 
   useEffect(() => {
     // Verificar solo una vez al inicio si está en checking
