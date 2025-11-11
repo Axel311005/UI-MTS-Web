@@ -4,7 +4,7 @@ import { persist } from 'zustand/middleware';
 interface LandingAuthState {
   token: string | null;
   user: {
-    id: number;
+    id: number | string; // Puede ser número o string (UUID)
     email: string;
     clienteId?: number;
     nombre?: string;

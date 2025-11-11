@@ -164,20 +164,37 @@ export default function LoginPage() {
         const from = (location.state as any)?.from?.pathname || '/admin/dashboard';
         navigate(from, { replace: true });
       } else if (cliente && token) {
+        // El backend puede devolver cliente.id o cliente.idCliente
+        // Según la respuesta del backend, viene como cliente.id (número)
         const clienteId = (cliente as any).id || cliente.idCliente;
+        
+        // El backend puede devolver nombreCompleto o primerNombre/primerApellido
         const clienteNombre = 
           (cliente as any).nombreCompleto ||
-          [cliente.primerNombre, cliente.primerApellido]
-            .filter(Boolean)
-            .join(' ') || 
+          (cliente.primerNombre && cliente.primerApellido
+            ? [cliente.primerNombre, cliente.primerApellido].filter(Boolean).join(' ')
+            : null) ||
           cliente.ruc || 
           'Cliente';
-        setLandingAuth(token, {
-          id: Number(user.id) || 0,
+        
+        // El id del usuario puede ser string (UUID) o number
+        const userId = typeof user.id === 'string' ? user.id : (Number(user.id) || 0);
+        
+        // Guardar primero en localStorage para asegurar que esté disponible inmediatamente
+        const landingUser = {
+          id: userId,
           email: email,
-          clienteId: clienteId,
+          clienteId: Number(clienteId) || 0,
           nombre: clienteNombre,
-        });
+        };
+        
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('token', token);
+          localStorage.setItem('landing-user', JSON.stringify(landingUser));
+        }
+        
+        setLandingAuth(token, landingUser);
+        
         toast.success(`Bienvenido ${clienteNombre}`, {
           position: 'top-right',
         });

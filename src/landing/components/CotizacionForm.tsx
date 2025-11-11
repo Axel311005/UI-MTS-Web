@@ -39,9 +39,29 @@ interface DetalleLinea {
 export function CotizacionForm() {
   const { user: landingUser, isAuthenticated: landingIsAuthenticated } = useLandingAuthStore();
   const authUser = useAuthStore((s) => s.user);
+  const [localUser, setLocalUser] = useState<{ id: number; email: string; clienteId?: number; nombre?: string } | null>(null);
   
-  // Obtener clienteId desde landingUser o desde authUser como fallback
-  const user = landingUser || (authUser?.cliente ? {
+  // Verificar localStorage directamente como fallback inmediato
+  useEffect(() => {
+    if (!landingUser && !authUser?.cliente) {
+      try {
+        const storedUserStr = localStorage.getItem('landing-user');
+        if (storedUserStr) {
+          const storedUser = JSON.parse(storedUserStr);
+          if (storedUser?.clienteId) {
+            setLocalUser(storedUser);
+          }
+        }
+      } catch (error) {
+        // Ignorar errores de parsing
+      }
+    } else {
+      setLocalUser(null);
+    }
+  }, [landingUser, authUser]);
+  
+  // Obtener clienteId desde landingUser, localUser o desde authUser como fallback
+  const user = landingUser || localUser || (authUser?.cliente ? {
     id: Number(authUser.id) || 0,
     email: authUser.email || '',
     clienteId: (authUser.cliente as any)?.id || (authUser.cliente as any)?.idCliente,
@@ -51,17 +71,6 @@ export function CotizacionForm() {
   } : null);
   
   const [items, setItems] = useState<ItemCotizable[]>([]);
-  
-  // Debug: verificar que el usuario se detecte correctamente
-  useEffect(() => {
-    if (!user?.clienteId && (landingIsAuthenticated || authUser?.cliente)) {
-      console.warn('CotizacionForm: Usuario autenticado pero sin clienteId', {
-        landingUser,
-        authUser,
-        user
-      });
-    }
-  }, [user, landingIsAuthenticated, authUser, landingUser]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [lineas, setLineas] = useState<DetalleLinea[]>([]);
@@ -679,6 +688,7 @@ export function CotizacionForm() {
                 className="mt-4"
               >
                 <Button
+                  type="button"
                   onClick={handleDownloadPdf}
                   className="w-full bg-green-500 hover:bg-green-600 text-white h-12 sm:h-14 rounded-xl font-bold text-base sm:text-lg shadow-2xl hover:shadow-green-500/50 transition-all duration-300 font-montserrat"
                 >

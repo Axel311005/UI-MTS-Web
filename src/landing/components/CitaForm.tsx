@@ -50,9 +50,33 @@ export function CitaForm() {
   const { user: landingUser, isAuthenticated: landingIsAuthenticated, token: landingToken } = useLandingAuthStore();
   const authUser = useAuthStore((s) => s.user);
   const authToken = useAuthStore((s) => s.token);
+  const [localUser, setLocalUser] = useState<{ id: number; email: string; clienteId?: number; nombre?: string } | null>(null);
+  const [localToken, setLocalToken] = useState<string | null>(null);
   
-  // Obtener usuario desde landingUser o desde authUser como fallback
-  const user = landingUser || (authUser?.cliente ? {
+  // Verificar localStorage directamente como fallback inmediato
+  useEffect(() => {
+    if (!landingUser && !authUser?.cliente) {
+      try {
+        const storedUserStr = localStorage.getItem('landing-user');
+        const storedToken = localStorage.getItem('token');
+        if (storedUserStr && storedToken) {
+          const storedUser = JSON.parse(storedUserStr);
+          if (storedUser?.clienteId) {
+            setLocalUser(storedUser);
+            setLocalToken(storedToken);
+          }
+        }
+      } catch (error) {
+        // Ignorar errores de parsing
+      }
+    } else {
+      setLocalUser(null);
+      setLocalToken(null);
+    }
+  }, [landingUser, authUser]);
+  
+  // Obtener usuario desde landingUser, localUser o desde authUser como fallback
+  const user = landingUser || localUser || (authUser?.cliente ? {
     id: Number(authUser.id) || 0,
     email: authUser.email || '',
     clienteId: (authUser.cliente as any)?.id || (authUser.cliente as any)?.idCliente,
@@ -61,8 +85,8 @@ export function CitaForm() {
       : authUser.cliente?.ruc || 'Cliente',
   } : null);
   
-  const isAuthenticated = landingIsAuthenticated || (!!authUser?.cliente && !!authToken);
-  const token = landingToken || authToken;
+  const token = landingToken || localToken || authToken;
+  const isAuthenticated = landingIsAuthenticated || !!localUser || (!!authUser?.cliente && !!authToken);
   
   const [motivos, setMotivos] = useState<MotivoCita[]>([]);
   const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);

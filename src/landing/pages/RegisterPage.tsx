@@ -181,16 +181,27 @@ export default function RegisterPage() {
 
       if (token && cliente) {
         // Guardar en el store de landing
+        // El id del usuario puede ser string (UUID) o number
+        const userId = typeof userData.id === 'string' ? userData.id : (Number(userData.id) || 0);
+        
         const landingUser = {
-          id: Number(userData.id) || 0,
+          id: userId,
           email: emailLimpio,
-          clienteId: cliente.idCliente,
+          clienteId: (cliente as any).id || cliente.idCliente,
           nombre:
+            (cliente as any).nombreCompleto ||
             [cliente.primerNombre, cliente.primerApellido]
               .filter(Boolean)
               .join(" ") || (cliente as any).ruc || 'Cliente',
         };
         
+        // Guardar primero en localStorage para asegurar que esté disponible inmediatamente
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('token', token);
+          localStorage.setItem('landing-user', JSON.stringify(landingUser));
+        }
+        
+        // Luego actualizar el store
         setAuth(token, landingUser);
         
         // También sincronizar con el store principal si es necesario
@@ -205,6 +216,9 @@ export default function RegisterPage() {
         } catch (error) {
           console.warn('Error al sincronizar con store principal:', error);
         }
+        
+        // Esperar un tick para asegurar que el store se actualice antes de navegar
+        await new Promise(resolve => setTimeout(resolve, 0));
         
         toast.success("Registro exitoso. Bienvenido!");
         navigate(redirect);
