@@ -1,0 +1,280 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Sistema de Facturación - Paleta de Colores Personalizada
+Todos los colores en HSL para theming perfecto y accesibilidad ISO/WCAG.
+--color-primary: #f6b0a2 (coral suave - color principal)
+--color-secondary: #a2d5f6 (azul suave - complementario)
+--color-accent: #f6d9a2 (melocotón - acento cálido)
+*/
+
+@layer base {
+  :root {
+    /* Fondos limpios y profesionales */
+    --background: 0 0% 98%;
+    --foreground: 0 0% 20%;
+
+    /* Sistema de tarjetas */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 20%;
+
+    /* Sistema de popover */
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 20%;
+
+    /* Coral suave como primario #f6b0a2 */
+    --primary: 10 81% 80%;
+    --primary-foreground: 0 0% 20%;
+    --primary-glow: 10 81% 88%;
+
+    /* Azul suave complementario #a2d5f6 */
+    --secondary: 204 81% 80%;
+    --secondary-foreground: 0 0% 20%;
+
+    /* Tonos neutros suaves */
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+
+    /* Melocotón cálido para acentos #f6d9a2 */
+    --accent: 41 81% 80%;
+    --accent-foreground: 0 0% 20%;
+
+    /* Destructivo profesional */
+    --destructive: 0 65% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Bordes sutiles */
+    --border: 0 0% 90%;
+    --input: 0 0% 94%;
+    --ring: 10 81% 80%;
+
+    --radius: 0.5rem;
+
+    /* Gradientes suaves */
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(10 81% 80%),
+      hsl(10 81% 88%)
+    );
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(0 0% 99%));
+    --gradient-muted: linear-gradient(180deg, hsl(0 0% 96%), hsl(0 0% 94%));
+
+    /* Sombras elegantes */
+    --shadow-card: 0 4px 20px -2px hsl(10 20% 50% / 0.08);
+    --shadow-header: 0 2px 16px -4px hsl(10 20% 50% / 0.06);
+    --shadow-hover: 0 8px 32px -4px hsl(10 81% 80% / 0.2);
+
+    /* Transiciones suaves */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    /* Sidebar claro */
+    --sidebar-background: 0 0% 99%;
+    --sidebar-foreground: 0 0% 20%;
+    --sidebar-primary: 10 81% 75%;
+    --sidebar-primary-foreground: 0 0% 20%;
+    --sidebar-accent: 0 0% 96%;
+    --sidebar-accent-foreground: 0 0% 20%;
+    --sidebar-border: 0 0% 92%;
+    --sidebar-ring: 10 81% 80%;
+  }
+
+  .dark {
+    /* Fondo oscuro profesional */
+    --background: 0 0% 8%;
+    --foreground: 0 0% 95%;
+
+    /* Tarjetas oscuras */
+    --card: 0 0% 11%;
+    --card-foreground: 0 0% 95%;
+
+    /* Popover oscuro */
+    --popover: 0 0% 11%;
+    --popover-foreground: 0 0% 95%;
+
+    /* Coral más vibrante para modo oscuro */
+    --primary: 10 75% 70%;
+    --primary-foreground: 0 0% 10%;
+    --primary-glow: 10 75% 78%;
+
+    /* Azul suave para modo oscuro */
+    --secondary: 204 60% 65%;
+    --secondary-foreground: 0 0% 10%;
+
+    /* Neutros oscuros */
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 70%;
+
+    /* Melocotón para modo oscuro */
+    --accent: 41 65% 70%;
+    --accent-foreground: 0 0% 10%;
+
+    /* Destructivo oscuro */
+    --destructive: 0 60% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Bordes oscuros */
+    --border: 0 0% 20%;
+    --input: 0 0% 16%;
+    --ring: 10 75% 70%;
+
+    /* Gradientes oscuros */
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(10 75% 70%),
+      hsl(10 75% 78%)
+    );
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 11%), hsl(0 0% 13%));
+    --gradient-muted: linear-gradient(180deg, hsl(0 0% 15%), hsl(0 0% 13%));
+
+    /* Sombras oscuras */
+    --shadow-card: 0 4px 20px -2px hsl(0 0% 0% / 0.4);
+    --shadow-header: 0 2px 16px -4px hsl(0 0% 0% / 0.3);
+    --shadow-hover: 0 8px 32px -4px hsl(10 75% 70% / 0.3);
+
+    /* Sidebar oscuro */
+    --sidebar-background: 0 0% 9%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 10 70% 65%;
+    --sidebar-primary-foreground: 0 0% 10%;
+    --sidebar-accent: 0 0% 14%;
+    --sidebar-accent-foreground: 0 0% 85%;
+    --sidebar-border: 0 0% 18%;
+    --sidebar-ring: 10 70% 65%;
+  }
+}
+
+/* Custom utility classes for billing system */
+@layer components {
+  .card-elegant {
+    @apply bg-gradient-to-br from-card to-card/95 rounded-2xl shadow-[var(--shadow-card)] border border-border/50;
+  }
+
+  .header-glass {
+    @apply bg-card/80 backdrop-blur-md border-b border-border/60 shadow-[var(--shadow-header)];
+  }
+
+  .button-hover {
+    @apply transition-all duration-300 hover:shadow-[var(--shadow-hover)] hover:scale-[1.02];
+  }
+
+  .table-row-hover {
+    @apply transition-colors duration-200 hover:bg-muted/50;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  .responsive-table {
+    min-width: max(100%, var(--table-min-width, 56rem));
+  }
+}
+
+@layer base {
+  @media (max-width: 768px) {
+    .responsive-table {
+      font-size: 0.8125rem;
+      table-layout: auto;
+      width: 100%;
+      min-width: 100%;
+    }
+
+    .responsive-table th,
+    .responsive-table td {
+      padding: 0.5rem 0.5rem;
+      white-space: normal;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      max-width: 120px;
+    }
+
+    .responsive-table th:first-child,
+    .responsive-table td:first-child {
+      padding-left: 0.75rem;
+      max-width: 100px;
+    }
+
+    .responsive-table th:last-child,
+    .responsive-table td:last-child {
+      padding-right: 0.75rem;
+    }
+
+    /* Ocultar columnas que no son esenciales en móvil */
+    .responsive-table
+      th:nth-child(n + 4):not(:last-child):not([data-mobile-keep]),
+    .responsive-table
+      td:nth-child(n + 4):not(:last-child):not([data-mobile-keep]) {
+      display: none;
+    }
+
+    .responsive-table th[data-mobile-hidden],
+    .responsive-table td[data-mobile-hidden] {
+      display: none;
+    }
+
+    /* Mantener columnas importantes visibles */
+    .responsive-table th[data-mobile-keep],
+    .responsive-table td[data-mobile-keep] {
+      display: table-cell;
+    }
+
+    .table-actions-mobile {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.25rem;
+    }
+
+    .responsive-table th[data-mobile-actions],
+    .responsive-table td[data-mobile-actions] {
+      white-space: normal;
+      overflow: visible;
+      text-overflow: unset;
+      min-width: 3rem;
+      max-width: 4rem;
+      padding: 0.5rem 0.5rem;
+      position: sticky;
+      right: 0;
+      background-color: hsl(var(--card));
+      z-index: 10;
+    }
+
+    .responsive-table td[data-mobile-actions] {
+      display: table-cell;
+    }
+
+    /* Mejorar la visualización de celdas con texto largo */
+    .responsive-table td {
+      line-height: 1.4;
+    }
+
+    /* Asegurar que las primeras columnas sean visibles */
+    .responsive-table th:nth-child(1),
+    .responsive-table td:nth-child(1),
+    .responsive-table th:nth-child(2),
+    .responsive-table td:nth-child(2),
+    .responsive-table th:nth-child(3),
+    .responsive-table td:nth-child(3) {
+      display: table-cell;
+    }
+  }
+
+  /* Mejoras para tablets */
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .responsive-table {
+      font-size: 0.875rem;
+    }
+
+    .responsive-table th,
+    .responsive-table td {
+      padding: 0.625rem 0.75rem;
+    }
+  }
+}
