@@ -7,6 +7,7 @@ export interface AuthResponse {
   empleado: Empleado;
   cliente: Cliente;
   token: string;
+  isActive?: boolean; // Campo del backend para verificar si el usuario está activo
 }
 
 export interface Empleado {

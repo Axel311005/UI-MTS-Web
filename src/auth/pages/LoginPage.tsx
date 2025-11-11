@@ -14,6 +14,7 @@ import { useState, type FormEvent } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router';
 import { useAuthStore } from '../store/auth.store';
 import { useLandingAuthStore } from '@/landing/store/landing-auth.store';
+import { loginAction } from '../actions/login.action';
 
 export default function LoginPage() {
   const [isPosting, setIsPosting] = useState(false);
@@ -98,75 +99,112 @@ export default function LoginPage() {
     }
 
     try {
-      const ok = await login(email, password);
-      if (ok) {
-        const authStore = useAuthStore.getState();
-        const hasPanelAccess = authStore.hasPanelAccess();
-        const empleado = authStore.user?.empleado;
-        const cliente = authStore.user?.cliente;
-        const token = authStore.token;
+      // Llamar directamente a loginAction para capturar el error del backend
+      const data = await loginAction(email, password);
+      
+      // Si llegamos aquí, el login fue exitoso
+      const { token, ...user } = data;
+      
+      // Verificar si el usuario tiene acceso al panel (vendedor, gerente, superuser)
+      const rawRoles = user.roles ?? [];
+      const roles = Array.isArray(rawRoles)
+        ? rawRoles.map((r) => String(r).toLowerCase().trim())
+        : [];
+      const allowedRoles: string[] = ['gerente', 'vendedor', 'superuser'];
+      const hasPanelAccess = roles.some((role: string) =>
+        allowedRoles.includes(role)
+      );
+      
+      // Si tiene acceso al panel, verificar que esté activo
+      if (hasPanelAccess) {
+        // Verificar si el usuario está activo
+        // El backend puede devolver isActive en la respuesta, o puede estar en false/undefined
+        const isActive = user.isActive !== undefined ? user.isActive : true; // Por defecto true si no viene
         
-        const user = empleado
-          ? empleado.nombreCompleto ||
-            [empleado.primerNombre, empleado.primerApellido]
-              .filter(Boolean)
-              .join(' ')
-          : cliente
-          ? [cliente.primerNombre, cliente.primerApellido]
-              .filter(Boolean)
-              .join(' ') || cliente.ruc
-          : 'Usuario';
-
-        if (hasPanelAccess) {
-          const userName = user || 'Usuario';
-          toast.success(`Inicio de sesión exitoso. Bienvenido ${userName}`, {
-            position: 'top-right',
-          });
-          const from = (location.state as any)?.from?.pathname || '/admin/dashboard';
-          navigate(from, { replace: true });
-        } else if (cliente && token) {
-          const clienteId = (cliente as any).id || cliente.idCliente;
-          const clienteNombre = 
-            (cliente as any).nombreCompleto ||
-            [cliente.primerNombre, cliente.primerApellido]
-              .filter(Boolean)
-              .join(' ') || 
-            cliente.ruc || 
-            'Cliente';
-          setLandingAuth(token, {
-            id: Number(authStore.user?.id) || 0,
-            email: email,
-            clienteId: clienteId,
-            nombre: clienteNombre,
-          });
-          toast.success(`Bienvenido ${clienteNombre}`, {
-            position: 'top-right',
-          });
-          const from = (location.state as any)?.from?.pathname || '/';
-          navigate(from, { replace: true });
-        } else {
+        if (!isActive) {
+          // Usuario inactivo - no permitir acceso
           toast.error(
-            'Tu cuenta no tiene permisos para acceder al sistema.',
-            { position: 'top-right' }
+            'Tu cuenta está inactiva. Por favor, contacta con alguien del taller para reactivar tu cuenta.',
+            { 
+              position: 'top-right',
+              duration: 6000 // Mostrar por más tiempo para que el usuario lo lea
+            }
           );
-          useAuthStore.getState().logout();
-          const currentPath = location.pathname;
-          navigate(currentPath, { replace: true });
+          // Limpiar cualquier dato que se haya guardado
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          useAuthStore.setState({ user: null, token: null, authStatus: 'not-authenticated' });
+          setIsPosting(false);
+          return;
         }
-      } else {
-        setLoginAttempts(prev => prev + 1);
-        setLastAttemptTime(Date.now());
-        toast.error('Error al iniciar sesión. Verifica tus credenciales.', {
+      }
+      
+      // Guardar en el store de auth
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      useAuthStore.setState({ user, token, authStatus: 'authenticated' });
+      
+      const empleado = user.empleado;
+      const cliente = user.cliente;
+      
+      const userName = empleado
+        ? empleado.nombreCompleto ||
+          [empleado.primerNombre, empleado.primerApellido]
+            .filter(Boolean)
+            .join(' ')
+        : cliente
+        ? [cliente.primerNombre, cliente.primerApellido]
+            .filter(Boolean)
+            .join(' ') || cliente.ruc
+        : 'Usuario';
+
+      if (hasPanelAccess) {
+        toast.success(`Inicio de sesión exitoso. Bienvenido ${userName}`, {
           position: 'top-right',
         });
+        const from = (location.state as any)?.from?.pathname || '/admin/dashboard';
+        navigate(from, { replace: true });
+      } else if (cliente && token) {
+        const clienteId = (cliente as any).id || cliente.idCliente;
+        const clienteNombre = 
+          (cliente as any).nombreCompleto ||
+          [cliente.primerNombre, cliente.primerApellido]
+            .filter(Boolean)
+            .join(' ') || 
+          cliente.ruc || 
+          'Cliente';
+        setLandingAuth(token, {
+          id: Number(user.id) || 0,
+          email: email,
+          clienteId: clienteId,
+          nombre: clienteNombre,
+        });
+        toast.success(`Bienvenido ${clienteNombre}`, {
+          position: 'top-right',
+        });
+        const from = (location.state as any)?.from?.pathname || '/';
+        navigate(from, { replace: true });
+      } else {
+        toast.error(
+          'Tu cuenta no tiene permisos para acceder al sistema.',
+          { position: 'top-right' }
+        );
+        useAuthStore.getState().logout();
+        const currentPath = location.pathname;
+        navigate(currentPath, { replace: true });
       }
     } catch (error: any) {
       setLoginAttempts(prev => prev + 1);
       setLastAttemptTime(Date.now());
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : 'Error al iniciar sesión. Verifica tus credenciales.';
+      
+      // Obtener el mensaje del backend directamente de la respuesta
+      // El loginAction ya extrae el mensaje del backend, así que usamos error.message
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : error?.response?.data?.message 
+        ? error.response.data.message
+        : 'Error al iniciar sesión. Verifica tus credenciales.';
+      
       toast.error(errorMessage, {
         position: 'top-right',
       });

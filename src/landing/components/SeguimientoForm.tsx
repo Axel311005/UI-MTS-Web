@@ -276,13 +276,13 @@ export function SeguimientoForm() {
                     placeholder="Ej: REC-20250115-AB12CD"
                     value={codigo}
                     onChange={(e) => setCodigo(e.target.value.toUpperCase())}
-                    className="text-base sm:text-lg py-4 sm:py-6 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat transition-all"
+                    className="text-base sm:text-lg py-4 sm:py-6 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat transition-all touch-manipulation"
                     disabled={loading}
                   />
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="bg-orange-500 hover:bg-orange-600 text-white px-6 sm:px-8 py-4 sm:py-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-montserrat font-semibold text-sm sm:text-base"
+                    className="bg-orange-500 hover:bg-orange-600 text-white px-6 sm:px-8 py-4 sm:py-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-montserrat font-semibold text-sm sm:text-base touch-manipulation min-h-[48px]"
                   >
                     {loading ? (
                       <div className="animate-spin">
@@ -354,45 +354,45 @@ export function SeguimientoForm() {
                     Información de la Recepción
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-6 sm:p-8">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
-                    <div className="flex items-start gap-4 sm:gap-5 p-6 sm:p-7 bg-gradient-to-br from-white to-orange-50/30 border-2 border-orange-500/20 rounded-xl shadow-sm hover:shadow-md transition-all">
-                      <div className="p-3 bg-orange-500 rounded-lg flex-shrink-0">
-                        <Car className="h-6 w-6 text-white" />
+                <CardContent className="p-4 sm:p-6 md:p-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
+                    <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 md:gap-5 p-4 sm:p-5 md:p-6 lg:p-7 bg-gradient-to-br from-white to-orange-50/30 border-2 border-orange-500/20 rounded-xl shadow-sm hover:shadow-md transition-all">
+                      <div className="p-2 sm:p-3 bg-orange-500 rounded-lg flex-shrink-0">
+                        <Car className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <Label className="text-orange-600 font-semibold font-montserrat text-sm sm:text-base block mb-2">
+                        <Label className="text-orange-600 font-semibold font-montserrat text-xs sm:text-sm md:text-base block mb-1 sm:mb-2">
                           Vehículo
                         </Label>
-                        <p className="font-bold text-black text-base sm:text-lg font-montserrat leading-relaxed">
+                        <p className="font-bold text-black text-sm sm:text-base md:text-lg font-montserrat leading-relaxed break-words">
                           {seguimiento.vehiculo.descripcion}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-4 sm:gap-5 p-6 sm:p-7 bg-gradient-to-br from-white to-orange-50/30 border-2 border-orange-500/20 rounded-xl shadow-sm hover:shadow-md transition-all">
-                      <div className="p-3 bg-orange-500 rounded-lg flex-shrink-0">
-                        <User className="h-6 w-6 text-white" />
+                    <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 md:gap-5 p-4 sm:p-5 md:p-6 lg:p-7 bg-gradient-to-br from-white to-orange-50/30 border-2 border-orange-500/20 rounded-xl shadow-sm hover:shadow-md transition-all">
+                      <div className="p-2 sm:p-3 bg-orange-500 rounded-lg flex-shrink-0">
+                        <User className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <Label className="text-orange-600 font-semibold font-montserrat text-sm sm:text-base block mb-2">
+                        <Label className="text-orange-600 font-semibold font-montserrat text-xs sm:text-sm md:text-base block mb-1 sm:mb-2">
                           Cliente
                         </Label>
-                        <p className="font-bold text-black text-base sm:text-lg font-montserrat leading-relaxed">
+                        <p className="font-bold text-black text-sm sm:text-base md:text-lg font-montserrat leading-relaxed break-words">
                           {seguimiento.cliente.nombre}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-4 sm:gap-5 p-6 sm:p-7 bg-gradient-to-br from-white to-orange-50/30 border-2 border-orange-500/20 rounded-xl shadow-sm hover:shadow-md transition-all">
-                      <div className="p-3 bg-orange-500 rounded-lg flex-shrink-0">
-                        <Calendar className="h-6 w-6 text-white" />
+                    <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 md:gap-5 p-4 sm:p-5 md:p-6 lg:p-7 bg-gradient-to-br from-white to-orange-50/30 border-2 border-orange-500/20 rounded-xl shadow-sm hover:shadow-md transition-all">
+                      <div className="p-2 sm:p-3 bg-orange-500 rounded-lg flex-shrink-0">
+                        <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <Label className="text-orange-600 font-semibold text-sm sm:text-base font-montserrat block mb-2">
+                        <Label className="text-orange-600 font-semibold text-xs sm:text-sm md:text-base font-montserrat block mb-1 sm:mb-2">
                           Fecha de Recepción
                         </Label>
-                        <p className="font-bold text-black text-base sm:text-lg font-montserrat leading-relaxed">
+                        <p className="font-bold text-black text-sm sm:text-base md:text-lg font-montserrat leading-relaxed break-words">
                           {format(
                             new Date(seguimiento.fechaRecepcion),
                             "d 'de' MMMM 'de' yyyy 'a las' HH:mm",
@@ -403,15 +403,15 @@ export function SeguimientoForm() {
                     </div>
 
                     {seguimiento.fechaEntregaEstimada && (
-                      <div className="flex items-start gap-4 sm:gap-5 p-6 sm:p-7 bg-gradient-to-br from-white to-orange-50/30 border-2 border-orange-500/20 rounded-xl shadow-sm hover:shadow-md transition-all">
-                        <div className="p-3 bg-orange-500 rounded-lg flex-shrink-0">
-                          <Calendar className="h-6 w-6 text-white" />
+                      <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 md:gap-5 p-4 sm:p-5 md:p-6 lg:p-7 bg-gradient-to-br from-white to-orange-50/30 border-2 border-orange-500/20 rounded-xl shadow-sm hover:shadow-md transition-all">
+                        <div className="p-2 sm:p-3 bg-orange-500 rounded-lg flex-shrink-0">
+                          <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <Label className="text-orange-600 font-semibold text-sm sm:text-base font-montserrat block mb-2">
+                          <Label className="text-orange-600 font-semibold text-xs sm:text-sm md:text-base font-montserrat block mb-1 sm:mb-2">
                             Fecha Estimada de Entrega
                           </Label>
-                          <p className="font-bold text-black text-base sm:text-lg font-montserrat leading-relaxed">
+                          <p className="font-bold text-black text-sm sm:text-base md:text-lg font-montserrat leading-relaxed break-words">
                             {format(
                               new Date(seguimiento.fechaEntregaEstimada),
                               "d 'de' MMMM 'de' yyyy 'a las' HH:mm",
@@ -465,14 +465,14 @@ export function SeguimientoForm() {
                                 <div className="w-1.5 h-full bg-gradient-to-b from-orange-500/40 via-orange-400/30 to-orange-500/20 my-2 rounded-full"></div>
                               )}
                             </div>
-                            <div className="flex-1 pb-6 bg-gradient-to-br from-white to-orange-50/20 p-5 md:p-6 rounded-xl border-2 border-orange-500/20 shadow-sm hover:shadow-md hover:border-orange-500/40 transition-all duration-300">
-                              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">
+                            <div className="flex-1 pb-4 sm:pb-6 bg-gradient-to-br from-white to-orange-50/20 p-4 sm:p-5 md:p-6 rounded-xl border-2 border-orange-500/20 shadow-sm hover:shadow-md hover:border-orange-500/40 transition-all duration-300">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
                                 <span
-                                  className={`font-bold text-base md:text-lg ${config.color}`}
+                                  className={`font-bold text-sm sm:text-base md:text-lg ${config.color} break-words`}
                                 >
                                   {seg.estado}
                                 </span>
-                                <span className="text-xs md:text-sm text-black/70 bg-orange-500/10 px-3 py-1 rounded-full font-montserrat w-fit">
+                                <span className="text-xs sm:text-sm md:text-base text-black/70 bg-orange-500/10 px-2 sm:px-3 py-1 rounded-full font-montserrat w-fit">
                                   {format(
                                     new Date(seg.fecha),
                                     "d MMM yyyy 'a las' HH:mm",
@@ -480,7 +480,7 @@ export function SeguimientoForm() {
                                   )}
                                 </span>
                               </div>
-                              <p className="text-black/80 leading-relaxed font-montserrat text-sm md:text-base">
+                              <p className="text-black/80 leading-relaxed font-montserrat text-xs sm:text-sm md:text-base break-words">
                                 {seg.descripcion}
                               </p>
                             </div>

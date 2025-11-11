@@ -8,6 +8,7 @@ import { RoleGuard } from '@/shared/components/routes/RoleGuard';
 import { LandingProtectedRoute } from '@/landing/components/routes/LandingProtectedRoute';
 import { LandingNotAuthenticatedRoute } from '@/landing/components/routes/LandingNotAuthenticatedRoute';
 import { RedirectToAdmin } from '@/shared/components/routes/RedirectToAdmin';
+import { RouterErrorBoundary } from '@/shared/components/ErrorBoundary';
 
 // Landing pages
 import { LandingPage } from '@/landing/pages/LandingPage';
@@ -407,6 +408,7 @@ export const appRouter = createBrowserRouter([
   {
     path: '/',
     element: <LandingPage />,
+    errorElement: <RouterErrorBoundary />,
   },
   {
     path: '/seguimiento',
@@ -415,6 +417,7 @@ export const appRouter = createBrowserRouter([
         <SeguimientoPage />
       </LandingProtectedRoute>
     ),
+    errorElement: <RouterErrorBoundary />,
   },
 
   // Landing Auth Routes (solo si NO está autenticado)
@@ -425,6 +428,7 @@ export const appRouter = createBrowserRouter([
         <LoginPage />
       </LandingNotAuthenticatedRoute>
     ),
+    errorElement: <RouterErrorBoundary />,
   },
   {
     path: '/register',
@@ -433,6 +437,7 @@ export const appRouter = createBrowserRouter([
         <LandingRegisterPage />
       </LandingNotAuthenticatedRoute>
     ),
+    errorElement: <RouterErrorBoundary />,
   },
 
   // Landing Protected Routes (requieren autenticación de landing)
@@ -443,6 +448,7 @@ export const appRouter = createBrowserRouter([
         <CotizacionPage />
       </LandingProtectedRoute>
     ),
+    errorElement: <RouterErrorBoundary />,
   },
   {
     path: '/cita',
@@ -451,11 +457,13 @@ export const appRouter = createBrowserRouter([
         <CitaPage />
       </LandingProtectedRoute>
     ),
+    errorElement: <RouterErrorBoundary />,
   },
 
   // Redirecciones de rutas cortas a rutas completas del panel (con soporte para subrutas)
   {
     element: <ProtectedRoute />,
+    errorElement: <RouterErrorBoundary />,
     children: [
       {
         path: '/facturas/*',
@@ -543,6 +551,7 @@ export const appRouter = createBrowserRouter([
       {
         path: '/admin',
         element: <AppLayout />,
+        errorElement: <RouterErrorBoundary />,
         children: [
           { index: true, element: <Navigate to="/admin/dashboard" replace /> },
           {
@@ -969,6 +978,7 @@ export const appRouter = createBrowserRouter([
   {
     path: '/auth',
     element: <NotAuthenticatedRoute />,
+    errorElement: <RouterErrorBoundary />,
     children: [
       { index: true, element: <Navigate to="/auth/login" replace /> },
       { path: 'login', element: <LoginPage /> },
@@ -979,5 +989,6 @@ export const appRouter = createBrowserRouter([
   {
     path: '*',
     element: <Navigate to="/" replace />,
+    errorElement: <RouterErrorBoundary />,
   },
 ]);

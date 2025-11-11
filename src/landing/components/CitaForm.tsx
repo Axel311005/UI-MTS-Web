@@ -46,7 +46,7 @@ interface VehiculoFormData {
 
 export function CitaForm() {
   const navigate = useNavigate();
-  const { user } = useLandingAuthStore();
+  const { user, isAuthenticated, token } = useLandingAuthStore();
   const [motivos, setMotivos] = useState<MotivoCita[]>([]);
   const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,12 +69,41 @@ export function CitaForm() {
   });
 
   useEffect(() => {
+    // Verificar autenticación desde localStorage como fallback
+    const checkAuth = () => {
+      if (typeof window !== 'undefined') {
+        const storedToken = localStorage.getItem('token');
+        const storedUser = localStorage.getItem('landing-user');
+        
+        // Si hay token pero el store no tiene usuario, intentar recuperarlo
+        if (storedToken && (!user || !isAuthenticated)) {
+          try {
+            if (storedUser) {
+              const parsedUser = JSON.parse(storedUser);
+              useLandingAuthStore.getState().setAuth(storedToken, parsedUser);
+            }
+          } catch {
+            // Si hay error, limpiar
+            localStorage.removeItem('token');
+            localStorage.removeItem('landing-user');
+          }
+        }
+      }
+    };
+    
+    checkAuth();
+    
     const loadData = async () => {
       try {
+        // Obtener el usuario actualizado después de verificar auth
+        const currentUser = useLandingAuthStore.getState().user;
+        const currentToken = useLandingAuthStore.getState().token || 
+          (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
+        
         const [motivosData, vehiculosData] = await Promise.all([
           getMotivosCita(),
-          user?.clienteId
-            ? getVehiculosByCliente(user.clienteId)
+          currentUser?.clienteId && currentToken
+            ? getVehiculosByCliente(currentUser.clienteId)
             : Promise.resolve([]),
         ]);
         setMotivos(motivosData);
@@ -86,7 +115,7 @@ export function CitaForm() {
       }
     };
     loadData();
-  }, [user]);
+  }, [user, isAuthenticated, token]);
 
   // Sanitizar texto
   const sanitizeText = (text: string, maxLength: number = 255): string => {
@@ -162,8 +191,13 @@ export function CitaForm() {
         return;
       }
 
+      if (!user?.clienteId) {
+        toast.error('Debes estar autenticado para agendar una cita');
+        return;
+      }
+
       await createCita({
-        idCliente: user!.clienteId!,
+        idCliente: user.clienteId,
         idVehiculo: idVehiculo,
         idMotivoCita: idMotivoCita,
         fechaInicio: new Date(fechaHora).toISOString(),
@@ -270,18 +304,6 @@ export function CitaForm() {
     );
   }
 
-  if (!user?.clienteId) {
-    return (
-      <Card className="max-w-3xl mx-auto bg-white/95 backdrop-blur-sm border border-orange-500/30 shadow-2xl">
-        <CardContent className="p-8 text-center">
-          <p className="text-black/70 font-montserrat text-lg">
-            Debes iniciar sesión para agendar una cita
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -365,12 +387,12 @@ export function CitaForm() {
                         value={vehiculo.idVehiculo.toString()}
                         className="font-montserrat"
                       >
-                        <div className="flex items-center gap-2">
-                          <Car className="h-4 w-4 text-orange-500" />
-                          <span className="font-medium font-montserrat">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2">
+                          <Car className="h-4 w-4 text-orange-500 flex-shrink-0" />
+                          <span className="font-medium font-montserrat text-sm sm:text-base">
                             {vehiculo.marca} {vehiculo.modelo}
                           </span>
-                          <span className="text-black/60 font-montserrat">
+                          <span className="text-black/60 font-montserrat text-xs sm:text-sm">
                             - {vehiculo.placa}
                           </span>
                         </div>
@@ -386,7 +408,7 @@ export function CitaForm() {
                   <Button
                     type="button"
                     onClick={() => setShowVehiculoForm(true)}
-                    className="bg-orange-500 hover:bg-orange-600 text-white font-montserrat font-semibold"
+                    className="bg-orange-500 hover:bg-orange-600 text-white font-montserrat font-semibold touch-manipulation min-h-[48px]"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Registrar Vehículo
@@ -401,7 +423,7 @@ export function CitaForm() {
                     variant="outline"
                     size="sm"
                     onClick={() => setShowVehiculoForm(!showVehiculoForm)}
-                    className="border-orange-500/30 text-orange-600 hover:bg-orange-500/10 font-montserrat"
+                    className="border-orange-500/30 text-orange-600 hover:bg-orange-500/10 font-montserrat touch-manipulation min-h-[40px]"
                   >
                     {showVehiculoForm ? (
                       <>
@@ -421,7 +443,7 @@ export function CitaForm() {
               {showVehiculoForm && (
                 <div className="p-4 sm:p-6 bg-gradient-to-br from-orange-50/50 to-white border-2 border-orange-500/20 rounded-xl space-y-4 sm:space-y-5 shadow-sm">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-base sm:text-lg font-bold text-black font-montserrat">
+                    <h3 className="text-sm sm:text-base md:text-lg font-bold text-black font-montserrat">
                       Registrar Nuevo Vehículo
                     </h3>
                     {vehiculos.length > 0 && (
@@ -430,7 +452,7 @@ export function CitaForm() {
                         variant="ghost"
                         size="sm"
                         onClick={() => setShowVehiculoForm(false)}
-                        className="text-black/60 hover:text-black"
+                        className="text-black/60 hover:text-black touch-manipulation min-h-[40px] min-w-[40px]"
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -450,7 +472,7 @@ export function CitaForm() {
                           })
                         }
                         placeholder="ABC-123"
-                        className="h-12 sm:h-14 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all"
+                        className="h-12 sm:h-14 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all touch-manipulation"
                       />
                     </div>
                     <div className="space-y-2">
@@ -466,7 +488,7 @@ export function CitaForm() {
                           })
                         }
                         placeholder="Número de motor"
-                        className="h-12 sm:h-14 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all"
+                        className="h-12 sm:h-14 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all touch-manipulation"
                       />
                     </div>
                     <div className="space-y-2">
@@ -482,7 +504,7 @@ export function CitaForm() {
                           })
                         }
                         placeholder="Honda, Yamaha, etc."
-                        className="h-12 sm:h-14 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all"
+                        className="h-12 sm:h-14 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all touch-manipulation"
                       />
                     </div>
                     <div className="space-y-2">
@@ -498,7 +520,7 @@ export function CitaForm() {
                           })
                         }
                         placeholder="Modelo del vehículo"
-                        className="h-12 sm:h-14 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all"
+                        className="h-12 sm:h-14 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all touch-manipulation"
                       />
                     </div>
                     <div className="space-y-2">
@@ -514,7 +536,7 @@ export function CitaForm() {
                           })
                         }
                         placeholder="Color del vehículo"
-                        className="h-12 sm:h-14 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all"
+                        className="h-12 sm:h-14 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all touch-manipulation"
                       />
                     </div>
                     <div className="space-y-2">
@@ -532,7 +554,7 @@ export function CitaForm() {
                         }
                         min="1900"
                         max={new Date().getFullYear() + 1}
-                        className="h-12 sm:h-14 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all"
+                        className="h-12 sm:h-14 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all touch-manipulation"
                       />
                     </div>
                     <div className="space-y-2 md:col-span-2">
@@ -548,7 +570,7 @@ export function CitaForm() {
                           })
                         }
                         placeholder="Número de chasis (opcional)"
-                        className="h-12 sm:h-14 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all"
+                        className="h-12 sm:h-14 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all touch-manipulation"
                       />
                     </div>
                   </div>
@@ -563,7 +585,7 @@ export function CitaForm() {
                       !vehiculoForm.color ||
                       !vehiculoForm.anio
                     }
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white h-12 sm:h-14 rounded-xl font-semibold text-sm sm:text-base font-montserrat shadow-lg"
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white h-12 sm:h-14 rounded-xl font-semibold text-sm sm:text-base font-montserrat shadow-lg touch-manipulation min-h-[48px]"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Registrar Vehículo
@@ -572,10 +594,10 @@ export function CitaForm() {
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-3">
-                <Label className="text-black font-semibold text-base flex items-center gap-2 font-montserrat">
-                  <Calendar className="h-5 w-5 text-orange-500" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div className="space-y-2 sm:space-y-3">
+                <Label className="text-black font-semibold text-sm sm:text-base flex items-center gap-2 font-montserrat">
+                  <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
                   Fecha <span className="text-destructive">*</span>
                 </Label>
                 <Input
@@ -585,14 +607,14 @@ export function CitaForm() {
                     setFormData({ ...formData, fechaInicio: e.target.value })
                   }
                   min={new Date().toISOString().split('T')[0]}
-                  className="h-12 sm:h-14 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all"
+                  className="h-12 sm:h-14 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all touch-manipulation"
                   disabled={submitting}
                   required
                 />
               </div>
-              <div className="space-y-3">
-                <Label className="text-black font-semibold text-base flex items-center gap-2 font-montserrat">
-                  <Calendar className="h-5 w-5 text-orange-500" />
+              <div className="space-y-2 sm:space-y-3">
+                <Label className="text-black font-semibold text-sm sm:text-base flex items-center gap-2 font-montserrat">
+                  <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
                   Hora <span className="text-destructive">*</span>
                 </Label>
                 <Input
@@ -601,7 +623,7 @@ export function CitaForm() {
                   onChange={(e) =>
                     setFormData({ ...formData, horaInicio: e.target.value })
                   }
-                  className="h-12 sm:h-14 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all"
+                  className="h-12 sm:h-14 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all touch-manipulation"
                   disabled={submitting}
                   required
                 />
@@ -611,7 +633,7 @@ export function CitaForm() {
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Button
                 type="submit"
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white h-12 sm:h-14 rounded-xl font-bold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-300 font-montserrat"
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white h-12 sm:h-14 rounded-xl font-bold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-300 font-montserrat touch-manipulation min-h-[48px]"
                 disabled={
                   submitting ||
                   (vehiculos.length === 0 && !showVehiculoForm) ||

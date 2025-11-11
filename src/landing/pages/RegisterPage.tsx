@@ -167,34 +167,56 @@ export default function RegisterPage() {
         telefono: telefonoBackend,
       };
 
-      await registerAction({
+      // El registerAction devuelve el token directamente del backend
+      const registerResponse = await registerAction({
         email: emailLimpio,
         password: formData.password,
         clienteData,
       });
 
-      const authStore = useAuthStore.getState();
-      const loginOk = await authStore.login(formData.email, formData.password);
-      if (loginOk) {
-        const updatedAuthStore = useAuthStore.getState();
-        const cliente = updatedAuthStore.user?.cliente;
-        const token = updatedAuthStore.token;
+      // El backend devuelve { token, user: { id, email, cliente: {...} } }
+      const token = registerResponse.token;
+      const userData = registerResponse.user;
+      const cliente = userData?.cliente;
 
-        if (cliente && token) {
-          setAuth(token, {
-            id: Number(updatedAuthStore.user?.id) || 0,
-            email: formData.email,
-            clienteId: cliente.idCliente,
-            nombre:
-              [cliente.primerNombre, cliente.primerApellido]
-                .filter(Boolean)
-                .join(" ") || cliente.ruc,
-          });
+      if (token && cliente) {
+        // Guardar en el store de landing
+        setAuth(token, {
+          id: Number(userData.id) || 0,
+          email: emailLimpio,
+          clienteId: cliente.idCliente,
+          nombre:
+            [cliente.primerNombre, cliente.primerApellido]
+              .filter(Boolean)
+              .join(" ") || cliente.ruc || 'Cliente',
+        });
+        
+        toast.success("Registro exitoso. Bienvenido!");
+        navigate(redirect);
+      } else {
+        // Si no viene el token o cliente, intentar login como fallback
+        const authStore = useAuthStore.getState();
+        const loginOk = await authStore.login(emailLimpio, formData.password);
+        if (loginOk) {
+          const updatedAuthStore = useAuthStore.getState();
+          const clienteFromLogin = updatedAuthStore.user?.cliente;
+          const tokenFromLogin = updatedAuthStore.token;
+
+          if (clienteFromLogin && tokenFromLogin) {
+            setAuth(tokenFromLogin, {
+              id: Number(updatedAuthStore.user?.id) || 0,
+              email: emailLimpio,
+              clienteId: clienteFromLogin.idCliente,
+              nombre:
+                [clienteFromLogin.primerNombre, clienteFromLogin.primerApellido]
+                  .filter(Boolean)
+                  .join(" ") || clienteFromLogin.ruc || 'Cliente',
+            });
+          }
         }
+        toast.success("Registro exitoso");
+        navigate(redirect);
       }
-
-      toast.success("Registro exitoso");
-      navigate(redirect);
     } catch (error: any) {
       const message =
         error?.response?.data?.message ||

@@ -234,7 +234,7 @@ export function HeroSection() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-2 border-white/40 text-white hover:bg-white/10 hover:border-white/60 text-lg px-8 py-6 rounded-lg backdrop-blur-md transition-all duration-300 group font-montserrat font-semibold"
+                className="border-2 border-orange-500/80 text-white bg-black/40 hover:bg-orange-500/20 hover:border-orange-500 text-lg px-8 py-6 rounded-lg backdrop-blur-md transition-all duration-300 group font-montserrat font-semibold shadow-lg hover:shadow-orange-500/40"
                 onClick={handleCotizacion}
               >
                 <DollarSign className="mr-3 h-6 w-6 group-hover:rotate-12 transition-transform" />

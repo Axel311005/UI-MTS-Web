@@ -345,23 +345,15 @@ export default function AdministracionPage() {
       .map((role) => role.trim().toLowerCase())
       .filter((role) => role.length > 0);
 
-    // Validar que los roles sean válidos según el backend
-    const rolesValidos = [
-      "gerente",
-      "admin",
-      "vendedor",
-      "cliente",
-      "superuser",
-    ];
+    // Validar que los roles sean válidos - solo vendedor puede ser asignado desde aquí
+    const rolesValidos = ["vendedor"];
     const rolesInvalidos = rolesEnMinusculas.filter(
       (role) => !rolesValidos.includes(role)
     );
 
     if (rolesInvalidos.length > 0) {
       toast.error(
-        `Roles inválidos: ${rolesInvalidos.join(
-          ", "
-        )}. Roles válidos: ${rolesValidos.join(", ")}`
+        `Solo se puede asignar el rol vendedor desde esta sección. Roles inválidos: ${rolesInvalidos.join(", ")}`
       );
       return;
     }
@@ -665,14 +657,8 @@ export default function AdministracionPage() {
                   const user = users?.find((u: any) => u.id === value);
                   if (user?.roles) {
                     const roles = Array.isArray(user.roles) ? user.roles : [];
-                    // Roles válidos según el backend
-                    const rolesValidos = [
-                      "gerente",
-                      "admin",
-                      "vendedor",
-                      "cliente",
-                      "superuser",
-                    ];
+                    // Solo mostrar vendedor como opción asignable
+                    const rolesValidos = ["vendedor"];
                     // Convertir a minúsculas, limpiar espacios y filtrar solo roles válidos
                     const rolesFiltrados = roles
                       .map((role: string) => String(role).trim().toLowerCase())
@@ -723,7 +709,7 @@ export default function AdministracionPage() {
               <div className="space-y-2">
                 <Label>Roles</Label>
                 <div className="space-y-2">
-                  {["vendedor", "gerente"].map((role) => {
+                  {["vendedor"].map((role) => {
                     const roleLower = role.toLowerCase();
                     return (
                       <div

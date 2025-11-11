@@ -9,9 +9,11 @@ export const loginAction = async (
     const { data } = await tallerApi.post('/auth/login', { email, password });
     return data;
   } catch (error: any) {
-    // Manejar errores específicos
+    // Manejar errores específicos del backend (bloqueo de cuenta, intentos fallidos, etc.)
     if (error.response?.status === 401) {
-      throw new Error('Credenciales incorrectas');
+      // El backend puede devolver mensajes específicos sobre bloqueo o intentos fallidos
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Credenciales incorrectas';
+      throw new Error(errorMessage);
     }
 
     if (error.response?.status === 404) {

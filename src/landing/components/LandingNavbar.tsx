@@ -134,13 +134,13 @@ export function LandingNavbar() {
                   variant="outline"
                   size="sm"
                   onClick={() => navigate("/login")}
-                  className="border-foreground/40 text-foreground hover:bg-foreground/10 dark:border-white/40 dark:text-white dark:hover:bg-white/10"
+                  className="border-2 border-white/60 text-white hover:bg-white/20 hover:border-white/80 bg-transparent font-semibold transition-all duration-200"
                 >
                   Iniciar Sesión
                 </Button>
                 <Button
                   size="sm"
-                  className="bg-orange-500 hover:bg-orange-600 text-white"
+                  className="bg-orange-500 hover:bg-orange-600 text-white font-semibold shadow-lg hover:shadow-orange-500/50 transition-all duration-200"
                   onClick={() => navigate("/register")}
                 >
                   Registrarse
@@ -219,11 +219,11 @@ export function LandingNavbar() {
                 </div>
               </>
             ) : (
-              <div className="pt-4 border-t border-orange-500/20 space-y-2">
+              <div className="pt-4 border-t border-orange-500/20 space-y-3">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full border-white/40 text-white hover:bg-white/10"
+                  className="w-full border-2 border-white/70 text-white hover:bg-white/20 hover:border-white bg-transparent font-semibold transition-all duration-200 min-h-[44px] touch-manipulation"
                   onClick={() => {
                     navigate("/login");
                     setMobileMenuOpen(false);
@@ -233,7 +233,7 @@ export function LandingNavbar() {
                 </Button>
                 <Button
                   size="sm"
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold shadow-lg hover:shadow-orange-500/50 transition-all duration-200 min-h-[44px] touch-manipulation"
                   onClick={() => {
                     navigate("/register");
                     setMobileMenuOpen(false);

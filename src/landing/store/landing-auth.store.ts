@@ -16,25 +16,42 @@ interface LandingAuthState {
 
 export const useLandingAuthStore = create<LandingAuthState>()(
   persist(
-    (set) => {
+    (set, get) => {
       // Inicializar desde localStorage si existe
       const initToken =
         typeof window !== 'undefined' ? localStorage.getItem('token') : null;
       const hasToken = !!initToken;
 
+      // Intentar recuperar el usuario del localStorage si existe
+      let initUser: LandingAuthState['user'] = null;
+      if (typeof window !== 'undefined' && hasToken) {
+        try {
+          const userStr = localStorage.getItem('landing-user');
+          if (userStr) {
+            initUser = JSON.parse(userStr);
+          }
+        } catch {
+          // Si hay error al parsear, mantener null
+        }
+      }
+
       return {
         token: initToken,
-        user: null,
-        isAuthenticated: hasToken,
+        user: initUser,
+        isAuthenticated: hasToken && !!initUser,
         setAuth: (token, user) => {
           if (typeof window !== 'undefined') {
             localStorage.setItem('token', token);
+            if (user) {
+              localStorage.setItem('landing-user', JSON.stringify(user));
+            }
           }
           set({ token, user, isAuthenticated: true });
         },
         logout: () => {
           if (typeof window !== 'undefined') {
             localStorage.removeItem('token');
+            localStorage.removeItem('landing-user');
           }
           set({ token: null, user: null, isAuthenticated: false });
         },
