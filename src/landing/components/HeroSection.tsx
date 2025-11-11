@@ -151,7 +151,7 @@ export function HeroSection() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 w-full px-4 sm:px-6 lg:px-12 xl:px-20">
+  <div className="relative z-30 w-full px-4 sm:px-6 lg:px-12 xl:px-20">
         <div className="mx-auto grid w-full max-w-[min(100vw,1760px)] grid-cols-1 gap-8 md:gap-12 lg:grid-cols-2 items-center min-h-screen py-20 md:py-32">
           {/* Left Side - Text Content */}
           <motion.div
@@ -280,7 +280,7 @@ export function HeroSection() {
       {/* Navigation Arrows */}
       <button
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-md transition-all duration-300 group"
+        className="absolute left-2 sm:left-4 sm:top-1/2 top-1/3 sm:-translate-y-1/2 translate-y-0 z-10 sm:z-20 p-3 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-md transition-all duration-300 group"
         aria-label="Previous slide"
       >
         <ChevronLeft className="h-6 w-6 text-white group-hover:text-orange-500" />
@@ -288,7 +288,7 @@ export function HeroSection() {
 
       <button
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-md transition-all duration-300 group"
+        className="absolute right-2 sm:right-4 sm:top-1/2 top-1/3 sm:-translate-y-1/2 translate-y-0 z-10 sm:z-20 p-3 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-md transition-all duration-300 group"
         aria-label="Next slide"
       >
         <ChevronRight className="h-6 w-6 text-white group-hover:text-orange-500" />

@@ -30,10 +30,11 @@ import { useAuthStore } from '@/auth/store/auth.store';
 
 interface DetalleLinea {
   idItem: number | null; // null cuando no hay item seleccionado
-  cantidad: number;
+  cantidad: number; // valor numérico consolidado
   precioUnitario: number;
   totalLinea: number;
   lineaId?: string; // ID único para cada línea
+  cantidadInput?: string; // estado de entrada crudo para permitir borrar temporalmente
 }
 
 export function CotizacionForm() {
@@ -118,6 +119,7 @@ export function CotizacionForm() {
       {
         idItem: null, // Sin item seleccionado inicialmente
         cantidad: 1,
+        cantidadInput: '1',
         precioUnitario: 0,
         totalLinea: 0,
         lineaId: `linea-${Date.now()}-${Math.random()}`,
@@ -194,7 +196,7 @@ export function CotizacionForm() {
         numeric = 1; // Cantidad debe ser al menos 1
       }
       
-      updated[index] = { ...updated[index], [field]: numeric } as DetalleLinea;
+      updated[index] = { ...updated[index], [field]: numeric, cantidadInput: String(updated[index].cantidad === numeric ? (updated[index].cantidadInput ?? numeric) : numeric) } as DetalleLinea;
     }
 
     // Recalcular total solo si cambia cantidad (precioUnitario no se puede cambiar)
@@ -205,6 +207,42 @@ export function CotizacionForm() {
     }
 
     setLineas(updated);
+  };
+
+  // Manejo especializado para el input de cantidad que permite borrar temporalmente
+  const handleCantidadChange = (index: number, raw: string) => {
+    const updated = [...lineas];
+    // Permitir vacío mientras el usuario escribe
+    if (raw === '') {
+      updated[index] = { ...updated[index], cantidadInput: '' };
+      setLineas(updated);
+      return;
+    }
+    // Normalizar a entero >= 1
+    let numeric = parseInt(raw, 10);
+    if (!Number.isFinite(numeric) || numeric < 1) numeric = 1;
+    updated[index] = {
+      ...updated[index],
+      cantidad: numeric,
+      cantidadInput: String(numeric),
+      totalLinea: Math.max(0, numeric * Math.max(0, Number(updated[index].precioUnitario) || 0)),
+    };
+    setLineas(updated);
+  };
+
+  const handleCantidadBlur = (index: number) => {
+    const updated = [...lineas];
+    if (updated[index].cantidadInput === '' || updated[index].cantidad < 1) {
+      const cantidad = 1;
+      const precio = Math.max(0, Number(updated[index].precioUnitario) || 0);
+      updated[index] = {
+        ...updated[index],
+        cantidad,
+        cantidadInput: '1',
+        totalLinea: Math.max(0, cantidad * precio),
+      };
+      setLineas(updated);
+    }
   };
 
   const handleDownloadPdf = async () => {
@@ -554,16 +592,13 @@ export function CotizacionForm() {
                         </Label>
                         <Input
                           type="number"
+                          inputMode="numeric"
                           min="1"
-                          value={linea.cantidad}
-                          onChange={(e) =>
-                            updateLinea(
-                              index,
-                              'cantidad',
-                              Number(e.target.value)
-                            )
-                          }
-                          className="h-11 sm:h-12 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all"
+                          step="1"
+                          value={linea.cantidadInput ?? String(linea.cantidad)}
+                          onChange={(e) => handleCantidadChange(index, e.target.value)}
+                          onBlur={() => handleCantidadBlur(index)}
+                          className="h-11 sm:h-12 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all appearance-none"
                         />
                       </div>
                       <div className="col-span-1 sm:col-span-1 lg:col-span-2">

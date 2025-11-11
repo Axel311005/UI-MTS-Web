@@ -29,7 +29,7 @@ export const formatDate = (iso: any) => {
   ): string => {
     const desc = (monedaDescripcion || '').toString().trim().toUpperCase();
 
-    if (desc === 'CORDOBAS' || desc === 'CÓRDOBAS' || desc === 'CNY' || desc === 'NIO') {
+    if (desc === 'CORDOBAS' || desc === 'CÓRDOBAS' || desc === 'NIO') {
       return formatLocalMoney(value, 'es-NI', 'NIO');
     }
 
