@@ -21,10 +21,12 @@ export function LandingProtectedRoute({ children }: LandingProtectedRouteProps) 
   const user = landingUser || (authUser?.cliente ? {
     id: Number(authUser.id) || 0,
     email: authUser.email || '',
-    clienteId: (authUser.cliente as any)?.id || (authUser.cliente as any)?.idCliente,
-    nombre: authUser.cliente?.primerNombre 
-      ? `${authUser.cliente.primerNombre} ${authUser.cliente.primerApellido || ''}`.trim()
-      : authUser.cliente?.ruc || 'Cliente',
+    clienteId: authUser.cliente.id || authUser.cliente.idCliente || 0,
+    nombre: authUser.cliente.nombreCompleto ||
+      (authUser.cliente.primerNombre 
+        ? `${authUser.cliente.primerNombre} ${authUser.cliente.primerApellido || ''}`.trim()
+        : null) ||
+      authUser.cliente.ruc || 'Cliente',
   } : null);
   
   const token = landingToken || authToken;
@@ -49,10 +51,13 @@ export function LandingProtectedRoute({ children }: LandingProtectedRouteProps) 
           else if (storedUser) {
             const parsedAuthUser = JSON.parse(storedUser);
             if (parsedAuthUser?.cliente) {
-              const clienteId = (parsedAuthUser.cliente as any)?.id || (parsedAuthUser.cliente as any)?.idCliente;
-              const clienteNombre = parsedAuthUser.cliente?.primerNombre 
-                ? `${parsedAuthUser.cliente.primerNombre} ${parsedAuthUser.cliente.primerApellido || ''}`.trim()
-                : parsedAuthUser.cliente?.ruc || 'Cliente';
+              const cliente = parsedAuthUser.cliente as { id?: number; idCliente?: number; nombreCompleto?: string; primerNombre?: string; primerApellido?: string; ruc?: string };
+              const clienteId = cliente.id || cliente.idCliente || 0;
+              const clienteNombre = cliente.nombreCompleto ||
+                (cliente.primerNombre 
+                  ? `${cliente.primerNombre} ${cliente.primerApellido || ''}`.trim()
+                  : null) ||
+                cliente.ruc || 'Cliente';
               
               useLandingAuthStore.getState().setAuth(storedToken, {
                 id: Number(parsedAuthUser.id) || 0,

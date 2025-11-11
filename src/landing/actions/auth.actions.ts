@@ -2,8 +2,32 @@ import { landingAuthApi } from '../api/landing.api';
 import type { RegisterPayload, LoginPayload, AuthResponse } from '../types/auth.types';
 
 export const registerAction = async (payload: RegisterPayload): Promise<AuthResponse> => {
-  const { data } = await landingAuthApi.post<AuthResponse>('/register', payload);
-  return data;
+  try {
+    const { data } = await landingAuthApi.post<AuthResponse>('/register', payload);
+    return data;
+  } catch (error: any) {
+    // Manejar errores específicos del backend
+    if (error.response?.status === 400) {
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Error al registrarse';
+      throw new Error(errorMessage);
+    }
+
+    if (error.response?.status === 409) {
+      throw new Error('El correo electrónico ya está registrado');
+    }
+
+    if (
+      error.code === 'ERR_NETWORK' ||
+      error.message?.includes('Network Error')
+    ) {
+      throw new Error(
+        'No se pudo conectar al servidor. Verifica que el backend esté corriendo.'
+      );
+    }
+
+    // Re-lanzar el error original si no es uno de los casos anteriores
+    throw error;
+  }
 };
 
 export const loginAction = async (payload: LoginPayload): Promise<AuthResponse> => {

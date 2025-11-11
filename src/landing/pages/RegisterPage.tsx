@@ -1,20 +1,19 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams, Link } from "react-router";
-import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
-import { Label } from "@/shared/components/ui/label";
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams, Link } from 'react-router';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
+import { Label } from '@/shared/components/ui/label';
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
-} from "@/shared/components/ui/card";
-import { toast } from "sonner";
-import { registerAction } from "../actions/auth.actions";
-import { useLandingAuthStore } from "../store/landing-auth.store";
-import { useAuthStore } from "@/auth/store/auth.store";
-import { UserPlus, Eye, EyeOff } from "lucide-react";
+} from '@/shared/components/ui/card';
+import { toast } from 'sonner';
+import { registerAction } from '../actions/auth.actions';
+import { useLandingAuthStore } from '../store/landing-auth.store';
+import { UserPlus, Eye, EyeOff } from 'lucide-react';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -23,17 +22,17 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    confirmPassword: "",
-    primerNombre: "",
-    primerApellido: "",
-    direccion: "",
-    telefono: "",
+    email: '',
+    password: '',
+    confirmPassword: '',
+    primerNombre: '',
+    primerApellido: '',
+    direccion: '',
+    telefono: '',
   });
   const [loading, setLoading] = useState(false);
 
-  const redirect = searchParams.get("redirect") || "/";
+  const redirect = searchParams.get('redirect') || '/';
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -44,7 +43,7 @@ export default function RegisterPage() {
   // Formatear teléfono: solo 8 números (el +505 se agrega automáticamente)
   const formatPhone = (value: string) => {
     // Solo permitir números, máximo 8 dígitos
-    const numbers = value.replace(/\D/g, "").slice(0, 8);
+    const numbers = value.replace(/\D/g, '').slice(0, 8);
     return numbers;
   };
 
@@ -78,61 +77,61 @@ export default function RegisterPage() {
 
     // Validaciones de email
     if (!emailLimpio || !validateEmail(emailLimpio)) {
-      toast.error("El correo electrónico no es válido", {
-        position: "top-right",
+      toast.error('El correo electrónico no es válido', {
+        position: 'top-right',
       });
       return;
     }
 
     // Validaciones de nombres
     if (!primerNombreLimpio || primerNombreLimpio.length < 2) {
-      toast.error("El primer nombre debe tener al menos 2 caracteres", {
-        position: "top-right",
+      toast.error('El primer nombre debe tener al menos 2 caracteres', {
+        position: 'top-right',
       });
       return;
     }
 
     if (!primerApellidoLimpio || primerApellidoLimpio.length < 2) {
-      toast.error("El primer apellido debe tener al menos 2 caracteres", {
-        position: "top-right",
+      toast.error('El primer apellido debe tener al menos 2 caracteres', {
+        position: 'top-right',
       });
       return;
     }
 
     // Validación de teléfono
     if (!formData.telefono || formData.telefono.length !== 8) {
-      toast.error("El teléfono debe tener 8 dígitos", {
-        position: "top-right",
+      toast.error('El teléfono debe tener 8 dígitos', {
+        position: 'top-right',
       });
       return;
     }
 
     // Validación de dirección
     if (!direccionLimpio || direccionLimpio.length < 5) {
-      toast.error("La dirección debe tener al menos 5 caracteres", {
-        position: "top-right",
+      toast.error('La dirección debe tener al menos 5 caracteres', {
+        position: 'top-right',
       });
       return;
     }
 
     // Validación de contraseñas
     if (formData.password !== formData.confirmPassword) {
-      toast.error("Las contraseñas no coinciden", {
-        position: "top-right",
+      toast.error('Las contraseñas no coinciden', {
+        position: 'top-right',
       });
       return;
     }
 
     if (formData.password.length < 8) {
-      toast.error("La contraseña debe tener al menos 8 caracteres", {
-        position: "top-right",
+      toast.error('La contraseña debe tener al menos 8 caracteres', {
+        position: 'top-right',
       });
       return;
     }
 
     if (formData.password.length > 128) {
-      toast.error("La contraseña es demasiado larga (máximo 128 caracteres)", {
-        position: "top-right",
+      toast.error('La contraseña es demasiado larga (máximo 128 caracteres)', {
+        position: 'top-right',
       });
       return;
     }
@@ -141,9 +140,9 @@ export default function RegisterPage() {
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)/;
     if (!passwordRegex.test(formData.password)) {
       toast.error(
-        "La contraseña debe contener al menos una letra y un número",
+        'La contraseña debe contener al menos una letra y un número',
         {
-          position: "top-right",
+          position: 'top-right',
         }
       );
       return;
@@ -153,106 +152,115 @@ export default function RegisterPage() {
 
     try {
       // Preparar clienteData
-      // Convertir teléfono de formato frontend (87781633) a backend (50587781633)
-      // Solo números, todo pegado
-      const telefonoLimpio = formData.telefono.replace(/\D/g, ""); // Solo números
+      // Convertir teléfono de formato frontend (87781633) a backend (+50587781633)
+      // Solo números, todo pegado, con código de país y el signo +
+      const telefonoLimpio = formData.telefono.replace(/\D/g, ''); // Solo números
       const telefonoBackend =
-        telefonoLimpio.length === 8 ? `505${telefonoLimpio}` : telefonoLimpio;
+        telefonoLimpio.length === 8
+          ? `+505${telefonoLimpio}`
+          : telefonoLimpio.startsWith('+')
+          ? telefonoLimpio
+          : `+${telefonoLimpio}`;
 
       const clienteData = {
         primerNombre: primerNombreLimpio,
         primerApellido: primerApellidoLimpio,
-        ruc: null, // RUC opcional, se envía vacío
+        ruc: null, // RUC siempre null según el backend
         direccion: direccionLimpio,
         telefono: telefonoBackend,
       };
 
-      // El registerAction devuelve el token directamente del backend
-      const registerResponse = await registerAction({
+      // 1. Registrar al usuario
+      await registerAction({
         email: emailLimpio,
         password: formData.password,
         clienteData,
       });
 
-      // El backend devuelve { token, user: { id, email, cliente: {...} } }
-      const token = registerResponse.token;
-      const userData = registerResponse.user;
-      const cliente = userData?.cliente;
+      // 2. Después del registro exitoso, hacer login automático
+      const { loginAction } = await import('../actions/auth.actions');
+      const loginResponse = await loginAction({
+        email: emailLimpio,
+        password: formData.password,
+      });
+
+      // 3. El login devuelve directamente { token, id, email, roles, cliente: {...} }
+      // Según la respuesta del backend: { id, email, roles, cliente: {...}, token }
+      const { token, id, roles, cliente } = loginResponse;
 
       if (token && cliente) {
-        // Guardar en el store de landing
+        // El backend devuelve cliente.idCliente en la respuesta del login
+        const clienteId = cliente.idCliente || cliente.id || 0;
+        const clienteNombre =
+          cliente.nombreCompleto ||
+          [cliente.primerNombre, cliente.primerApellido]
+            .filter(Boolean)
+            .join(' ') ||
+          cliente.ruc ||
+          'Cliente';
+
         // El id del usuario puede ser string (UUID) o number
-        const userId = typeof userData.id === 'string' ? userData.id : (Number(userData.id) || 0);
-        
+        const userId = typeof id === 'string' ? id : Number(id) || 0;
+
         const landingUser = {
           id: userId,
           email: emailLimpio,
-          clienteId: (cliente as any).id || cliente.idCliente,
-          nombre:
-            (cliente as any).nombreCompleto ||
-            [cliente.primerNombre, cliente.primerApellido]
-              .filter(Boolean)
-              .join(" ") || (cliente as any).ruc || 'Cliente',
+          clienteId: Number(clienteId) || 0,
+          nombre: clienteNombre,
         };
-        
+
         // Guardar primero en localStorage para asegurar que esté disponible inmediatamente
         if (typeof window !== 'undefined') {
           localStorage.setItem('token', token);
           localStorage.setItem('landing-user', JSON.stringify(landingUser));
         }
-        
-        // Luego actualizar el store
+
+        // Actualizar el store de landing
         setAuth(token, landingUser);
-        
-        // También sincronizar con el store principal si es necesario
-        // (para que funcione correctamente cuando se inicia sesión desde el panel)
+
+        // También sincronizar con el store principal
         try {
-          localStorage.setItem('user', JSON.stringify({
-            id: userData.id,
-            email: emailLimpio,
-            cliente: cliente,
-            roles: [],
-          }));
+          localStorage.setItem(
+            'user',
+            JSON.stringify({
+              id: id,
+              email: emailLimpio,
+              cliente: cliente,
+              roles: roles || [],
+            })
+          );
         } catch (error) {
           console.warn('Error al sincronizar con store principal:', error);
         }
-        
-        // Esperar un tick para asegurar que el store se actualice antes de navegar
-        await new Promise(resolve => setTimeout(resolve, 0));
-        
-        toast.success("Registro exitoso. Bienvenido!");
+
+        toast.success(`Registro exitoso. Bienvenido ${clienteNombre}!`, {
+          position: 'top-right',
+        });
+
+        // Redirigir a la página de destino
         navigate(redirect);
       } else {
-        // Si no viene el token o cliente, intentar login como fallback
-        const authStore = useAuthStore.getState();
-        const loginOk = await authStore.login(emailLimpio, formData.password);
-        if (loginOk) {
-          const updatedAuthStore = useAuthStore.getState();
-          const clienteFromLogin = updatedAuthStore.user?.cliente;
-          const tokenFromLogin = updatedAuthStore.token;
-
-          if (clienteFromLogin && tokenFromLogin) {
-            setAuth(tokenFromLogin, {
-              id: Number(updatedAuthStore.user?.id) || 0,
-              email: emailLimpio,
-              clienteId: clienteFromLogin.idCliente,
-              nombre:
-                [clienteFromLogin.primerNombre, clienteFromLogin.primerApellido]
-                  .filter(Boolean)
-                  .join(" ") || clienteFromLogin.ruc || 'Cliente',
-            });
+        // Si no viene el token o cliente, redirigir al login
+        toast.success(
+          'Registro exitoso. Por favor, inicia sesión con tus credenciales.',
+          {
+            position: 'top-right',
+            duration: 5000,
           }
-        }
-        toast.success("Registro exitoso");
-        navigate(redirect);
+        );
+        navigate(
+          `/login?email=${encodeURIComponent(
+            emailLimpio
+          )}&redirect=${encodeURIComponent(redirect)}`
+        );
       }
     } catch (error: any) {
       const message =
         error?.response?.data?.message ||
         (error instanceof Error ? error.message : undefined) ||
-        "Error al registrarse";
+        'Error al registrarse';
       toast.error(message, {
-        position: "top-right",
+        position: 'top-right',
       });
     } finally {
       setLoading(false);
@@ -265,7 +273,7 @@ export default function RegisterPage() {
     const { id, value } = e.target;
 
     // Si es teléfono, usar el formateador especial
-    if (id === "telefono") {
+    if (id === 'telefono') {
       // Si es teléfono, usar el formateador especial
       const formatted = formatPhone(value);
       setFormData((prev) => ({
@@ -319,7 +327,7 @@ export default function RegisterPage() {
                   <div className="relative">
                     <Input
                       id="password"
-                      type={showPassword ? "text" : "password"}
+                      type={showPassword ? 'text' : 'password'}
                       placeholder="••••••••"
                       className="pr-10 h-10 sm:h-11"
                       value={formData.password}
@@ -346,7 +354,7 @@ export default function RegisterPage() {
                   <div className="relative">
                     <Input
                       id="confirmPassword"
-                      type={showConfirmPassword ? "text" : "password"}
+                      type={showConfirmPassword ? 'text' : 'password'}
                       placeholder="••••••••"
                       className="pr-10 h-10 sm:h-11"
                       value={formData.confirmPassword}
@@ -440,12 +448,12 @@ export default function RegisterPage() {
               disabled={loading}
             >
               <UserPlus className="w-4 h-4 mr-2" />
-              {loading ? "Creando cuenta..." : "Crear Cuenta"}
+              {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
             </Button>
           </form>
 
           <div className="text-center text-xs sm:text-sm text-muted-foreground mt-4">
-            ¿Ya tienes una cuenta?{" "}
+            ¿Ya tienes una cuenta?{' '}
             <Link
               to={`/login?redirect=${encodeURIComponent(redirect)}`}
               className="text-primary hover:underline font-medium"

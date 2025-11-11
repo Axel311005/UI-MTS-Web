@@ -57,15 +57,16 @@ export default function LoginPage() {
 
     setIsPosting(true);
     const formData = new FormData(event.currentTarget);
-    let email = formData.get('email') as string;
+    // Usar el estado del email si está disponible, sino usar el formData
+    let emailValue = email || (formData.get('email') as string);
     let password = formData.get('password') as string;
 
     // Sanitizar inputs
-    email = sanitizeInput(email);
+    emailValue = sanitizeInput(emailValue);
     password = sanitizeInput(password);
 
     // Validaciones
-    if (!email || email.length === 0) {
+    if (!emailValue || emailValue.length === 0) {
       toast.error('El correo electrónico es requerido', {
         position: 'top-right',
       });
@@ -73,7 +74,7 @@ export default function LoginPage() {
       return;
     }
 
-    if (!validateEmail(email)) {
+    if (!validateEmail(emailValue)) {
       toast.error('El correo electrónico no es válido', {
         position: 'top-right',
       });
@@ -99,7 +100,7 @@ export default function LoginPage() {
 
     try {
       // Llamar directamente a loginAction para capturar el error del backend
-      const data = await loginAction(email, password);
+      const data = await loginAction(emailValue, password);
       
       // Si llegamos aquí, el login fue exitoso
       const { token, ...user } = data;
@@ -166,11 +167,11 @@ export default function LoginPage() {
       } else if (cliente && token) {
         // El backend puede devolver cliente.id o cliente.idCliente
         // Según la respuesta del backend, viene como cliente.id (número)
-        const clienteId = (cliente as any).id || cliente.idCliente;
+        const clienteId = cliente.id || cliente.idCliente || 0;
         
         // El backend puede devolver nombreCompleto o primerNombre/primerApellido
         const clienteNombre = 
-          (cliente as any).nombreCompleto ||
+          cliente.nombreCompleto ||
           (cliente.primerNombre && cliente.primerApellido
             ? [cliente.primerNombre, cliente.primerApellido].filter(Boolean).join(' ')
             : null) ||
@@ -183,11 +184,12 @@ export default function LoginPage() {
         // Guardar primero en localStorage para asegurar que esté disponible inmediatamente
         const landingUser = {
           id: userId,
-          email: email,
+          email: emailValue,
           clienteId: Number(clienteId) || 0,
           nombre: clienteNombre,
         };
         
+        // Guardar primero en localStorage para asegurar que esté disponible inmediatamente
         if (typeof window !== 'undefined') {
           localStorage.setItem('token', token);
           localStorage.setItem('landing-user', JSON.stringify(landingUser));
@@ -198,7 +200,7 @@ export default function LoginPage() {
         toast.success(`Bienvenido ${clienteNombre}`, {
           position: 'top-right',
         });
-        const from = (location.state as any)?.from?.pathname || '/';
+        const from = (location.state as any)?.from?.pathname || redirect || '/';
         navigate(from, { replace: true });
       } else {
         toast.error(
@@ -231,6 +233,10 @@ export default function LoginPage() {
 
   const searchParams = new URLSearchParams(location.search);
   const redirect = searchParams.get('redirect') || '/';
+  const emailFromQuery = searchParams.get('email') || '';
+  
+  // Prellenar el email si viene en los query params (desde registro)
+  const [email, setEmail] = useState(emailFromQuery);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4 sm:p-6">
@@ -252,6 +258,8 @@ export default function LoginPage() {
                 id="email"
                 type="email"
                 name="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="usuario@ejemplo.com"
                 className="h-10 sm:h-11"
                 required

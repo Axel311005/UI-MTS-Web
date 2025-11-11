@@ -64,10 +64,12 @@ export function CotizacionForm() {
   const user = landingUser || localUser || (authUser?.cliente ? {
     id: Number(authUser.id) || 0,
     email: authUser.email || '',
-    clienteId: (authUser.cliente as any)?.id || (authUser.cliente as any)?.idCliente,
-    nombre: authUser.cliente?.primerNombre 
-      ? `${authUser.cliente.primerNombre} ${authUser.cliente.primerApellido || ''}`.trim()
-      : authUser.cliente?.ruc || 'Cliente',
+    clienteId: authUser.cliente.id || authUser.cliente.idCliente || 0,
+    nombre: authUser.cliente.nombreCompleto ||
+      (authUser.cliente.primerNombre 
+        ? `${authUser.cliente.primerNombre} ${authUser.cliente.primerApellido || ''}`.trim()
+        : null) ||
+      authUser.cliente.ruc || 'Cliente',
   } : null);
   
   const [items, setItems] = useState<ItemCotizable[]>([]);

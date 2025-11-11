@@ -19,19 +19,33 @@ export interface LoginPayload {
 }
 
 export interface AuthResponse {
+  id: string; // UUID del usuario
+  email: string;
+  roles: string[];
   token: string;
-  user: {
-    id: number;
-    email: string;
-    cliente?: {
-      idCliente: number;
-      primerNombre: string;
-      primerApellido: string;
-    };
-    empleado?: {
-      idEmpleado: number;
-      primerNombre: string;
-      primerApellido: string;
-    };
+  isActive?: boolean;
+  loginAttempts?: number;
+  blockedUntil?: string | null;
+  cliente?: {
+    id?: number; // Algunos endpoints pueden devolver id en lugar de idCliente
+    idCliente: number;
+    primerNombre: string;
+    primerApellido: string;
+    ruc?: string | null;
+    direccion?: string;
+    telefono?: string;
+    esExonerado?: boolean;
+    porcentajeExonerado?: string;
+    activo?: string;
+    notas?: string;
+    fechaUltModif?: string | null;
+    fechaCreacion?: string;
+    nombreCompleto?: string; // Campo opcional que puede venir del backend
+  };
+  empleado?: {
+    idEmpleado: number;
+    primerNombre: string;
+    primerApellido: string;
+    nombreCompleto?: string; // Campo opcional que puede venir del backend
   };
 }
