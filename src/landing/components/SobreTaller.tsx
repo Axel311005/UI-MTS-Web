@@ -1,33 +1,34 @@
-import { motion } from "framer-motion";
-import { MapPin, Phone, Clock } from "lucide-react";
+import { motion } from 'framer-motion';
+import { MapPin, Phone, Clock } from 'lucide-react';
 
 export function SobreTaller() {
   const infoItems = [
     {
       icon: MapPin,
-      title: "Dirección",
-      content: ["Barrio Riguero, Talleres Modernos", "1c n, 1 c abajo"],
-      isLink: false,
+      title: 'Dirección',
+      content: ['Barrio Riguero, Talleres Modernos', '1c n, 1 c abajo'],
+      link: 'https://maps.app.goo.gl/riLpecd1xVPSbVBw6',
+      isClickable: true,
     },
     {
       icon: Phone,
-      title: "WhatsApp",
-      content: ["+505 84809632"],
-      link: "https://wa.me/50584809632",
-      isLink: true,
+      title: 'WhatsApp',
+      content: ['+505 84809632'],
+      link: 'https://wa.me/50584809632',
+      isClickable: true,
     },
     {
       icon: Clock,
-      title: "Horario",
-      content: ["Lunes a sábado | 8:00 a.m.", "- 5:00 p.m."],
-      isLink: false,
+      title: 'Horario',
+      content: ['Lunes a sábado | 8:00 a.m.', '- 5:00 p.m.'],
+      isClickable: false,
     },
     {
       icon: Phone, // Placeholder, se reemplazará con SVG en el render
-      title: "Redes Sociales",
-      content: ["@taller.terry"],
-      link: "https://www.tiktok.com/@taller.terry",
-      isLink: true,
+      title: 'Redes Sociales',
+      content: ['@taller.terry'],
+      link: 'https://www.tiktok.com/@taller.terry',
+      isClickable: true,
     },
   ];
 
@@ -58,7 +59,49 @@ export function SobreTaller() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {infoItems.map((item, index) => {
             const Icon = item.icon;
-            const isTikTok = item.title === "Redes Sociales";
+            const isTikTok = item.title === 'Redes Sociales';
+            const CardContent = (
+              <div
+                className={`h-full bg-white border-2 border-orange-500/20 rounded-xl p-6 hover:border-orange-500/50 hover:shadow-xl transition-all duration-300 shadow-lg ${
+                  item.isClickable ? 'cursor-pointer' : ''
+                }`}
+              >
+                {/* Icon Container */}
+                <div className="flex justify-center mb-6">
+                  <div className="w-16 h-16 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                    {isTikTok ? (
+                      <svg
+                        className="h-8 w-8 text-white"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
+                      </svg>
+                    ) : (
+                      <Icon className="h-8 w-8 text-white" strokeWidth={2} />
+                    )}
+                  </div>
+                </div>
+
+                {/* Title */}
+                <h3 className="font-bold text-black text-lg mb-4 text-center font-montserrat">
+                  {item.title}
+                </h3>
+
+                {/* Content */}
+                <div className="space-y-1">
+                  {item.content.map((line, lineIndex) => (
+                    <div key={lineIndex} className="text-center">
+                      <p className="text-black/70 font-montserrat text-sm md:text-base">
+                        {line}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+
             return (
               <motion.div
                 key={item.title}
@@ -68,52 +111,18 @@ export function SobreTaller() {
                 transition={{ delay: index * 0.1, duration: 0.6 }}
                 whileHover={{ y: -5 }}
               >
-                <div className="h-full bg-white border-2 border-orange-500/20 rounded-xl p-6 hover:border-orange-500/50 hover:shadow-xl transition-all duration-300 shadow-lg">
-                  {/* Icon Container */}
-                  <div className="flex justify-center mb-6">
-                    <div className="w-16 h-16 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg">
-                      {isTikTok ? (
-                        <svg
-                          className="h-8 w-8 text-white"
-                          fill="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
-                        </svg>
-                      ) : (
-                        <Icon className="h-8 w-8 text-white" strokeWidth={2} />
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Title */}
-                  <h3 className="font-bold text-black text-lg mb-4 text-center font-montserrat">
-                    {item.title}
-                  </h3>
-
-                  {/* Content */}
-                  <div className="space-y-1">
-                    {item.content.map((line, lineIndex) => (
-                      <div key={lineIndex} className="text-center">
-                        {item.isLink && item.link ? (
-                          <a
-                            href={item.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-orange-500 hover:text-orange-400 transition-colors font-montserrat text-sm md:text-base font-semibold"
-                          >
-                            {line}
-                          </a>
-                        ) : (
-                          <p className="text-black/70 font-montserrat text-sm md:text-base">
-                            {line}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                {item.isClickable && item.link ? (
+                  <a
+                    href={item.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block h-full"
+                  >
+                    {CardContent}
+                  </a>
+                ) : (
+                  CardContent
+                )}
               </motion.div>
             );
           })}

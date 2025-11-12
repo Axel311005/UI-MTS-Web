@@ -1,85 +1,74 @@
-import { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
-import { Card, CardContent } from "@/shared/components/ui/card";
-import { ChevronLeft, ChevronRight, Minus, Plus } from "lucide-react";
+import { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { Card, CardContent } from '@/shared/components/ui/card';
+import { ChevronLeft, ChevronRight, Minus, Plus } from 'lucide-react';
 
 const servicios = [
   {
     id: 1,
-    title: "Alineación de Chasis",
+    title: 'Alineación de Chasis',
     description:
-      "Tecnología hidráulica de precisión para recuperar la geometría original",
-    image: "/Tecnologia-hidraulica-de-presicion.jpg",
+      'Tecnología hidráulica de precisión para recuperar la geometría original',
+    image: '/Tecnologia-hidraulica-de-presicion.jpg',
     features: [
-      "Alinear ejes delantero y trasero",
-      "Corregir desviaciones del chasis",
-      "Recuperar la geometría original de fábrica",
-      "Mejorar estabilidad y seguridad",
+      'Alinear ejes delantero y trasero',
+      'Corregir desviaciones del chasis',
+      'Recuperar la geometría original de fábrica',
+      'Mejorar estabilidad y seguridad',
     ],
   },
   {
     id: 2,
-    title: "Electromecánica",
+    title: 'Electromecánica',
     description:
-      "Diagnóstico y reparación del sistema eléctrico y mecánico interconectados",
-    image: "/Electro.jpg",
+      'Diagnóstico y reparación del sistema eléctrico y mecánico interconectados',
+    image: '/Electro.jpg',
     features: [
-      "Diagnóstico de reparación del sistema eléctrico y mecánico interconectados",
-      "Inspección y desmontaje de la moto",
-      "Limpieza",
-      "Medición y evaluación",
-      "Reparación o remplazo",
-      "Ajuste y montaje",
+      'Diagnóstico de reparación del sistema eléctrico y mecánico interconectados',
+      'Inspección y desmontaje de la moto',
+      'Limpieza',
+      'Medición y evaluación',
+      'Reparación o remplazo',
+      'Ajuste y montaje',
     ],
   },
   {
     id: 3,
-    title: "Escaneado y Reparación Eléctrica",
-    description: "Diagnóstico completo del sistema eléctrico de tu moto",
-    image: "/Imagen-de-herramientas-de-taller.jpg",
+    title: 'Escaneado y Reparación Eléctrica',
+    description: 'Diagnóstico completo del sistema eléctrico de tu moto',
+    image: '/Imagen-de-herramientas-de-taller.jpg',
     features: [
-      "Diagnóstico",
-      "Revisión de la moto por dentro",
-      "Localización de daños y reparación",
-      "Pruebas y ajustes de la moto",
-      "Entrega",
+      'Diagnóstico',
+      'Revisión de la moto por dentro',
+      'Localización de daños y reparación',
+      'Pruebas y ajustes de la moto',
+      'Entrega',
     ],
   },
   {
     id: 4,
-    title: "Overhaul",
-    description: "Desmontaje completo y reconstrucción profesional",
-    image: "/Imagen-del-taller.jpg",
+    title: 'Overhaul',
+    description: 'Desmontaje completo y reconstrucción profesional',
+    image: '/Imagen-del-taller.jpg',
     features: [
-      "Desmontaje completo",
-      "Limpieza y análisis",
-      "Rectificación y reparación",
-      "Remplazo de piezas (costo del cliente)",
-      "Reensamblaje",
-      "Pruebas finales",
-      "Entrega de la moto",
+      'Desmontaje completo',
+      'Limpieza y análisis',
+      'Rectificación y reparación',
+      'Remplazo de piezas (costo del cliente)',
+      'Reensamblaje',
+      'Pruebas finales',
+      'Entrega de la moto',
     ],
   },
   {
     id: 5,
-    title: "Tecnología Hidráulica",
-    description: "Equipos profesionales para alineación perfecta",
-    image: "/Otra-imagen.jpg",
+    title: 'Tecnología Hidráulica',
+    description: 'Equipos profesionales para alineación perfecta',
+    image: '/Otra-imagen.jpg',
     features: [
-      "Equipos de última generación",
-      "Precisión milimétrica",
-      "Tecnología hidráulica profesional",
-    ],
-  },
-  {
-    id: 6,
-    title: "Personal Capacitado",
-    description: "Técnicos especializados en chasis de motos",
-    image: "/personal-capacitado.png",
-    features: [
-      "Técnicos certificados",
-      "Años de experiencia",
-      "Especialización en motos",
+      'Equipos de última generación',
+      'Precisión milimétrica',
+      'Tecnología hidráulica profesional',
     ],
   },
 ];
@@ -109,13 +98,13 @@ export function ServicioEstrella() {
       img.onerror = () => {
         // Si falla, pre-cargar fallback
         if (
-          src !== "/Moto Hero.png" &&
-          !preloadedImages.has("/Moto Hero.png")
+          src !== '/Moto Hero.png' &&
+          !preloadedImages.has('/Moto Hero.png')
         ) {
           const fallbackImg = new Image();
-          fallbackImg.src = "/Moto Hero.png";
-          imageCache.set("/Moto Hero.png", fallbackImg);
-          preloadedImages.add("/Moto Hero.png");
+          fallbackImg.src = '/Moto Hero.png';
+          imageCache.set('/Moto Hero.png', fallbackImg);
+          preloadedImages.add('/Moto Hero.png');
         }
       };
     };
@@ -126,8 +115,8 @@ export function ServicioEstrella() {
     });
 
     // Pre-cargar fallback
-    if (!preloadedImages.has("/Moto Hero.png")) {
-      preloadImage("/Moto Hero.png");
+    if (!preloadedImages.has('/Moto Hero.png')) {
+      preloadImage('/Moto Hero.png');
     }
   }, []);
 
@@ -242,8 +231,8 @@ export function ServicioEstrella() {
                       decoding="async"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        if (target.src !== "/Moto Hero.png") {
-                          target.src = "/Moto Hero.png";
+                        if (target.src !== '/Moto Hero.png') {
+                          target.src = '/Moto Hero.png';
                         }
                       }}
                     />
@@ -351,8 +340,8 @@ export function ServicioEstrella() {
                   onClick={() => goToSlide(index)}
                   className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 ${
                     isActive
-                      ? "w-6 sm:w-8 bg-orange-500 shadow-[0_0_8px_rgba(255,165,0,0.4)]"
-                      : "w-1.5 sm:w-2 bg-white/40 hover:bg-white/60 hover:w-2.5 sm:hover:w-3"
+                      ? 'w-6 sm:w-8 bg-orange-500 shadow-[0_0_8px_rgba(255,165,0,0.4)]'
+                      : 'w-1.5 sm:w-2 bg-white/40 hover:bg-white/60 hover:w-2.5 sm:hover:w-3'
                   }`}
                   aria-label={`Go to slide ${index + 1}`}
                 />
