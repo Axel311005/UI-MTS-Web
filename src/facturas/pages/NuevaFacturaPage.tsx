@@ -17,6 +17,7 @@ import { postFactura } from '../actions/post-factura';
 import { postFacturaLinea } from '../actions/post-facturalinea';
 import { useMoneda } from '@/moneda/hook/useMoneda';
 import { useQueryClient } from '@tanstack/react-query';
+import { useRecepcion } from '@/recepcion/hook/useRecepcion';
 
 interface InvoiceFormValues {
   consecutivoId: number | '';
@@ -32,6 +33,7 @@ interface InvoiceFormValues {
   bodegaId: number | '';
   comentario: string;
   descuentoPct: number | '';
+  recepcionId: number | '';
   lineas: Array<{
     itemId: number | '';
     cantidad: number | '';
@@ -51,11 +53,16 @@ export default function NuevaFacturaPage() {
   const empleado = useAuthStore((s) => s.user?.empleado);
   const empleadoForForm = useMemo(() => {
     if (!empleado) return { id: 0, nombre: '' };
-    const nombre = empleado.nombreCompleto || 
-      [empleado.primerNombre, empleado.primerApellido].filter(Boolean).join(' ') || '';
+    const nombre =
+      empleado.nombreCompleto ||
+      [empleado.primerNombre, empleado.primerApellido]
+        .filter(Boolean)
+        .join(' ') ||
+      '';
     return { id: empleado.id ?? 0, nombre };
   }, [empleado]);
   const { monedas } = useMoneda();
+  const { recepciones } = useRecepcion();
 
   // Refrescar datos del servidor solo una vez al montar
   useEffect(() => {
@@ -83,6 +90,7 @@ export default function NuevaFacturaPage() {
     bodegaId: '',
     comentario: '',
     descuentoPct: '',
+    recepcionId: '',
     lineas: [],
     totales: {
       subtotal: 0,
@@ -130,6 +138,8 @@ export default function NuevaFacturaPage() {
       : 0,
     tipoCambioUsado: getTipoCambioUsado(),
     comentario: formValues.comentario ?? '',
+    recepcionId:
+      formValues.recepcionId !== '' ? Number(formValues.recepcionId) : null,
   });
 
   const buildLinesPayload = () => {
@@ -256,6 +266,7 @@ export default function NuevaFacturaPage() {
         bodegaId: '',
         comentario: '',
         descuentoPct: '',
+        recepcionId: '',
         lineas: [],
         totales: formValues.totales,
       });
@@ -364,6 +375,11 @@ export default function NuevaFacturaPage() {
                 onDescuentoPctChange={(value) =>
                   setFormValues((prev) => ({ ...prev, descuentoPct: value }))
                 }
+                recepcionId={formValues.recepcionId}
+                onRecepcionChange={(value) =>
+                  setFormValues((prev) => ({ ...prev, recepcionId: value }))
+                }
+                recepciones={recepciones}
               />
             </CardContent>
           </Card>

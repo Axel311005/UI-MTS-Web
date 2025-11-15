@@ -54,6 +54,18 @@ export interface Factura {
     totalEstimado?: number;
     observaciones?: string;
   } | null;
+  recepcion?: {
+    idRecepcion: number;
+    codigoRecepcion: string;
+    fechaRecepcion?: string | Date;
+    vehiculo?: {
+      placa: string;
+      marca: string;
+      modelo: string;
+    };
+    estado?: string;
+    observaciones?: string;
+  } | null;
 }
 
 export interface FacturaLinea {

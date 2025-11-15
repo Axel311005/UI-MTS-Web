@@ -370,6 +370,13 @@ export const FacturasPage = () => {
                           >
                             Desde Proforma
                           </Badge>
+                        ) : factura.recepcion || (factura as any)?.recepcionId ? (
+                          <Badge
+                            variant="secondary"
+                            className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                          >
+                            Desde Recepción
+                          </Badge>
                         ) : (
                           <span className="text-muted-foreground text-sm">
                             Directa
