@@ -22,7 +22,6 @@ import { deleteFacturaLinea } from '../actions/delete-factura-linea';
 import { getFacturaById } from '../actions/get-factura-by-id';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Factura } from '../types/Factura.interface';
-import { useRecepcion } from '@/recepcion/hook/useRecepcion';
 
 type InvoiceStatus = 'PENDIENTE' | 'PAGADO' | 'ANULADA';
 
@@ -108,7 +107,6 @@ export default function EditarFacturaPage() {
   >([]);
   const [codigoPreview] = React.useState('');
   const [facturaData, setFacturaData] = React.useState<Factura | null>(null);
-  const { recepciones } = useRecepcion();
 
   // Guardar las IDs originales de las líneas para detectar las eliminadas
   const [originalLineIds, setOriginalLineIds] = React.useState<number[]>([]);
@@ -440,7 +438,6 @@ export default function EditarFacturaPage() {
                 onRecepcionChange={(value) =>
                   setFormValues((prev) => ({ ...prev, recepcionId: value }))
                 }
-                recepciones={recepciones}
                 errors={errors}
               />
             </CardContent>

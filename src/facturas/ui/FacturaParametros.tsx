@@ -12,7 +12,7 @@ import { useMoneda } from '@/moneda/hook/useMoneda';
 import { useTipoPago } from '@/tiposPago/hook/useTipoPago';
 import { useImpuesto } from '@/impuesto/hook/useImpuesto';
 import { BodegaSelect } from '@/shared/components/selects/BodegaSelect';
-import type { Recepcion } from '@/recepcion/types/recepcion.interface';
+import { RecepcionSelect } from '@/shared/components/selects/RecepcionSelect';
 
 interface InvoiceParamsProps {
   monedaId: number | '';
@@ -29,7 +29,6 @@ interface InvoiceParamsProps {
   onDescuentoPctChange: (value: number | '') => void;
   recepcionId?: number | '';
   onRecepcionChange?: (value: number | '') => void;
-  recepciones?: Recepcion[];
   errors?: {
     moneda?: string;
     tipoPago?: string;
@@ -53,7 +52,6 @@ export function FacturaParametros({
   onDescuentoPctChange,
   recepcionId,
   onRecepcionChange,
-  recepciones = [],
   errors = {},
 }: InvoiceParamsProps) {
   const { monedas } = useMoneda();
@@ -170,7 +168,8 @@ export function FacturaParametros({
       {/* Porcentaje de Descuento */}
       <div className="space-y-2">
         <label className="text-sm font-medium">
-          Descuento (%) <span className="text-muted-foreground text-xs">(opcional)</span>
+          Descuento (%){' '}
+          <span className="text-muted-foreground text-xs">(opcional)</span>
         </label>
         <Input
           type="number"
@@ -189,27 +188,16 @@ export function FacturaParametros({
       {onRecepcionChange && (
         <div className="space-y-2">
           <label className="text-sm font-medium">
-            Recepción <span className="text-muted-foreground text-xs">(opcional)</span>
+            Recepción{' '}
+            <span className="text-muted-foreground text-xs">(opcional)</span>
           </label>
-          <Select
-            value={recepcionId !== '' && recepcionId !== undefined ? recepcionId.toString() : ''}
-            onValueChange={(value) => onRecepcionChange(value === '' ? '' : Number(value))}
-          >
-            <SelectTrigger aria-label="Seleccionar recepción">
-              <SelectValue placeholder="Seleccionar recepción..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">Ninguna</SelectItem>
-              {(recepciones || []).map((recepcion) => (
-                <SelectItem
-                  key={recepcion.idRecepcion}
-                  value={recepcion.idRecepcion.toString()}
-                >
-                  {recepcion.codigoRecepcion || `REC-${recepcion.idRecepcion}`} — {recepcion.vehiculo?.placa || '—'}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <RecepcionSelect
+            selectedId={
+              recepcionId !== '' && recepcionId !== undefined ? recepcionId : ''
+            }
+            onSelectId={(id) => onRecepcionChange(id)}
+            onClear={() => onRecepcionChange('')}
+          />
         </div>
       )}
 
