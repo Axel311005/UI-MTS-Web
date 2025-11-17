@@ -24,7 +24,7 @@ export default function HomePage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-left">Home</h1>
+          <h1 className="text-3xl font-bold text-center">Home</h1>
         </div>
         {isAdmin() && (
           <Button
