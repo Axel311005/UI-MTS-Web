@@ -7,7 +7,9 @@ interface LandingNotAuthenticatedRouteProps {
   children: ReactNode;
 }
 
-export function LandingNotAuthenticatedRoute({ children }: LandingNotAuthenticatedRouteProps) {
+export function LandingNotAuthenticatedRoute({
+  children,
+}: LandingNotAuthenticatedRouteProps) {
   const { isAuthenticated: isLandingAuthenticated } = useLandingAuthStore();
   const authStatus = useAuthStore((s) => s.authStatus);
   const hasPanelAccess = useAuthStore((s) => s.hasPanelAccess);
@@ -15,9 +17,10 @@ export function LandingNotAuthenticatedRoute({ children }: LandingNotAuthenticat
 
   // Si está autenticado en el panel admin, redirigir al panel
   if (authStatus === 'authenticated') {
-    const canAccessPanel = typeof hasPanelAccess === 'function' ? hasPanelAccess() : false;
+    const canAccessPanel =
+      typeof hasPanelAccess === 'function' ? hasPanelAccess() : false;
     if (canAccessPanel) {
-      const from = (location.state as any)?.from?.pathname || '/admin/dashboard';
+      const from = (location.state as any)?.from?.pathname || '/admin/home';
       return <Navigate to={from} replace />;
     }
   }
@@ -30,4 +33,3 @@ export function LandingNotAuthenticatedRoute({ children }: LandingNotAuthenticat
 
   return <>{children}</>;
 }
-

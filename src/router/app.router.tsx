@@ -397,8 +397,8 @@ const ReportesPage = lazy(() =>
     default: m.ReportesPage,
   }))
 );
-const DashboardPage = lazy(() =>
-  import('@/dashboard/pages/DashboardPage').then((m) => ({
+const HomePage = lazy(() =>
+  import('@/home/pages/HomePage').then((m) => ({
     default: m.default,
   }))
 );
@@ -558,11 +558,11 @@ export const appRouter = createBrowserRouter([
         element: <AppLayout />,
         errorElement: <RouterErrorBoundary />,
         children: [
-          { index: true, element: <Navigate to="/admin/dashboard" replace /> },
+          { index: true, element: <Navigate to="/admin/home" replace /> },
           {
-            path: 'dashboard',
-            element: <DashboardPage />,
-            handle: { crumb: 'Dashboard' },
+            path: 'home',
+            element: <HomePage />,
+            handle: { crumb: 'Home' },
           },
           {
             path: 'perfil',

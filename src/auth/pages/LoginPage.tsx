@@ -39,12 +39,13 @@ export default function LoginPage() {
 
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    
+
     // Rate limiting básico: máximo 5 intentos por minuto
     const now = Date.now();
     const timeSinceLastAttempt = now - lastAttemptTime;
-    
-    if (timeSinceLastAttempt < 60000) { // 1 minuto
+
+    if (timeSinceLastAttempt < 60000) {
+      // 1 minuto
       if (loginAttempts >= 5) {
         toast.error('Demasiados intentos. Por favor espera un minuto.', {
           position: 'top-right',
@@ -101,10 +102,10 @@ export default function LoginPage() {
     try {
       // Llamar directamente a loginAction para capturar el error del backend
       const data = await loginAction(emailValue, password);
-      
+
       // Si llegamos aquí, el login fue exitoso
       const { token, ...user } = data;
-      
+
       // Verificar si el usuario tiene acceso al panel (vendedor, gerente, superuser)
       const rawRoles = user.roles ?? [];
       const roles = Array.isArray(rawRoles)
@@ -114,39 +115,43 @@ export default function LoginPage() {
       const hasPanelAccess = roles.some((role: string) =>
         allowedRoles.includes(role)
       );
-      
+
       // Si tiene acceso al panel, verificar que esté activo
       if (hasPanelAccess) {
         // Verificar si el usuario está activo
         // El backend puede devolver isActive en la respuesta, o puede estar en false/undefined
         const isActive = user.isActive !== undefined ? user.isActive : true; // Por defecto true si no viene
-        
+
         if (!isActive) {
           // Usuario inactivo - no permitir acceso
           toast.error(
             'Tu cuenta está inactiva. Por favor, contacta con alguien del taller para reactivar tu cuenta.',
-            { 
+            {
               position: 'top-right',
-              duration: 6000 // Mostrar por más tiempo para que el usuario lo lea
+              duration: 6000, // Mostrar por más tiempo para que el usuario lo lea
             }
           );
           // Limpiar cualquier dato que se haya guardado
           localStorage.removeItem('token');
           localStorage.removeItem('user');
-          useAuthStore.setState({ user: null, token: null, authStatus: 'not-authenticated' });
+          useAuthStore.setState({
+            user: null,
+            token: null,
+            authStatus: 'not-authenticated',
+          });
           setIsPosting(false);
           return;
         }
       }
-      
+
       // Guardar en el store de auth
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
       useAuthStore.setState({ user, token, authStatus: 'authenticated' });
-      
+
       const empleado = user.empleado;
       const cliente = user.cliente;
-      
+
       const userName = empleado
         ? empleado.nombreCompleto ||
           [empleado.primerNombre, empleado.primerApellido]
@@ -162,25 +167,28 @@ export default function LoginPage() {
         toast.success(`Inicio de sesión exitoso. Bienvenido ${userName}`, {
           position: 'top-right',
         });
-        const from = (location.state as any)?.from?.pathname || '/admin/dashboard';
+        const from = (location.state as any)?.from?.pathname || '/admin/home';
         navigate(from, { replace: true });
       } else if (cliente && token) {
         // El backend puede devolver cliente.id o cliente.idCliente
         // Según la respuesta del backend, viene como cliente.id (número)
         const clienteId = cliente.id || cliente.idCliente || 0;
-        
+
         // El backend puede devolver nombreCompleto o primerNombre/primerApellido
-        const clienteNombre = 
+        const clienteNombre =
           cliente.nombreCompleto ||
           (cliente.primerNombre && cliente.primerApellido
-            ? [cliente.primerNombre, cliente.primerApellido].filter(Boolean).join(' ')
+            ? [cliente.primerNombre, cliente.primerApellido]
+                .filter(Boolean)
+                .join(' ')
             : null) ||
-          cliente.ruc || 
+          cliente.ruc ||
           'Cliente';
-        
+
         // El id del usuario puede ser string (UUID) o number
-        const userId = typeof user.id === 'string' ? user.id : (Number(user.id) || 0);
-        
+        const userId =
+          typeof user.id === 'string' ? user.id : Number(user.id) || 0;
+
         // Guardar primero en localStorage para asegurar que esté disponible inmediatamente
         const landingUser = {
           id: userId,
@@ -188,41 +196,41 @@ export default function LoginPage() {
           clienteId: Number(clienteId) || 0,
           nombre: clienteNombre,
         };
-        
+
         // Guardar primero en localStorage para asegurar que esté disponible inmediatamente
         if (typeof window !== 'undefined') {
           localStorage.setItem('token', token);
           localStorage.setItem('landing-user', JSON.stringify(landingUser));
         }
-        
+
         setLandingAuth(token, landingUser);
-        
+
         toast.success(`Bienvenido ${clienteNombre}`, {
           position: 'top-right',
         });
         const from = (location.state as any)?.from?.pathname || redirect || '/';
         navigate(from, { replace: true });
       } else {
-        toast.error(
-          'Tu cuenta no tiene permisos para acceder al sistema.',
-          { position: 'top-right' }
-        );
+        toast.error('Tu cuenta no tiene permisos para acceder al sistema.', {
+          position: 'top-right',
+        });
         useAuthStore.getState().logout();
         const currentPath = location.pathname;
         navigate(currentPath, { replace: true });
       }
     } catch (error: any) {
-      setLoginAttempts(prev => prev + 1);
+      setLoginAttempts((prev) => prev + 1);
       setLastAttemptTime(Date.now());
-      
+
       // Obtener el mensaje del backend directamente de la respuesta
       // El loginAction ya extrae el mensaje del backend, así que usamos error.message
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : error?.response?.data?.message 
-        ? error.response.data.message
-        : 'Error al iniciar sesión. Verifica tus credenciales.';
-      
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : error?.response?.data?.message
+          ? error.response.data.message
+          : 'Error al iniciar sesión. Verifica tus credenciales.';
+
       toast.error(errorMessage, {
         position: 'top-right',
       });
@@ -234,7 +242,7 @@ export default function LoginPage() {
   const searchParams = new URLSearchParams(location.search);
   const redirect = searchParams.get('redirect') || '/';
   const emailFromQuery = searchParams.get('email') || '';
-  
+
   // Prellenar el email si viene en los query params (desde registro)
   const [email, setEmail] = useState(emailFromQuery);
 
@@ -245,7 +253,9 @@ export default function LoginPage() {
           <div className="mx-auto w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary/10 flex items-center justify-center mb-2">
             <LogIn className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
           </div>
-          <CardTitle className="text-2xl sm:text-3xl font-bold">Iniciar Sesión</CardTitle>
+          <CardTitle className="text-2xl sm:text-3xl font-bold">
+            Iniciar Sesión
+          </CardTitle>
           <CardDescription className="text-sm sm:text-base">
             Ingresa tus credenciales para acceder al sistema
           </CardDescription>

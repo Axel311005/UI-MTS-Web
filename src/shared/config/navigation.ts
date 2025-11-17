@@ -36,8 +36,8 @@ export interface MenuItem {
 export const navigationConfig: MenuItem[] = [
   // Navegación principal
   {
-    title: 'Dashboard',
-    url: '/admin/dashboard',
+    title: 'Home',
+    url: '/admin/home',
     icon: LayoutDashboard,
     userTypes: ['gerente', 'vendedor'],
   },
@@ -188,7 +188,7 @@ export const getGroupedNavigationItems = (userType: PanelRole) => {
 
   const navigationItems = allItems.filter((item) =>
     [
-      'Dashboard',
+      'Home',
       'Productos',
       'Clientes',
       'Facturas',
@@ -199,9 +199,13 @@ export const getGroupedNavigationItems = (userType: PanelRole) => {
   );
 
   const catalogItems = allItems.filter((item) =>
-    ['Clasificaciones', 'Unidades de Medida', 'Tipos de Pago', 'Monedas', 'Impuestos'].includes(
-      item.title
-    )
+    [
+      'Clasificaciones',
+      'Unidades de Medida',
+      'Tipos de Pago',
+      'Monedas',
+      'Impuestos',
+    ].includes(item.title)
   );
 
   const segurosItems = allItems.filter((item) =>
@@ -227,7 +231,8 @@ export const getGroupedNavigationItems = (userType: PanelRole) => {
     navigationItems,
     catalogItems: catalogItems.length > 0 ? catalogItems : undefined,
     segurosItems: segurosItems.length > 0 ? segurosItems : undefined,
-    clientPortalItems: clientPortalItems.length > 0 ? clientPortalItems : undefined,
+    clientPortalItems:
+      clientPortalItems.length > 0 ? clientPortalItems : undefined,
     systemItems: systemItems.length > 0 ? systemItems : undefined,
   };
 };

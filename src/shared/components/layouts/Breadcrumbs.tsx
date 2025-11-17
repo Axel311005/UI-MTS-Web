@@ -35,10 +35,10 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
 }) => {
   const matches = useMatches() as RouteMatch[];
   const location = useLocation();
-  
+
   // Determinar si estamos en el panel admin
   const isAdminPanel = location.pathname.startsWith('/admin');
-  const homeLink = isAdminPanel ? '/admin/dashboard' : '/';
+  const homeLink = isAdminPanel ? '/admin/home' : '/';
 
   const crumbs: Crumb[] = matches
     .filter((match: RouteMatch) => (match.handle as CrumbHandle)?.crumb)
@@ -64,8 +64,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
       // Vendedor ve breadcrumbs limitados (sin rutas administrativas)
       return crumbs.filter(
         (crumb) =>
-          !crumb.to.includes('/usuarios') &&
-          !crumb.to.includes('/reportes')
+          !crumb.to.includes('/usuarios') && !crumb.to.includes('/reportes')
       );
     }
   };
@@ -77,7 +76,10 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
       <BreadcrumbList>
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
-            <Link to={homeLink} className="flex items-center hover:text-primary">
+            <Link
+              to={homeLink}
+              className="flex items-center hover:text-primary"
+            >
               <Home className="h-4 w-4 mr-1" />
               Inicio
             </Link>
