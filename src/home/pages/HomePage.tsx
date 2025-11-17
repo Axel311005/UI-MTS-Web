@@ -37,9 +37,9 @@ export default function HomePage() {
         )}
       </div>
       {/* Recent Activity & Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="w-full flex justify-center">
         {/* Quick Actions */}
-        <Card className="card-elegant">
+        <Card className="card-elegant w-full max-w-xl">
           <CardHeader>
             <CardTitle>Acciones Rápidas</CardTitle>
             <CardDescription>Tareas frecuentes</CardDescription>
