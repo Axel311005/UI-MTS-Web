@@ -275,7 +275,7 @@ export default function EditarFacturaPage() {
         // If a mapping is needed, do it here.
         estado: payload.estado as any, // Change as needed based on API's FacturaEstado
       };
-      const { facturaId: updatedId } = await patchFactura(
+      await patchFactura(
         facturaId,
         fixedPayload
       );

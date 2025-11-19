@@ -16,12 +16,16 @@ export default function NuevaRecepcionPage() {
   const navigate = useNavigate();
 
   const queryClient = useQueryClient();
-  const empleadoId = useAuthStore((s) => s.user?.empleado?.id ?? null);
+  const empleadoId = useAuthStore((s) => {
+    const id = s.user?.empleado?.id;
+    if (!id) {
+      throw new Error('No hay empleado en sesión');
+    }
+    return id;
+  });
 
   const handleSubmit = async (data: RecepcionFormValues) => {
     try {
-      if (!empleadoId) throw new Error('No hay empleado en sesión');
-
       await postRecepcionAction({
         idVehiculo: data.idVehiculo,
         idEmpleado: empleadoId,

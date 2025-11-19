@@ -30,7 +30,13 @@ export default function NuevaFacturaFromProformaPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const proformaId = Number(searchParams.get('proformaId') || 0);
-  const empleadoId = useAuthStore((s) => s.user?.empleado?.id ?? null);
+  const empleadoId = useAuthStore((s) => {
+    const id = s.user?.empleado?.id;
+    if (!id) {
+      throw new Error('No hay empleado en sesión');
+    }
+    return id;
+  });
 
   const { recepciones = [] } = useRecepcion();
   const { tipoPagos = [] } = useTipoPago();
@@ -66,6 +72,7 @@ export default function NuevaFacturaFromProformaPage() {
   const handleSubmit = async (ev: React.FormEvent) => {
     ev.preventDefault();
     if (!validate()) return;
+
     try {
       await postFacturaFromProformaAction({
         proformaId,

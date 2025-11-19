@@ -86,7 +86,13 @@ export default function NuevaFacturaFromProformaPage() {
     proformaIdFromWindow;
 
   const proformaId = proformaIdParam ? Number(proformaIdParam) : 0;
-  const empleadoId = useAuthStore((s) => s.user?.empleado?.id ?? null);
+  const empleadoId = useAuthStore((s) => {
+    const id = s.user?.empleado?.id;
+    if (!id) {
+      throw new Error('No hay empleado en sesión');
+    }
+    return id;
+  });
 
   // Validar que el proformaId sea válido
   const isValidProformaId = Number.isFinite(proformaId) && proformaId > 0;
@@ -165,12 +171,6 @@ export default function NuevaFacturaFromProformaPage() {
       toast.error(
         'Error: No se encontró el ID de la proforma. Por favor, vuelve a la página de proformas e intenta nuevamente.'
       );
-      return;
-    }
-
-    // Validar que empleadoId esté presente
-    if (!empleadoId) {
-      toast.error('Error: No se encontró el ID del empleado en sesión.');
       return;
     }
 
