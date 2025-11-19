@@ -48,8 +48,6 @@ export const patchUnidadMedida = async (
   );
 
   if (!Number.isFinite(unidadMedidaId)) {
-    // eslint-disable-next-line no-console
-    console.error('[patchUnidadMedida] Respuesta inesperada:', data);
     throw new Error('No se pudo actualizar la unidad de medida');
   }
 

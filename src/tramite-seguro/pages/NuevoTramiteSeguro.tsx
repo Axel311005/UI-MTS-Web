@@ -47,20 +47,13 @@ export default function NuevoTramiteSeguroPage() {
     } catch (error: any) {
       // El backend devuelve: { message: "...", error: "Bad Request", statusCode: 400 }
       const responseData = error?.response?.data;
-      
+
       // Extraer el mensaje del backend - priorizar message que es el campo correcto
-      const message = 
-        responseData?.message || 
+      const message =
+        responseData?.message ||
         (error instanceof Error ? error.message : undefined) ||
         'No se pudo crear el trámite de seguro';
-      
-      console.error('Error creando trámite de seguro:', {
-        error,
-        response: error?.response,
-        responseData,
-        extractedMessage: message,
-      });
-      
+
       toast.error(message, {
         duration: 5000,
       });

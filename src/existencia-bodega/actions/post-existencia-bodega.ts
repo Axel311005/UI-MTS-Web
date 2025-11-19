@@ -34,8 +34,6 @@ export const postExistenciaBodega = async (
   );
 
   if (!Number.isFinite(existenciaBodegaId)) {
-    // eslint-disable-next-line no-console
-    console.error('[postExistenciaBodega] Respuesta inesperada:', data);
     throw new Error('No se pudo crear la existencia de bodega');
   }
 

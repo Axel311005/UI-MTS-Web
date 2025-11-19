@@ -18,18 +18,9 @@ export const postFacturaLinea = async (payload: CreateFacturaLineaPayload) => {
     totalLinea: Number(payload.totalLinea),
   } as const;
   try {
-    // eslint-disable-next-line no-console
-    console.log('[postFacturaLinea] sending body:', body);
     const { data } = await tallerApi.post('/factura-linea', body);
-    // eslint-disable-next-line no-console
-    console.log('Factura linea creada:', data);
     return data;
   } catch (err: any) {
-    // eslint-disable-next-line no-console
-    console.error('[postFacturaLinea] error:', {
-      status: err?.response?.status,
-      data: err?.response?.data,
-    });
     throw err;
   }
 };

@@ -38,7 +38,6 @@ export default function VerDetallesCitaPage() {
         const fetchedCita = await getCitaByIdAction(idNumber);
         setCita(fetchedCita);
       } catch (error) {
-        console.error('Error loading cita:', error);
         toast.error('No se pudo cargar la cita');
         navigate('/admin/citas');
       } finally {

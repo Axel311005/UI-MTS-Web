@@ -34,11 +34,6 @@ class ErrorBoundaryClass extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Log error to console in development
-    if (import.meta.env.DEV) {
-      console.error('ErrorBoundary caught an error:', error, errorInfo);
-    }
-
     // Detectar errores de chunks dinámicos y recargar automáticamente
     const errorMessage = error.message || String(error);
     if (
@@ -46,8 +41,6 @@ class ErrorBoundaryClass extends Component<Props, State> {
       errorMessage.includes('Failed to fetch') ||
       errorMessage.includes('Loading chunk')
     ) {
-      console.warn('Chunk loading error detected in ErrorBoundary, forcing reload');
-      
       // Limpiar caché y recargar
       if ('caches' in window) {
         caches.keys().then((names) => {

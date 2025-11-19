@@ -26,8 +26,6 @@ export const postImpuesto = async (payload: CreateImpuestoPayload) => {
   );
 
   if (!Number.isFinite(impuestoId)) {
-    // eslint-disable-next-line no-console
-    console.error('[postImpuesto] Respuesta inesperada:', data);
     throw new Error('No se pudo crear el impuesto');
   }
 

@@ -19,8 +19,6 @@ export const patchCliente = async (
   );
 
   if (!Number.isFinite(clienteId)) {
-    // eslint-disable-next-line no-console
-    console.error('[patchCliente] Respuesta inesperada:', data);
     throw new Error('No se pudo confirmar la actualización del cliente');
   }
 

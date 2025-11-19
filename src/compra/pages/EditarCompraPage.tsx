@@ -178,7 +178,6 @@ export default function EditarCompraPage() {
 
         toast.success(`Editando compra #${id}`);
       } catch (err: any) {
-        console.error('Error cargando compra:', err);
         const message =
           err?.response?.data?.message ||
           err?.message ||
@@ -438,7 +437,6 @@ export default function EditarCompraPage() {
         }),
       ]);
     } catch (err: any) {
-      console.error('Error actualizando compra:', err);
       const raw = err?.response?.data;
       const message =
         raw?.message ||

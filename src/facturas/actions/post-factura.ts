@@ -33,9 +33,6 @@ export const postFactura = async (payload: CreateFacturaPayload) => {
   );
 
   if (!Number.isFinite(facturaId)) {
-    // log opcional para ver exactamente qué llegó
-    // eslint-disable-next-line no-console
-    console.error('[postFactura] Respuesta inesperada:', data);
     throw new Error('No se recibió un id de factura válido');
   }
 

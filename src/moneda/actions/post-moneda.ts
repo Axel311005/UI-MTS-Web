@@ -26,8 +26,6 @@ export const postMoneda = async (payload: CreateMonedaPayload) => {
   );
 
   if (!Number.isFinite(monedaId)) {
-    // eslint-disable-next-line no-console
-    console.error('[postMoneda] Respuesta inesperada:', data);
     throw new Error('No se pudo crear la moneda');
   }
 

@@ -51,7 +51,6 @@ export default function NuevaProformaPage() {
       toast.success('Proforma guardada correctamente');
       await queryClient.invalidateQueries({ queryKey: ['proformas'] });
     } catch (err: any) {
-      console.error('Error guardando proforma:', err);
       toast.error(
         err?.response?.data?.message ?? 'No se pudo guardar la proforma'
       );
@@ -92,7 +91,6 @@ export default function NuevaProformaPage() {
       await queryClient.invalidateQueries({ queryKey: ['proformas'] });
       navigate('/admin/proformas');
     } catch (err: any) {
-      console.error('Error guardando líneas de proforma:', err);
       toast.error(
         err?.response?.data?.message ?? 'No se pudo guardar las líneas'
       );

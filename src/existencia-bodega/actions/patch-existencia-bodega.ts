@@ -50,8 +50,6 @@ export const patchExistenciaBodega = async (
   );
 
   if (!Number.isFinite(existenciaBodegaId)) {
-    // eslint-disable-next-line no-console
-    console.error('[patchExistenciaBodega] Respuesta inesperada:', data);
     throw new Error('No se pudo actualizar la existencia de bodega');
   }
 

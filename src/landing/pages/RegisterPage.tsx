@@ -230,7 +230,7 @@ export default function RegisterPage() {
             })
           );
         } catch (error) {
-          console.warn('Error al sincronizar con store principal:', error);
+          // Error al sincronizar con store principal - continuar de todas formas
         }
 
         toast.success(`Registro exitoso. Bienvenido ${clienteNombre}!`, {

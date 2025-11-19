@@ -87,7 +87,6 @@ export default function EditarProformaPage() {
         queryClient.invalidateQueries({ queryKey: ['proforma', proformaId] }),
       ]);
     } catch (err: any) {
-      console.error('Error actualizando proforma:', err);
       toast.error(
         err?.response?.data?.message ?? 'No se pudo actualizar la proforma'
       );
@@ -129,7 +128,6 @@ export default function EditarProformaPage() {
       ]);
       navigate('/admin/proformas');
     } catch (err: any) {
-      console.error('Error guardando líneas:', err);
       toast.error(
         err?.response?.data?.message ?? 'No se pudieron guardar las líneas'
       );

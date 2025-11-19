@@ -22,8 +22,6 @@ export const postUnidadMedida = async (payload: CreateUnidadMedidaPayload) => {
   );
 
   if (!Number.isFinite(unidadMedidaId)) {
-    // eslint-disable-next-line no-console
-    console.error('[postUnidadMedida] Respuesta inesperada:', data);
     throw new Error('No se pudo crear la unidad de medida');
   }
 

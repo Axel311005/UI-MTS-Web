@@ -48,8 +48,6 @@ export const patchTipoPago = async (
   );
 
   if (!Number.isFinite(tipoPagoId)) {
-    // eslint-disable-next-line no-console
-    console.error('[patchTipoPago] Respuesta inesperada:', data);
     throw new Error('No se pudo actualizar el tipo de pago');
   }
 

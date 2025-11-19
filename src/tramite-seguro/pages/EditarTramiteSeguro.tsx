@@ -72,13 +72,6 @@ export default function EditarTramiteSeguroPage() {
         (err instanceof Error ? err.message : undefined) ||
         'No se pudo actualizar el trámite de seguro';
       
-      console.error('Error actualizando trámite de seguro:', {
-        error: err,
-        response: err?.response,
-        responseData,
-        extractedMessage: message,
-      });
-      
       toast.error(message, {
         duration: 5000,
       });

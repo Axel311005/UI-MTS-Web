@@ -314,7 +314,6 @@ export function CotizacionForm() {
         localStorage.removeItem('lastCreatedCotizacionCodigo');
       } catch (error) {
         // Si hay error al limpiar localStorage, continuar de todas formas
-        console.warn('Error al limpiar localStorage:', error);
       }
     } catch (error: any) {
       toast.dismiss();
@@ -463,7 +462,6 @@ export function CotizacionForm() {
         }
       } catch (error) {
         // Si hay error al guardar en localStorage, continuar de todas formas
-        console.warn('Error al guardar en localStorage:', error);
       }
       
       toast.success('Cotización enviada con éxito');

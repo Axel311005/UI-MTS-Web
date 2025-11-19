@@ -74,7 +74,6 @@ export default function VerDetallesFacturaPage() {
         const fetchedFactura = await getFacturaById(numericId);
         setFactura(fetchedFactura as FacturaDetalle);
       } catch (error) {
-        console.error('Error loading factura:', error);
         toast.error('No se pudo cargar la factura');
         navigate('/admin/facturas');
       } finally {

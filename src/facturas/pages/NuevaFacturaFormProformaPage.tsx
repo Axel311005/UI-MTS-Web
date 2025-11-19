@@ -1,4 +1,4 @@
-import { useNavigate, useSearchParams } from 'react-router';
+import { useNavigate, useSearchParams, useLocation } from 'react-router';
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -47,9 +47,49 @@ function getClienteNombre(cliente: any): string {
 
 export default function NuevaFacturaFromProformaPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
-  const proformaId = Number(searchParams.get('proformaId') || 0);
+
+  // Leer proformaId de múltiples fuentes:
+  // 1. Desde searchParams (React Router)
+  // 2. Desde location.search directamente
+  // 3. Desde location.state (si se pasó en la navegación)
+  // 4. Desde window.location.search (fallback)
+  const proformaIdFromSearch =
+    searchParams.get('proformaId') || searchParams.get('proforma_id');
+
+  const proformaIdFromLocation = (() => {
+    try {
+      const urlParams = new URLSearchParams(location.search);
+      return urlParams.get('proformaId') || urlParams.get('proforma_id');
+    } catch {
+      return null;
+    }
+  })();
+
+  const proformaIdFromState = (location.state as any)?.proformaId;
+
+  const proformaIdFromWindow = (() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('proformaId') || urlParams.get('proforma_id');
+    } catch {
+      return null;
+    }
+  })();
+
+  // Usar el primer valor válido encontrado
+  const proformaIdParam =
+    proformaIdFromSearch ||
+    proformaIdFromLocation ||
+    (proformaIdFromState ? String(proformaIdFromState) : null) ||
+    proformaIdFromWindow;
+
+  const proformaId = proformaIdParam ? Number(proformaIdParam) : 0;
   const empleadoId = useAuthStore((s) => s.user?.empleado?.id ?? null);
+
+  // Validar que el proformaId sea válido
+  const isValidProformaId = Number.isFinite(proformaId) && proformaId > 0;
 
   const { recepciones = [] } = useRecepcion();
   const { tipoPagos = [] } = useTipoPago();
@@ -57,14 +97,18 @@ export default function NuevaFacturaFromProformaPage() {
   // Obtener datos de la proforma
   const proformaQuery = useQuery({
     queryKey: ['proforma', proformaId],
-    enabled: Number.isFinite(proformaId) && proformaId > 0,
+    enabled: isValidProformaId,
     queryFn: () => getProformaByIdAction(proformaId),
+    retry: 2,
+    retryDelay: 1000,
   });
 
   const lineasQuery = useQuery({
     queryKey: ['proforma.lineas', proformaId],
-    enabled: Number.isFinite(proformaId) && proformaId > 0,
+    enabled: isValidProformaId,
     queryFn: () => getProformaLineasByProformaIdAction(proformaId),
+    retry: 2,
+    retryDelay: 1000,
   });
 
   const proforma = proformaQuery.data;
@@ -115,17 +159,35 @@ export default function NuevaFacturaFromProformaPage() {
   const handleSubmit = async (ev: React.FormEvent) => {
     ev.preventDefault();
     if (!validate()) return;
+
+    // Validar que proformaId esté presente antes de enviar
+    if (!proformaId || proformaId <= 0) {
+      toast.error(
+        'Error: No se encontró el ID de la proforma. Por favor, vuelve a la página de proformas e intenta nuevamente.'
+      );
+      return;
+    }
+
+    // Validar que empleadoId esté presente
+    if (!empleadoId) {
+      toast.error('Error: No se encontró el ID del empleado en sesión.');
+      return;
+    }
+
+    // Preparar el payload con validación
+    const payload = {
+      proformaId,
+      recepcionId: values.recepcionId,
+      tipoPagoId: values.tipoPagoId,
+      bodegaId: values.bodegaId,
+      consecutivoId: values.consecutivoId,
+      empleadoId,
+      comentario: values.comentario || undefined,
+      porcentajeDescuento: values.porcentajeDescuento,
+    };
+
     try {
-      await postFacturaFromProformaAction({
-        proformaId,
-        recepcionId: values.recepcionId,
-        tipoPagoId: values.tipoPagoId,
-        bodegaId: values.bodegaId,
-        consecutivoId: values.consecutivoId,
-        empleadoId,
-        comentario: values.comentario || undefined,
-        porcentajeDescuento: values.porcentajeDescuento,
-      });
+      await postFacturaFromProformaAction(payload);
       toast.success('Factura generada desde proforma');
       navigate('/admin/facturas');
     } catch (error) {
@@ -137,6 +199,53 @@ export default function NuevaFacturaFromProformaPage() {
       toast.error(message);
     }
   };
+
+  // Si no hay proformaId válido en la URL
+  if (!isValidProformaId) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Generar Factura desde Proforma</h1>
+          <p className="text-destructive mb-2">
+            No se proporcionó un ID de proforma válido en la URL
+          </p>
+          <div className="space-y-1 text-sm text-muted-foreground">
+            {proformaIdParam ? (
+              <>
+                <p>
+                  Parámetro recibido:{' '}
+                  <code className="bg-muted px-1 rounded">
+                    {proformaIdParam}
+                  </code>
+                </p>
+                <p>
+                  Valor numérico:{' '}
+                  <code className="bg-muted px-1 rounded">{proformaId}</code>
+                </p>
+                <p className="text-xs mt-2">
+                  La URL debe tener el formato:{' '}
+                  <code className="bg-muted px-1 rounded">
+                    /admin/facturas/from-proforma?proformaId=12
+                  </code>
+                </p>
+              </>
+            ) : (
+              <p>
+                No se encontró el parámetro{' '}
+                <code className="bg-muted px-1 rounded">proformaId</code> en la
+                URL
+              </p>
+            )}
+          </div>
+        </div>
+        <div className="flex gap-4">
+          <Button onClick={() => navigate('/admin/proformas')}>
+            Volver a Proformas
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (proformaQuery.isLoading || lineasQuery.isLoading) {
     return (
@@ -152,17 +261,44 @@ export default function NuevaFacturaFromProformaPage() {
   }
 
   if (proformaQuery.isError || !proforma) {
+    const errorMessage =
+      proformaQuery.error instanceof Error
+        ? proformaQuery.error.message
+        : (proformaQuery.error as any)?.response?.data?.message ||
+          (proformaQuery.error as any)?.response?.status === 404
+        ? 'La proforma no fue encontrada'
+        : (proformaQuery.error as any)?.response?.status === 401
+        ? 'No autorizado. Por favor, inicia sesión nuevamente'
+        : 'No se pudo cargar la información de la proforma';
+
     return (
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Generar Factura desde Proforma</h1>
-          <p className="text-destructive">
-            No se pudo cargar la información de la proforma
+          <p className="text-destructive mb-2">{errorMessage}</p>
+          <p className="text-sm text-muted-foreground">
+            ID de Proforma: {proformaId}
           </p>
+          {(proformaQuery.error as any)?.response?.status && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Código de error: {(proformaQuery.error as any).response.status}
+            </p>
+          )}
         </div>
-        <Button onClick={() => navigate('/admin/proformas')}>
-          Volver a Proformas
-        </Button>
+        <div className="flex gap-4">
+          <Button onClick={() => navigate('/admin/proformas')}>
+            Volver a Proformas
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              proformaQuery.refetch();
+              lineasQuery.refetch();
+            }}
+          >
+            Reintentar
+          </Button>
+        </div>
       </div>
     );
   }
@@ -467,7 +603,7 @@ export default function NuevaFacturaFromProformaPage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate('/proformas')}
+                onClick={() => navigate('/admin/proformas')}
               >
                 Cancelar
               </Button>

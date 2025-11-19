@@ -151,7 +151,6 @@ export function ProformaLinesTable({
         await patchProformaLineaAction(current.idProformaLineas, payload);
         toast.success('Línea actualizada');
       } catch (err: any) {
-        console.error('Error actualizando línea de proforma:', err);
         toast.error(
           err?.response?.data?.message ?? 'No se pudo actualizar la línea'
         );

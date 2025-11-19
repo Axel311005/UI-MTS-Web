@@ -27,8 +27,6 @@ export const postClasificacionItem = async (
   );
 
   if (!Number.isFinite(clasificacionId)) {
-    // eslint-disable-next-line no-console
-    console.error('[postClasificacionItem] Respuesta inesperada:', data);
     throw new Error('No se pudo crear la clasificación');
   }
 

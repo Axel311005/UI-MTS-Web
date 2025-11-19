@@ -48,8 +48,6 @@ export const patchImpuesto = async (
   );
 
   if (!Number.isFinite(impuestoId)) {
-    // eslint-disable-next-line no-console
-    console.error('[patchImpuesto] Respuesta inesperada:', data);
     throw new Error('No se pudo actualizar el impuesto');
   }
 

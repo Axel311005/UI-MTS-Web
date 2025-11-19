@@ -26,8 +26,6 @@ export const postCliente = async (payload: CreateClientePayload) => {
   );
 
   if (!Number.isFinite(clienteId)) {
-    // eslint-disable-next-line no-console
-    console.error('[postCliente] Respuesta inesperada:', data);
     throw new Error('No se recibió un id de cliente válido');
   }
 

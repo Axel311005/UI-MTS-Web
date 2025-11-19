@@ -53,13 +53,7 @@ export const postTramiteSeguroAction = async (
       throw enhancedError;
     }
     
-    // Si no hay mensaje del backend, lanzar el error original con toda su información
-    console.error('Error completo del backend:', {
-      status: error?.response?.status,
-      statusText: error?.response?.statusText,
-      data: error?.response?.data,
-      message: error?.message,
-    });
+    // Si no hay mensaje del backend, lanzar el error original
     throw error;
   }
 };

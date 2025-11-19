@@ -7,8 +7,6 @@ export const patchCompra = async (id: number, payload: Partial<CreateCompraPaylo
   const { data } = await compraApi.patch<RawResponse>(`/${id}`, payload);
   const compraId = Number(data?.idCompra ?? data?.id_compra ?? data?.id ?? data?.Id);
   if (!Number.isFinite(compraId)) {
-    // eslint-disable-next-line no-console
-    console.error('[patchCompra] Respuesta inesperada:', data);
     throw new Error('No se recibió un id de compra válido');
   }
   return { compraId, raw: data };

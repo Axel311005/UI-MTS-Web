@@ -23,8 +23,6 @@ export const postCompra = async (payload: CreateCompraPayload) => {
   );
 
   if (!Number.isFinite(compraId)) {
-    // eslint-disable-next-line no-console
-    console.error('[postCompra] Respuesta inesperada:', data);
     throw new Error('No se recibió un id de compra válido');
   }
 

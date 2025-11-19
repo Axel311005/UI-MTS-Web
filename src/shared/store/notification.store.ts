@@ -143,7 +143,6 @@ const loadNotificationsFromStorage = (): Notification[] => {
       timestamp: new Date(n.timestamp),
     }));
   } catch (error) {
-    console.warn('Error al cargar notificaciones desde localStorage:', error);
     return [];
   }
 };
@@ -156,7 +155,7 @@ const saveNotificationsToStorage = (notifications: Notification[]) => {
       JSON.stringify(notifications)
     );
   } catch (error) {
-    console.warn('Error al guardar notificaciones en localStorage:', error);
+    // Error al guardar en localStorage - continuar de todas formas
   }
 };
 

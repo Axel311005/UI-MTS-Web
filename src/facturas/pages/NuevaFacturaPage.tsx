@@ -158,15 +158,6 @@ export default function NuevaFacturaPage() {
         const totalRaw = l.totalLinea > 0 ? l.totalLinea : qty * price;
         const total = parseFloat(totalRaw.toFixed(2)); // Asegúrate de que esto sea un número
 
-        // Verifica en la consola antes de enviar
-        console.log('[buildLinesPayload] Línea de factura:', {
-          facturaId: facturaId ?? 0,
-          itemId: Number(l.itemId),
-          cantidad: qty,
-          precioUnitario: price,
-          totalLinea: total,
-        });
-
         return {
           facturaId: facturaId ?? 0,
           itemId: Number(l.itemId),
@@ -206,13 +197,11 @@ export default function NuevaFacturaPage() {
       setFacturaId(newFacturaId); // Set facturaId after invoice is created
 
       if (!newFacturaId) {
-        console.error('Respuesta inesperada al crear factura:', resp);
         throw new Error('No se recibió un id de factura válido');
       }
 
       toast.success('Factura guardada correctamente');
     } catch (err: any) {
-      console.error('Error guardando factura:', err);
       toast.error('No se pudo guardar la factura');
     } finally {
       toast.dismiss(dismiss);
@@ -269,7 +258,6 @@ export default function NuevaFacturaPage() {
         totales: formValues.totales,
       });
     } catch (err: any) {
-      console.error('Error guardando líneas de factura:', err);
       toast.error('No se pudo guardar las líneas de la factura');
     } finally {
       toast.dismiss(dismiss);

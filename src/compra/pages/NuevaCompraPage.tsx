@@ -165,14 +165,6 @@ export default function NuevaCompraPage() {
         const totalRaw = l.totalLinea > 0 ? l.totalLinea : qty * price;
         const total = parseFloat(totalRaw.toFixed(2));
 
-        // Debug útil en desarrollo
-        console.log('[buildLinesPayload] Línea de compra:', {
-          compraId: compraId ?? 0,
-          itemId: Number(l.itemId),
-          cantidad: qty,
-          precioUnitario: price,
-          totalLinea: total,
-        });
 
         return {
           compraId: compraId ?? 0,
@@ -272,7 +264,6 @@ export default function NuevaCompraPage() {
       });
       setCompraId(null);
     } catch (err: any) {
-      console.error('Error guardando líneas de compra:', err);
       toast.error('No se pudo guardar las líneas de la compra');
     } finally {
       toast.dismiss(dismiss);

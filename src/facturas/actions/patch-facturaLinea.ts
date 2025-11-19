@@ -19,20 +19,13 @@ export const patchFacturaLinea = async (payload: CreateFacturaLineaPayload) => {
     totalLinea: Number(payload.totalLinea),
   } as const;
   try {
-    console.log('[patchFacturaLinea] sending body:', body);
     if (!payload.id) {
       throw new Error('patchFacturaLinea: id es requerido para actualizar');
     }
     const url = `/factura-linea/${payload.id}`;
     const { data } = await tallerApi.patch(url, body);
-
-    console.log('Factura linea editada:', data);
     return data;
   } catch (err: any) {
-    console.error('[patchFacturaLinea] error:', {
-      status: err?.response?.status,
-      data: err?.response?.data,
-    });
     throw err;
   }
 };

@@ -284,7 +284,19 @@ export default function ProformasPage() {
   };
 
   const handleGenerarFactura = (proformaId: number) => {
-    navigate(`/facturas/from-proforma?proformaId=${proformaId}`);
+    // Validar que el proformaId sea válido antes de navegar
+    if (!Number.isFinite(proformaId) || proformaId <= 0) {
+      toast.error('Error: ID de proforma inválido');
+      return;
+    }
+
+    // Navegar con el parámetro en la URL Y en el estado (por si acaso)
+    const url = `/admin/facturas/from-proforma?proformaId=${proformaId}`;
+
+    // Pasar el proformaId tanto en la URL como en el estado de navegación
+    navigate(url, {
+      state: { proformaId },
+    });
   };
 
   return (

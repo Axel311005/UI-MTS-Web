@@ -31,6 +31,8 @@ type AuthUser = Omit<AuthResponse, 'token'>;
 
 export const useAuthStore = create<AuthState>()((set, get) => {
   // Inicializar desde localStorage al crear el store
+  // Confiar en el localStorage inicialmente para evitar carga innecesaria
+  // Solo verificar con el servidor cuando sea realmente necesario (checkAuthStatus)
   let initialState: Pick<AuthState, 'user' | 'token' | 'authStatus'> = {
     user: null,
     token: null,
@@ -44,14 +46,23 @@ export const useAuthStore = create<AuthState>()((set, get) => {
     if (token && userStr) {
       try {
         const user = JSON.parse(userStr) as AuthUser;
+        // Confiar en el localStorage inicialmente
+        // El checkAuthStatus se llamará cuando sea necesario (ProtectedRoute, etc.)
         initialState = {
           user,
           token,
-          authStatus: 'authenticated',
+          authStatus: 'authenticated', // Confiar en localStorage inicialmente
         };
       } catch {
         // Si hay error al parsear, mantener checking
       }
+    } else {
+      // No hay token, establecer como no autenticado directamente
+      initialState = {
+        user: null,
+        token: null,
+        authStatus: 'not-authenticated',
+      };
     }
   } catch {
     // Si hay error, mantener checking
@@ -114,7 +125,7 @@ export const useAuthStore = create<AuthState>()((set, get) => {
 
     checkAuthStatus: async () => {
       // Si ya está autenticado y hay token válido, no hacer check-status constantemente
-      // Solo verificar si está en estado 'checking' (al inicio de la app)
+      // Solo verificar si está en estado 'checking' (al inicio de la app o cuando sea necesario)
       const currentStatus = get().authStatus;
       const currentToken = get().token ?? localStorage.getItem('token');
       const currentUser =
@@ -128,41 +139,12 @@ export const useAuthStore = create<AuthState>()((set, get) => {
           }
         })();
 
-      // Si ya está autenticado y tiene token/usuario, mantener la sesión
-      // Solo verificar con el servidor si está en estado 'checking' (inicio de app)
+      // Si ya está autenticado y tiene token/usuario, no verificar constantemente
+      // El interceptor de respuesta manejará la renovación automática cuando sea necesario
       if (currentStatus === 'authenticated' && currentToken && currentUser) {
-        // Si ya está autenticado, solo intentar renovar el token silenciosamente
-        // pero no cambiar el estado si falla (puede ser error de red)
-        try {
-          const data = await checkAuthAction();
-          const newToken = (data as any)?.token ?? currentToken;
-
-          // Si hay un nuevo token, actualizarlo
-          if (newToken && newToken !== currentToken) {
-            localStorage.setItem('token', newToken);
-            set({ token: newToken });
-          }
-
-          return true;
-        } catch (error: any) {
-          // Si el error es 401 (token realmente expirado), limpiar sesión
-          const isUnauthorized =
-            error?.response?.status === 401 ||
-            error?.status === 401 ||
-            (error?.message && error.message.includes('401'));
-
-          if (isUnauthorized) {
-            // Token realmente expirado - limpiar todo
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            set({ user: null, token: null, authStatus: 'not-authenticated' });
-            return false;
-          }
-
-          // Para otros errores (red, servidor), mantener la sesión
-          // El usuario ya está autenticado y puede seguir trabajando
-          return true;
-        }
+        // No hacer verificación constante - confiar en el token
+        // El interceptor de respuesta se encargará de renovar si es necesario
+        return true;
       }
 
       // Si está en 'checking' o no autenticado, hacer verificación completa
@@ -187,18 +169,33 @@ export const useAuthStore = create<AuthState>()((set, get) => {
         }
 
         // Intentar verificar el token con el servidor
-        const data = await checkAuthAction();
-        const newToken = (data as any)?.token ?? token;
+        const checkStatusData = await checkAuthAction();
+        const newToken = checkStatusData.token ?? token;
 
         // Actualizar token si hay uno nuevo
-        if (newToken) {
+        if (newToken && newToken !== token) {
           localStorage.setItem('token', newToken);
         }
 
-        // Mantener el usuario del store/localStorage (no sobrescribir con check-status)
-        // El check-status puede no devolver los roles completos
+        // Actualizar el usuario con los datos de check-status
+        // check-status devuelve roles actualizados, así que los usamos
+        const updatedUser = {
+          id: checkStatusData.id,
+          email: checkStatusData.email,
+          roles: checkStatusData.roles,
+          isActive: checkStatusData.isActive,
+          // Mantener empleado y cliente si existen en check-status, sino usar los del store
+          empleado:
+            checkStatusData.empleado ?? user?.empleado ?? currentUser?.empleado,
+          cliente:
+            checkStatusData.cliente ?? user?.cliente ?? currentUser?.cliente,
+        };
+
+        // Guardar usuario actualizado en localStorage
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+
         set({
-          user: user ?? currentUser, // Mantener usuario original con todos sus roles
+          user: updatedUser,
           token: newToken,
           authStatus: 'authenticated',
         });

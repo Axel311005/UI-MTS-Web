@@ -24,8 +24,6 @@ export function useChunkErrorHandler() {
           errorMessage.includes('Loading chunk') ||
           errorMessage.includes('Loading CSS chunk')
         ) {
-          console.warn('Chunk loading error detected, forcing page reload:', errorMessage);
-          
           // Limpiar caché antes de recargar
           if ('caches' in window) {
             caches.keys().then((names) => {
@@ -54,7 +52,6 @@ export function useChunkErrorHandler() {
         errorMessage.includes('Failed to fetch') ||
         errorMessage.includes('Loading chunk')
       ) {
-        console.warn('Unhandled chunk loading error, forcing page reload:', errorMessage);
         event.preventDefault(); // Prevenir que se muestre en consola
         
         // Limpiar caché y recargar

@@ -49,8 +49,6 @@ export const patchClasificacionItem = async (
   );
 
   if (!Number.isFinite(clasificacionId)) {
-    // eslint-disable-next-line no-console
-    console.error('[patchClasificacionItem] Respuesta inesperada:', data);
     throw new Error('No se pudo actualizar la clasificación');
   }
 

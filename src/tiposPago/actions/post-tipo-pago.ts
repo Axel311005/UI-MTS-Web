@@ -21,8 +21,6 @@ export const postTipoPago = async (payload: CreateTipoPagoPayload) => {
   );
 
   if (!Number.isFinite(tipoPagoId)) {
-    // eslint-disable-next-line no-console
-    console.error('[postTipoPago] Respuesta inesperada:', data);
     throw new Error('No se pudo crear el tipo de pago');
   }
 

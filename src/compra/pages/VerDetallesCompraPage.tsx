@@ -134,7 +134,6 @@ export default function VerDetallesCompraPage() {
         const fetched = await getCompraById(numericId);
         setCompra(fetched as CompraDetalle);
       } catch (error) {
-        console.error('Error cargando compra:', error);
         toast.error('No se pudo cargar la compra');
         navigate('/admin/compras');
       } finally {

@@ -157,7 +157,6 @@ export default function EditarFacturaPage() {
 
         toast.success(`Editando factura #${id}`);
       } catch (error) {
-        console.error('Error loading invoice:', error);
         toast.error('No se pudo cargar la factura');
         navigate('/admin/facturas');
       } finally {
@@ -280,8 +279,6 @@ export default function EditarFacturaPage() {
         facturaId,
         fixedPayload
       );
-      // eslint-disable-next-line no-console
-      console.log('[EditarFactura] patchFactura ok, facturaId:', updatedId);
       toast.success(`Factura #${facturaId} actualizada`);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['facturas'], exact: false }),
@@ -293,7 +290,6 @@ export default function EditarFacturaPage() {
       // Opcional: navegar después de guardar
       // navigate("/facturas");
     } catch (error: any) {
-      console.error('Error saving invoice:', error);
       const raw = error?.response?.data;
       const msg =
         raw?.message ||
@@ -573,7 +569,6 @@ export default function EditarFacturaPage() {
                     }),
                   ]);
                 } catch (error: any) {
-                  console.error('Error guardando líneas:', error);
                   const raw = error?.response?.data;
                   const msg =
                     raw?.message ||

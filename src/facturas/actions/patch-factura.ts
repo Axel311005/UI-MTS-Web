@@ -37,7 +37,6 @@ export const patchFactura = async (
   );
 
   if (!Number.isFinite(facturaId)) {
-    console.error('[patchFactura] Respuesta inesperada:', data);
     throw new Error('No se recibió un id de factura válido');
   }
 
