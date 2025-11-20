@@ -6,6 +6,7 @@ import {
   validateNoRepeatedChars,
   sanitizeStringNoRepeats,
   sanitizeString,
+  detectSQLInjection,
 } from './security';
 
 /**
@@ -50,7 +51,7 @@ export function validateLength(
 }
 
 /**
- * Valida texto con longitud y caracteres repetidos
+ * Valida texto con longitud, caracteres repetidos y SQL Injection
  */
 export function validateText(
   text: string,
@@ -62,6 +63,14 @@ export function validateText(
   const lengthValidation = validateLength(text, min, max);
   if (!lengthValidation.isValid) {
     return lengthValidation;
+  }
+
+  // Validar SQL Injection
+  if (detectSQLInjection(text)) {
+    return {
+      isValid: false,
+      error: 'El texto contiene patrones no permitidos (SQL Injection)',
+    };
   }
 
   // Validar caracteres repetidos si no se permite

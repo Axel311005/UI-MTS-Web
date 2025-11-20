@@ -6,6 +6,7 @@ import DOMPurify from 'dompurify';
 
 /**
  * Sanitiza una cadena de texto usando DOMPurify (robusto contra XSS)
+ * También detecta y bloquea patrones de SQL Injection
  * @param input - Texto a sanitizar
  * @param maxLength - Longitud máxima permitida (default: 500)
  * @returns Texto sanitizado
@@ -17,6 +18,26 @@ export function sanitizeString(input: string, maxLength: number = 500): string {
 
   // Eliminar caracteres de control y espacios al inicio/final
   let sanitized = input.trim();
+
+  // Detectar SQL Injection - si se detecta, eliminar el texto malicioso
+  if (detectSQLInjection(sanitized)) {
+    // Eliminar patrones SQL maliciosos
+    sanitized = sanitized
+      .replace(/(\bOR\b|\bAND\b)\s+['"]?\d+['"]?\s*=\s*['"]?\d+['"]?/gi, '')
+      .replace(/\bUNION\s+SELECT\b/gi, '')
+      .replace(/\bSELECT\s+.*\s+FROM\b/gi, '')
+      .replace(/\bINSERT\s+INTO\b/gi, '')
+      .replace(/\bUPDATE\s+.*\s+SET\b/gi, '')
+      .replace(/\bDELETE\s+FROM\b/gi, '')
+      .replace(/\bDROP\s+(TABLE|DATABASE)\b/gi, '')
+      .replace(/\bEXEC\s*\(/gi, '')
+      .replace(/\bEXECUTE\s*\(/gi, '')
+      .replace(/;\s*(DROP|DELETE|UPDATE|INSERT)/gi, '')
+      .replace(/--\s*$/gm, '') // Eliminar comentarios SQL
+      .replace(/\/\*.*?\*\//gs, '') // Eliminar comentarios SQL multilínea
+      .replace(/'/g, '') // Eliminar comillas simples (común en SQL Injection)
+      .trim();
+  }
 
   // Usar DOMPurify para sanitización robusta contra XSS
   // DOMPurify elimina scripts, event handlers, y otros vectores de ataque
@@ -272,6 +293,47 @@ export function sanitizeId(
   }
 
   return Math.floor(num);
+}
+
+/**
+ * Detecta patrones comunes de SQL Injection
+ * @param input - Texto a validar
+ * @returns true si contiene patrones de SQL Injection
+ */
+export function detectSQLInjection(input: string): boolean {
+  if (!input || typeof input !== 'string') {
+    return false;
+  }
+
+  const sqlPatterns = [
+    // Patrones básicos de SQL Injection
+    /(\bOR\b|\bAND\b)\s+['"]?\d+['"]?\s*=\s*['"]?\d+['"]?/gi,
+    /\bUNION\s+SELECT\b/gi,
+    /\bSELECT\s+.*\s+FROM\b/gi,
+    /\bINSERT\s+INTO\b/gi,
+    /\bUPDATE\s+.*\s+SET\b/gi,
+    /\bDELETE\s+FROM\b/gi,
+    /\bDROP\s+(TABLE|DATABASE)\b/gi,
+    /\bEXEC\s*\(/gi,
+    /\bEXECUTE\s*\(/gi,
+    /;\s*(DROP|DELETE|UPDATE|INSERT)/gi,
+    /--\s*$/gm, // Comentarios SQL
+    /\/\*.*\*\//gs, // Comentarios SQL multilínea
+    /'\s*OR\s*['"]?\d+['"]?\s*=\s*['"]?\d+['"]?/gi,
+    /'\s*OR\s*'1'\s*=\s*'1/gi,
+    /'\s*OR\s*'1'\s*=\s*'1'\s*--/gi,
+    /'\s*OR\s*'1'\s*=\s*'1'\s*\/\*/gi,
+    /admin'--/gi,
+    /admin'\/\*/gi,
+    /admin'#/gi,
+    /'\s*UNION\s+SELECT\s+NULL/gi,
+    /'\s*UNION\s+SELECT\s+NULL,\s*NULL/gi,
+    /'\s*OR\s*1\s*=\s*1/gi,
+    /'\s*OR\s*1\s*=\s*1\s*--/gi,
+    /'\s*OR\s*1\s*=\s*1\s*\/\*/gi,
+  ];
+
+  return sqlPatterns.some((pattern) => pattern.test(input));
 }
 
 /**

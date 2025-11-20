@@ -12,7 +12,10 @@ import type {
   ClienteFormErrors,
   ClienteFormValues,
 } from './cliente-form.types';
-import { sanitizeStringNoRepeats } from '@/shared/utils/security';
+import {
+  sanitizeStringNoRepeats,
+  sanitizeString,
+} from '@/shared/utils/security';
 import {
   sanitizeText,
   validateText,
@@ -61,7 +64,8 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
   ) => {
     let sanitizedValue: string | boolean = value;
 
-    // Aplicar sanitización en tiempo real para campos de texto
+    // Aplicar sanitización en tiempo real para TODOS los campos de texto
+    // Esto incluye protección contra SQL Injection y XSS
     if (typeof value === 'string') {
       if (field === 'direccion') {
         sanitizedValue = sanitizeText(
@@ -77,6 +81,12 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
           VALIDATION_RULES.notas.max,
           false // No permitir 3 caracteres repetidos
         );
+      } else if (field === 'primerNombre' || field === 'primerApellido') {
+        // Sanitizar nombres (protección SQL + XSS, sin validar caracteres repetidos)
+        sanitizedValue = sanitizeString(value, 100);
+      } else {
+        // Sanitizar cualquier otro campo de texto (protección SQL + XSS)
+        sanitizedValue = sanitizeString(value, 200);
       }
     }
 

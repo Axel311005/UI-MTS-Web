@@ -5,6 +5,7 @@ import {
   sanitizeText,
   VALIDATION_RULES,
 } from '@/shared/utils/validation';
+import { useProtectedInput } from '@/shared/hooks/useProtectedInput';
 
 interface ClasificacionFormValues {
   descripcion: string;
@@ -26,6 +27,15 @@ export function ClasificacionForm({ values, onChange, errors }: ClasificacionFor
     );
     onChange({ ...values, [field]: sanitized });
   };
+
+  // Proteger contra manipulación directa del DOM
+  useProtectedInput({
+    fieldId: 'descripcion',
+    currentValue: values.descripcion,
+    onValueChange: (value) => handleChange('descripcion', value),
+    validationRules: VALIDATION_RULES.descripcion,
+    allowRepeats: false,
+  });
 
   return (
     <Card>
