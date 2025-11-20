@@ -9,6 +9,14 @@ import {
 } from './security';
 
 /**
+ * Resultado de una validación
+ */
+export interface ValidationResult {
+  isValid: boolean;
+  error?: string;
+}
+
+/**
  * Valida longitud de texto con mínimo y máximo
  */
 export function validateLength(
@@ -72,7 +80,7 @@ export function validateText(
  */
 export function sanitizeText(
   text: string,
-  min: number,
+  _min: number, // Parámetro para compatibilidad, se valida en validateText
   max: number,
   allowRepeats: boolean = false
 ): string {

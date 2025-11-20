@@ -14,6 +14,7 @@ import {
 import { Textarea } from '@/shared/components/ui/textarea';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
+import { sanitizeText, VALIDATION_RULES } from '@/shared/utils/validation';
 
 interface ProformaHeaderValues {
   idTramiteSeguro: number | '';

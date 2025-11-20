@@ -12,7 +12,7 @@ import {
   toNumberOrZero,
 } from '../ui/cliente-form.types';
 import { EstadoActivo } from '@/shared/types/status';
-import { sanitizeStringNoRepeats } from '@/shared/utils/security';
+import { sanitizeStringNoRepeats, validateRUC } from '@/shared/utils/security';
 import {
   validateText,
   sanitizeText,
@@ -45,6 +45,7 @@ export default function NuevoClientePage() {
     if (!formValues.ruc.trim()) {
       newErrors.ruc = 'El RUC es requerido';
     } else {
+      // Validar formato y longitud básica
       const rucValidation = validateText(
         formValues.ruc.trim(),
         VALIDATION_RULES.ruc.min,
@@ -53,6 +54,11 @@ export default function NuevoClientePage() {
       );
       if (!rucValidation.isValid) {
         newErrors.ruc = rucValidation.error || 'RUC inválido';
+      } else {
+        // Validar dígito verificador usando algoritmo de RUC
+        if (!validateRUC(formValues.ruc.trim())) {
+          newErrors.ruc = 'El RUC no es válido (dígito verificador incorrecto)';
+        }
       }
     }
 

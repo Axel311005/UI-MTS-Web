@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import './app.css';
 import { ThemeProvider } from './shared/components/layouts/ThemeProvider';
-import { initDevToolsProtection } from './shared/utils/devtools-protection';
+import { initDevToolsProtection, initDevToolsProtectionAdvanced } from './shared/utils/devtools-protection';
 
 import { TallerApp } from './TallerApp';
 
@@ -19,10 +19,11 @@ if (import.meta.env.PROD) {
     initDevToolsProtection();
   }, 100);
   
-  // Ejecutar periódicamente para asegurar que console permanezca bloqueado
-  setInterval(() => {
-    initDevToolsProtection();
-  }, 5000);
+  // Usar la versión avanzada que usa MutationObserver en lugar de setInterval constante
+  // Esto es más eficiente y consume menos recursos
+  setTimeout(() => {
+    initDevToolsProtectionAdvanced();
+  }, 500);
 }
 
 createRoot(document.getElementById('root')!).render(

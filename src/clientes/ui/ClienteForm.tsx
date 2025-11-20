@@ -18,6 +18,7 @@ import {
   validateText,
   VALIDATION_RULES,
 } from '@/shared/utils/validation';
+import { ErrorMessage } from '@/shared/components/ui/ErrorMessage';
 
 interface ClienteFormProps {
   values: ClienteFormValues;
@@ -114,11 +115,16 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
                 onChange={(e) => handleChange('primerNombre', e.target.value)}
                 placeholder="Juan"
                 className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
+                aria-invalid={!!errors.primerNombre}
+                aria-describedby={
+                  errors.primerNombre ? 'primerNombre-error' : undefined
+                }
               />
               {errors.primerNombre && (
-                <p className="text-xs sm:text-sm text-destructive">
-                  {errors.primerNombre}
-                </p>
+                <ErrorMessage
+                  message={errors.primerNombre}
+                  fieldId="primerNombre"
+                />
               )}
             </div>
 
@@ -132,11 +138,16 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
                 onChange={(e) => handleChange('primerApellido', e.target.value)}
                 placeholder="Pérez"
                 className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
+                aria-invalid={!!errors.primerApellido}
+                aria-describedby={
+                  errors.primerApellido ? 'primerApellido-error' : undefined
+                }
               />
               {errors.primerApellido && (
-                <p className="text-xs sm:text-sm text-destructive">
-                  {errors.primerApellido}
-                </p>
+                <ErrorMessage
+                  message={errors.primerApellido}
+                  fieldId="primerApellido"
+                />
               )}
             </div>
           </div>
@@ -153,11 +164,11 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
                 placeholder="J9999999999999"
                 maxLength={14}
                 className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
+                aria-invalid={!!errors.ruc}
+                aria-describedby={errors.ruc ? 'ruc-error' : undefined}
               />
               {errors.ruc && (
-                <p className="text-xs sm:text-sm text-destructive">
-                  {errors.ruc}
-                </p>
+                <ErrorMessage message={errors.ruc} fieldId="ruc" />
               )}
             </div>
             <div className="space-y-1.5 sm:space-y-2">
@@ -209,9 +220,7 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
                 className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
               />
               {errors.direccion && (
-                <p className="text-xs sm:text-sm text-destructive">
-                  {errors.direccion}
-                </p>
+                <ErrorMessage message={errors.direccion} fieldId="direccion" />
               )}
             </div>
           </div>
@@ -241,9 +250,7 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
               className="text-sm sm:text-base touch-manipulation resize-y"
             />
             {errors.notas && (
-              <p className="text-xs sm:text-sm text-destructive">
-                {errors.notas}
-              </p>
+              <ErrorMessage message={errors.notas} fieldId="notas" />
             )}
           </div>
 
@@ -284,9 +291,10 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
                 className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
               />
               {errors.porcentajeExonerado && (
-                <p className="text-xs sm:text-sm text-destructive">
-                  {errors.porcentajeExonerado}
-                </p>
+                <ErrorMessage
+                  message={errors.porcentajeExonerado}
+                  fieldId="porcentajeExonerado"
+                />
               )}
             </div>
           )}

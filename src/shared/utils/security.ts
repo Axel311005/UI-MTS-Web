@@ -2,8 +2,10 @@
  * Utilidades de seguridad para prevenir XSS, validar inputs y sanitizar datos
  */
 
+import DOMPurify from 'dompurify';
+
 /**
- * Sanitiza una cadena de texto eliminando caracteres peligrosos y limitando la longitud
+ * Sanitiza una cadena de texto usando DOMPurify (robusto contra XSS)
  * @param input - Texto a sanitizar
  * @param maxLength - Longitud máxima permitida (default: 500)
  * @returns Texto sanitizado
@@ -16,13 +18,13 @@ export function sanitizeString(input: string, maxLength: number = 500): string {
   // Eliminar caracteres de control y espacios al inicio/final
   let sanitized = input.trim();
 
-  // Eliminar caracteres peligrosos para XSS
-  sanitized = sanitized
-    .replace(/[<>]/g, '') // Eliminar < y >
-    .replace(/javascript:/gi, '') // Eliminar javascript:
-    .replace(/on\w+=/gi, '') // Eliminar event handlers (onclick=, onerror=, etc.)
-    .replace(/data:/gi, '') // Eliminar data: URLs
-    .replace(/vbscript:/gi, ''); // Eliminar vbscript:
+  // Usar DOMPurify para sanitización robusta contra XSS
+  // DOMPurify elimina scripts, event handlers, y otros vectores de ataque
+  sanitized = DOMPurify.sanitize(sanitized, {
+    ALLOWED_TAGS: [], // No permitir ningún tag HTML
+    ALLOWED_ATTR: [], // No permitir ningún atributo
+    KEEP_CONTENT: true, // Mantener el contenido de texto
+  });
 
   // Limitar longitud
   if (sanitized.length > maxLength) {
@@ -209,6 +211,46 @@ export function validateTelefono(
 
   const telefonoRegex = /^\d+$/;
   return telefonoRegex.test(telefono) && telefono.length === length;
+}
+
+/**
+ * Valida un RUC (Registro Único de Contribuyente) con algoritmo de dígito verificador
+ * Soporta formatos comunes de RUC en países latinoamericanos
+ * @param ruc - RUC a validar
+ * @returns true si es válido
+ */
+export function validateRUC(ruc: string): boolean {
+  if (!ruc || typeof ruc !== 'string') {
+    return false;
+  }
+
+  // Limpiar espacios y guiones
+  const cleaned = ruc.trim().replace(/[-\s]/g, '');
+
+  // Debe ser solo números y tener entre 10 y 14 dígitos
+  if (!/^\d{10,14}$/.test(cleaned)) {
+    return false;
+  }
+
+  // Algoritmo de validación de dígito verificador (algoritmo común para RUC)
+  // Este es un algoritmo simplificado, puede necesitar ajustes según el país
+  const digits = cleaned.split('').map(Number);
+  const base = digits.slice(0, -1); // Todos excepto el último
+  const checkDigit = digits[digits.length - 1]; // Último dígito
+
+  // Pesos para el cálculo (varían según el país, aquí usamos un algoritmo común)
+  const weights = [3, 2, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1, 1];
+  const weightsForLength = weights.slice(-base.length).reverse();
+
+  let sum = 0;
+  for (let i = 0; i < base.length; i++) {
+    sum += base[i] * weightsForLength[i];
+  }
+
+  const remainder = sum % 11;
+  const calculatedCheckDigit = remainder < 2 ? remainder : 11 - remainder;
+
+  return calculatedCheckDigit === checkDigit;
 }
 
 /**

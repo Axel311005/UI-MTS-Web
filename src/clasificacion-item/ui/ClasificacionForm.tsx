@@ -3,7 +3,6 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import {
   sanitizeText,
-  validateText,
   VALIDATION_RULES,
 } from '@/shared/utils/validation';
 

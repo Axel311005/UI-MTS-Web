@@ -1,9 +1,5 @@
 import { useState } from 'react';
 import {
-  validateNoRepeatedChars,
-  sanitizeStringNoRepeats,
-} from '@/shared/utils/security';
-import {
   validateText,
   validatePrecio,
   sanitizeText,

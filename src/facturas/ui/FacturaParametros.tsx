@@ -40,6 +40,8 @@ interface InvoiceParamsProps {
     tipoPago?: string;
     impuesto?: string;
     bodega?: string;
+    descuentoPct?: string;
+    comentario?: string;
   };
 }
 
