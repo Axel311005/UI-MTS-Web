@@ -40,6 +40,11 @@ import { Label } from "@/shared/components/ui/label";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { postMotivoCitaAction } from "../actions/post-motivo-cita";
 import { inactivateMotivoCitaAction } from "../actions/inactivate-motivo-cita";
+import {
+  sanitizeText,
+  validateText,
+  VALIDATION_RULES,
+} from '@/shared/utils/validation';
 
 export default function MotivosCitaPage() {
   const queryClient = useQueryClient();
@@ -98,10 +103,28 @@ export default function MotivosCitaPage() {
       toast.error("La descripción es requerida");
       return;
     }
+    
+    const validation = validateText(
+      formData.descripcion.trim(),
+      VALIDATION_RULES.descripcion.min,
+      VALIDATION_RULES.descripcion.max,
+      false
+    );
+    if (!validation.isValid) {
+      toast.error(validation.error || "Descripción inválida");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
-      await postMotivoCitaAction({ descripcion: formData.descripcion.trim() });
+      await postMotivoCitaAction({
+        descripcion: sanitizeText(
+          formData.descripcion.trim(),
+          VALIDATION_RULES.descripcion.min,
+          VALIDATION_RULES.descripcion.max,
+          false
+        ),
+      });
       toast.success("Motivo de cita creado exitosamente");
       setIsCreateDialogOpen(false);
       setFormData({ descripcion: "" });
@@ -120,11 +143,27 @@ export default function MotivosCitaPage() {
       toast.error("La descripción es requerida");
       return;
     }
+    
+    const validation = validateText(
+      formData.descripcion.trim(),
+      VALIDATION_RULES.descripcion.min,
+      VALIDATION_RULES.descripcion.max,
+      false
+    );
+    if (!validation.isValid) {
+      toast.error(validation.error || "Descripción inválida");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
       await patchMotivoCitaAction(editingMotivo.idMotivoCita, {
-        descripcion: formData.descripcion.trim(),
+        descripcion: sanitizeText(
+          formData.descripcion.trim(),
+          VALIDATION_RULES.descripcion.min,
+          VALIDATION_RULES.descripcion.max,
+          false
+        ),
       });
       toast.success("Motivo de cita actualizado exitosamente");
       setIsEditDialogOpen(false);
@@ -279,10 +318,17 @@ export default function MotivosCitaPage() {
                 id="descripcion-create"
                 placeholder="Ej: Mantenimiento preventivo, Reparación de frenos, etc."
                 value={formData.descripcion}
-                onChange={(e) =>
-                  setFormData({ ...formData, descripcion: e.target.value })
-                }
+                onChange={(e) => {
+                  const sanitized = sanitizeText(
+                    e.target.value,
+                    VALIDATION_RULES.descripcion.min,
+                    VALIDATION_RULES.descripcion.max,
+                    false
+                  );
+                  setFormData({ ...formData, descripcion: sanitized });
+                }}
                 rows={3}
+                maxLength={VALIDATION_RULES.descripcion.max}
               />
             </div>
           </div>
@@ -319,10 +365,17 @@ export default function MotivosCitaPage() {
                 id="descripcion-edit"
                 placeholder="Ej: Mantenimiento preventivo, Reparación de frenos, etc."
                 value={formData.descripcion}
-                onChange={(e) =>
-                  setFormData({ ...formData, descripcion: e.target.value })
-                }
+                onChange={(e) => {
+                  const sanitized = sanitizeText(
+                    e.target.value,
+                    VALIDATION_RULES.descripcion.min,
+                    VALIDATION_RULES.descripcion.max,
+                    false
+                  );
+                  setFormData({ ...formData, descripcion: sanitized });
+                }}
                 rows={3}
+                maxLength={VALIDATION_RULES.descripcion.max}
               />
             </div>
           </div>

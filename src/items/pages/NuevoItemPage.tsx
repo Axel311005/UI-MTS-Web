@@ -1,4 +1,14 @@
 import { useState } from 'react';
+import {
+  validateNoRepeatedChars,
+  sanitizeStringNoRepeats,
+} from '@/shared/utils/security';
+import {
+  validateText,
+  validatePrecio,
+  sanitizeText,
+  VALIDATION_RULES,
+} from '@/shared/utils/validation';
 import { useNavigate } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Save } from 'lucide-react';
@@ -26,40 +36,81 @@ export default function NuevoItemPage() {
 
   const validateForm = () => {
     const newErrors: ItemFormErrors = {};
+    
+    // Validar código
     if (!formValues.codigoItem.trim()) {
       newErrors.codigoItem = 'El código es requerido';
+    } else {
+      const codigoValidation = validateText(
+        formValues.codigoItem.trim(),
+        VALIDATION_RULES.codigo.min,
+        VALIDATION_RULES.codigo.max,
+        false
+      );
+      if (!codigoValidation.isValid) {
+        newErrors.codigoItem = codigoValidation.error || 'Código inválido';
+      }
     }
+    
+    // Validar descripción
     if (!formValues.descripcion.trim()) {
       newErrors.descripcion = 'La descripción es requerida';
+    } else {
+      const descripcionValidation = validateText(
+        formValues.descripcion.trim(),
+        VALIDATION_RULES.descripcion.min,
+        VALIDATION_RULES.descripcion.max,
+        false
+      );
+      if (!descripcionValidation.isValid) {
+        newErrors.descripcion = descripcionValidation.error || 'Descripción inválida';
+      }
     }
+    
     if (!formValues.clasificacionId || Number(formValues.clasificacionId) < 1) {
       newErrors.clasificacionId = 'Clasificación requerida';
     }
     if (!formValues.unidadMedidaId || Number(formValues.unidadMedidaId) < 1) {
       newErrors.unidadMedidaId = 'Unidad de medida requerida';
     }
+    
     // Si es SERVICIO, no validar precios (se envían como 1)
     const isServicio = formValues.tipo === 'SERVICIO';
     if (!isServicio) {
-      if (!formValues.precioBaseLocal || Number(formValues.precioBaseLocal) < 0) {
-        newErrors.precioBaseLocal = 'Precio local requerido';
+      // Validar precios con rangos razonables
+      const precioBaseLocalValidation = validatePrecio(
+        formValues.precioBaseLocal,
+        VALIDATION_RULES.precio.max
+      );
+      if (!precioBaseLocalValidation.isValid) {
+        newErrors.precioBaseLocal = precioBaseLocalValidation.error || 'Precio local inválido';
       }
-      if (!formValues.precioBaseDolar || Number(formValues.precioBaseDolar) < 0) {
-        newErrors.precioBaseDolar = 'Precio USD requerido';
+      
+      const precioBaseDolarValidation = validatePrecio(
+        formValues.precioBaseDolar,
+        VALIDATION_RULES.precio.max
+      );
+      if (!precioBaseDolarValidation.isValid) {
+        newErrors.precioBaseDolar = precioBaseDolarValidation.error || 'Precio USD inválido';
       }
-      if (
-        !formValues.precioAdquisicionLocal ||
-        Number(formValues.precioAdquisicionLocal) < 0
-      ) {
-        newErrors.precioAdquisicionLocal = 'Precio adquisición local requerido';
+      
+      const precioAdqLocalValidation = validatePrecio(
+        formValues.precioAdquisicionLocal,
+        VALIDATION_RULES.precio.max
+      );
+      if (!precioAdqLocalValidation.isValid) {
+        newErrors.precioAdquisicionLocal = precioAdqLocalValidation.error || 'Precio adquisición local inválido';
       }
-      if (
-        !formValues.precioAdquisicionDolar ||
-        Number(formValues.precioAdquisicionDolar) < 0
-      ) {
-        newErrors.precioAdquisicionDolar = 'Precio adquisición USD requerido';
+      
+      const precioAdqDolarValidation = validatePrecio(
+        formValues.precioAdquisicionDolar,
+        VALIDATION_RULES.precio.max
+      );
+      if (!precioAdqDolarValidation.isValid) {
+        newErrors.precioAdquisicionDolar = precioAdqDolarValidation.error || 'Precio adquisición USD inválido';
       }
     }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -70,8 +121,18 @@ export default function NuevoItemPage() {
     return {
       clasificacionId: Number(formValues.clasificacionId),
       unidadMedidaId: Number(formValues.unidadMedidaId),
-      codigoItem: formValues.codigoItem.trim(),
-      descripcion: formValues.descripcion.trim(),
+      codigoItem: sanitizeText(
+        formValues.codigoItem.trim(),
+        VALIDATION_RULES.codigo.min,
+        VALIDATION_RULES.codigo.max,
+        false
+      ).toUpperCase(),
+      descripcion: sanitizeText(
+        formValues.descripcion.trim(),
+        VALIDATION_RULES.descripcion.min,
+        VALIDATION_RULES.descripcion.max,
+        false
+      ),
       tipo: formValues.tipo,
       precioBaseLocal: isServicio ? 1 : toNumberOrZero(formValues.precioBaseLocal),
       precioBaseDolar: isServicio ? 1 : toNumberOrZero(formValues.precioBaseDolar),

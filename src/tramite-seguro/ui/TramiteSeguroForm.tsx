@@ -14,6 +14,13 @@ import { TramiteSeguroEstado } from '@/shared/types/status';
 import { ClienteSelect } from '@/facturas/ui/ClienteSelect';
 import { VehiculoSelect } from '@/shared/components/selects/VehiculoSelect';
 import { AseguradoraSelect } from '@/shared/components/selects/AseguradoraSelect';
+import {
+  sanitizeText,
+  validateText,
+  validateFecha,
+  validateFechaRango,
+  VALIDATION_RULES,
+} from '@/shared/utils/validation';
 
 type FormValues = {
   idVehiculo: number | '';
@@ -78,7 +85,19 @@ export function TramiteSeguroForm({
   };
 
   const handleInputChange = (field: keyof FormValues, value: string) => {
-    setValues((prev) => ({ ...prev, [field]: value }));
+    let sanitizedValue = value;
+    
+    // Sanitizar observaciones
+    if (field === 'observaciones') {
+      sanitizedValue = sanitizeText(
+        value,
+        VALIDATION_RULES.observaciones.min,
+        VALIDATION_RULES.observaciones.max,
+        false // No permitir 3 caracteres repetidos
+      );
+    }
+    
+    setValues((prev) => ({ ...prev, [field]: sanitizedValue }));
     if (errors[field]) setFieldError(field, undefined);
   };
 
@@ -101,22 +120,47 @@ export function TramiteSeguroForm({
       nextErrors.numeroTramite = 'El número de trámite es requerido';
     }
 
+    // Validar fecha de inicio
     if (!values.fechaInicio) {
       nextErrors.fechaInicio = 'La fecha de inicio es requerida';
-    } else if (Number.isNaN(Date.parse(values.fechaInicio))) {
-      nextErrors.fechaInicio = 'La fecha de inicio es inválida';
+    } else {
+      const fechaInicioValidation = validateFecha(
+        values.fechaInicio,
+        VALIDATION_RULES.fechaMinima,
+        VALIDATION_RULES.fechaMaxima
+      );
+      if (!fechaInicioValidation.isValid) {
+        nextErrors.fechaInicio = fechaInicioValidation.error || 'Fecha de inicio inválida';
+      }
     }
 
+    // Validar fecha de fin
     if (values.fechaFin) {
-      if (Number.isNaN(Date.parse(values.fechaFin))) {
-        nextErrors.fechaFin = 'La fecha de fin es inválida';
-      } else if (
-        values.fechaInicio &&
-        !Number.isNaN(Date.parse(values.fechaInicio)) &&
-        Date.parse(values.fechaFin) < Date.parse(values.fechaInicio)
-      ) {
-        nextErrors.fechaFin =
-          'La fecha de fin no puede ser anterior a la fecha de inicio';
+      const fechaFinValidation = validateFecha(
+        values.fechaFin,
+        VALIDATION_RULES.fechaMinima,
+        VALIDATION_RULES.fechaMaxima
+      );
+      if (!fechaFinValidation.isValid) {
+        nextErrors.fechaFin = fechaFinValidation.error || 'Fecha de fin inválida';
+      } else if (values.fechaInicio) {
+        const rangoValidation = validateFechaRango(values.fechaInicio, values.fechaFin);
+        if (!rangoValidation.isValid) {
+          nextErrors.fechaFin = rangoValidation.error || 'La fecha de fin debe ser posterior a la fecha de inicio';
+        }
+      }
+    }
+    
+    // Validar observaciones
+    if (values.observaciones.trim()) {
+      const observacionesValidation = validateText(
+        values.observaciones.trim(),
+        VALIDATION_RULES.observaciones.min,
+        VALIDATION_RULES.observaciones.max,
+        false
+      );
+      if (!observacionesValidation.isValid) {
+        nextErrors.observaciones = observacionesValidation.error;
       }
     }
 

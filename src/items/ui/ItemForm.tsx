@@ -20,6 +20,8 @@ import { EstadoActivo } from '@/shared/types/status';
 import { useClasificacionItem } from '@/clasificacion-item/hook/useClasificacionItem';
 import { useUnidadMedida } from '@/unidad-medida/hook/useUnidadMedida';
 import { useMemo } from 'react';
+import { sanitizeString } from '@/shared/utils/security';
+import { sanitizeText, VALIDATION_RULES } from '@/shared/utils/validation';
 
 interface ItemFormProps {
   values: ItemFormValues;
@@ -57,8 +59,39 @@ export function ItemForm({
     field: keyof ItemFormValues,
     value: string | boolean
   ) => {
-    const newValues = { ...values, [field]: value };
-    
+    let sanitizedValue: string | boolean = value;
+
+    // Aplicar sanitización y validación de caracteres repetidos
+    if (typeof value === 'string') {
+      if (field === 'codigoItem') {
+        sanitizedValue = sanitizeText(
+          value,
+          VALIDATION_RULES.codigo.min,
+          VALIDATION_RULES.codigo.max,
+          false // No permitir 3 caracteres repetidos
+        ).toUpperCase();
+      } else if (field === 'descripcion') {
+        sanitizedValue = sanitizeText(
+          value,
+          VALIDATION_RULES.descripcion.min,
+          VALIDATION_RULES.descripcion.max,
+          false // No permitir 3 caracteres repetidos
+        );
+      } else if (
+        field === 'precioBaseLocal' ||
+        field === 'precioBaseDolar' ||
+        field === 'precioAdquisicionLocal' ||
+        field === 'precioAdquisicionDolar'
+      ) {
+        // Los precios se validan en validateForm, aquí solo sanitizamos
+        sanitizedValue = value;
+      } else {
+        sanitizedValue = sanitizeString(value, 200);
+      }
+    }
+
+    const newValues = { ...values, [field]: sanitizedValue };
+
     // Si el tipo es SERVICIO, bloquear precios y establecerlos en 1
     if (field === 'tipo' && value === 'SERVICIO') {
       newValues.precioBaseLocal = '1';
@@ -66,17 +99,19 @@ export function ItemForm({
       newValues.precioAdquisicionLocal = '1';
       newValues.precioAdquisicionDolar = '1';
     }
-    
+
     onChange(newValues);
   };
-  
+
   const isServicio = values.tipo === 'SERVICIO';
 
   return (
     <div className="space-y-4 sm:space-y-6">
       <Card className="card-elegant">
         <CardHeader className="p-4 sm:p-6">
-          <CardTitle className="text-base sm:text-lg">Información General</CardTitle>
+          <CardTitle className="text-base sm:text-lg">
+            Información General
+          </CardTitle>
         </CardHeader>
         <CardContent className="p-4 sm:p-6 pt-0 space-y-3 sm:space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
@@ -89,10 +124,13 @@ export function ItemForm({
                 value={values.codigoItem}
                 onChange={(e) => handleChange('codigoItem', e.target.value)}
                 placeholder="ITEM-001"
+                maxLength={VALIDATION_RULES.codigo.max}
                 className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
               />
               {errors.codigoItem && (
-                <p className="text-xs sm:text-sm text-destructive">{errors.codigoItem}</p>
+                <p className="text-xs sm:text-sm text-destructive">
+                  {errors.codigoItem}
+                </p>
               )}
             </div>
 
@@ -104,7 +142,10 @@ export function ItemForm({
                 value={values.tipo}
                 onValueChange={(value) => handleChange('tipo', value)}
               >
-                <SelectTrigger id="tipo" className="h-10 sm:h-11 text-sm sm:text-base">
+                <SelectTrigger
+                  id="tipo"
+                  className="h-10 sm:h-11 text-sm sm:text-base"
+                >
                   <SelectValue placeholder="Selecciona un tipo" />
                 </SelectTrigger>
                 <SelectContent>
@@ -113,7 +154,9 @@ export function ItemForm({
                 </SelectContent>
               </Select>
               {errors.tipo && (
-                <p className="text-xs sm:text-sm text-destructive">{errors.tipo}</p>
+                <p className="text-xs sm:text-sm text-destructive">
+                  {errors.tipo}
+                </p>
               )}
             </div>
           </div>
@@ -130,7 +173,9 @@ export function ItemForm({
               className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
             />
             {errors.descripcion && (
-              <p className="text-xs sm:text-sm text-destructive">{errors.descripcion}</p>
+              <p className="text-xs sm:text-sm text-destructive">
+                {errors.descripcion}
+              </p>
             )}
           </div>
 
@@ -149,7 +194,9 @@ export function ItemForm({
                 placeholder="Selecciona una clasificación"
                 searchPlaceholder="Buscar clasificación..."
                 emptyMessage="No se encontraron clasificaciones."
-                disabled={!clasificacionItems || clasificacionItems.length === 0}
+                disabled={
+                  !clasificacionItems || clasificacionItems.length === 0
+                }
               />
               {errors.clasificacionId && (
                 <p className="text-xs sm:text-sm text-destructive">
@@ -298,7 +345,9 @@ export function ItemForm({
         <CardContent className="p-4 sm:p-6 pt-0 space-y-3 sm:space-y-4">
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-0.5 flex-1">
-              <Label htmlFor="esCotizable" className="text-sm">Es Cotizable</Label>
+              <Label htmlFor="esCotizable" className="text-sm">
+                Es Cotizable
+              </Label>
               <p className="text-xs sm:text-sm text-muted-foreground">
                 ¿Este item puede ser cotizado?
               </p>
@@ -316,7 +365,9 @@ export function ItemForm({
           {showEstadoToggle && (
             <div className="flex items-center justify-between gap-4">
               <div className="space-y-0.5 flex-1">
-                <Label htmlFor="activo" className="text-sm">Estado del Item</Label>
+                <Label htmlFor="activo" className="text-sm">
+                  Estado del Item
+                </Label>
                 <p className="text-xs sm:text-sm text-muted-foreground">
                   ¿Este item está activo?
                 </p>

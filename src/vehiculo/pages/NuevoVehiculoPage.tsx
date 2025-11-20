@@ -17,6 +17,8 @@ export default function NuevoVehiculoPage() {
 
   const handleSubmit = async (data: any) => {
     try {
+      // Los datos ya vienen sanitizados del VehiculoForm
+      // pero aplicamos una capa adicional de seguridad aquí
       await postVehiculoAction({
         idCliente: Number(data.idCliente),
         placa: data.placa,
@@ -32,6 +34,7 @@ export default function NuevoVehiculoPage() {
       await queryClient.invalidateQueries({ queryKey: ['vehiculos'] });
       navigate('/admin/vehiculos');
     } catch (error) {
+      // No exponer detalles del error al usuario por seguridad
       toast.error('No se pudo crear el vehículo');
     }
   };

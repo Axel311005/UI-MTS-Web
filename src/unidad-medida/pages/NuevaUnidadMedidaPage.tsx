@@ -6,6 +6,11 @@ import { UnidadMedidaForm } from '../ui/UnidadMedidaForm';
 import { postUnidadMedida } from '../actions/post-unidad-medida';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import {
+  validateText,
+  sanitizeText,
+  VALIDATION_RULES,
+} from '@/shared/utils/validation';
 
 interface UnidadMedidaFormValues {
   descripcion: string;
@@ -27,6 +32,16 @@ export default function NuevaUnidadMedidaPage() {
 
     if (!formValues.descripcion.trim()) {
       newErrors.descripcion = 'La descripción es requerida';
+    } else {
+      const validation = validateText(
+        formValues.descripcion.trim(),
+        VALIDATION_RULES.descripcion.min,
+        VALIDATION_RULES.descripcion.max,
+        false
+      );
+      if (!validation.isValid) {
+        newErrors.descripcion = validation.error || 'Descripción inválida';
+      }
     }
 
     setErrors(newErrors);
@@ -43,7 +58,14 @@ export default function NuevaUnidadMedidaPage() {
     const dismiss = toast.loading('Creando unidad de medida...');
 
     try {
-      await postUnidadMedida({ descripcion: formValues.descripcion });
+      await postUnidadMedida({
+        descripcion: sanitizeText(
+          formValues.descripcion.trim(),
+          VALIDATION_RULES.descripcion.min,
+          VALIDATION_RULES.descripcion.max,
+          false
+        ),
+      });
       toast.success('Unidad de medida creada exitosamente');
       await queryClient.invalidateQueries({ queryKey: ['unidadMedidas'] });
       navigate('/admin/unidades-medida');

@@ -1,0 +1,30 @@
+# Protección de archivos sensibles
+<FilesMatch "\.(env|log|json|md|txt|config|key|pem)$">
+  Order allow,deny
+  Deny from all
+</FilesMatch>
+
+# Prevenir acceso a archivos de configuración
+<FilesMatch "^(\.env|\.git|package\.json|package-lock\.json|tsconfig|vite\.config|netlify\.toml)$">
+  Order allow,deny
+  Deny from all
+</FilesMatch>
+
+# Proteger archivos de source maps
+<FilesMatch "\.map$">
+  Order allow,deny
+  Deny from all
+</FilesMatch>
+
+# Headers de seguridad
+<IfModule mod_headers.c>
+  # Prevenir que se acceda a archivos sensibles
+  <FilesMatch "\.(env|log|key|pem|config)$">
+    Header set X-Robots-Tag "noindex, nofollow"
+  </FilesMatch>
+  
+  # No exponer información del servidor
+  Header unset Server
+  Header unset X-Powered-By
+</IfModule>
+

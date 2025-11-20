@@ -12,6 +12,12 @@ import {
   toNumberOrZero,
 } from '../ui/cliente-form.types';
 import { EstadoActivo } from '@/shared/types/status';
+import { sanitizeStringNoRepeats } from '@/shared/utils/security';
+import {
+  validateText,
+  sanitizeText,
+  VALIDATION_RULES,
+} from '@/shared/utils/validation';
 import type {
   ClienteFormErrors,
   ClienteFormValues,
@@ -38,6 +44,42 @@ export default function NuevoClientePage() {
 
     if (!formValues.ruc.trim()) {
       newErrors.ruc = 'El RUC es requerido';
+    } else {
+      const rucValidation = validateText(
+        formValues.ruc.trim(),
+        VALIDATION_RULES.ruc.min,
+        VALIDATION_RULES.ruc.max,
+        false
+      );
+      if (!rucValidation.isValid) {
+        newErrors.ruc = rucValidation.error || 'RUC inválido';
+      }
+    }
+
+    // Validar dirección
+    if (formValues.direccion.trim()) {
+      const direccionValidation = validateText(
+        formValues.direccion.trim(),
+        VALIDATION_RULES.direccion.min,
+        VALIDATION_RULES.direccion.max,
+        false
+      );
+      if (!direccionValidation.isValid) {
+        newErrors.direccion = direccionValidation.error;
+      }
+    }
+
+    // Validar notas
+    if (formValues.notas.trim()) {
+      const notasValidation = validateText(
+        formValues.notas.trim(),
+        VALIDATION_RULES.notas.min,
+        VALIDATION_RULES.notas.max,
+        false
+      );
+      if (!notasValidation.isValid) {
+        newErrors.notas = notasValidation.error;
+      }
     }
 
     if (formValues.esExonerado) {
@@ -58,22 +100,35 @@ export default function NuevoClientePage() {
     // Convertir teléfono de formato frontend (87781633) a backend (50587781633)
     // Solo números, todo pegado sin espacios
     const telefonoLimpio = formValues.telefono.replace(/\D/g, ''); // Solo números
-    const telefonoBackend = telefonoLimpio.length === 8
-      ? `505${telefonoLimpio}`
-      : telefonoLimpio;
+    const telefonoBackend =
+      telefonoLimpio.length === 8 ? `505${telefonoLimpio}` : telefonoLimpio;
 
     return {
       primerNombre: formValues.primerNombre.trim() || null,
       primerApellido: formValues.primerApellido.trim() || null,
-      ruc: formValues.ruc.trim(),
+      ruc: sanitizeStringNoRepeats(formValues.ruc.trim(), 14),
       esExonerado: formValues.esExonerado,
       porcentajeExonerado: formValues.esExonerado
         ? toNumberOrZero(formValues.porcentajeExonerado)
         : 0,
-      direccion: formValues.direccion.trim(),
+      direccion: formValues.direccion.trim()
+        ? sanitizeText(
+            formValues.direccion.trim(),
+            VALIDATION_RULES.direccion.min,
+            VALIDATION_RULES.direccion.max,
+            false
+          )
+        : '',
       telefono: telefonoBackend,
       activo: EstadoActivo.ACTIVO,
-      notas: formValues.notas.trim(),
+      notas: formValues.notas.trim()
+        ? sanitizeText(
+            formValues.notas.trim(),
+            VALIDATION_RULES.notas.min,
+            VALIDATION_RULES.notas.max,
+            false
+          )
+        : '',
     };
   };
 
@@ -125,25 +180,27 @@ export default function NuevoClientePage() {
     <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center space-x-2 sm:space-x-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={handleCancel}
             className="h-9 w-9 sm:h-10 sm:w-10 touch-manipulation"
           >
             <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
           <div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">Nuevo Cliente</h1>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">
+              Nuevo Cliente
+            </h1>
             <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
               Completa la información del nuevo cliente
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2 sm:space-x-2">
-          <Button 
-            variant="outline" 
-            onClick={handleCancel} 
+          <Button
+            variant="outline"
+            onClick={handleCancel}
             disabled={saving}
             className="flex-1 sm:flex-initial h-10 sm:h-11 text-sm sm:text-base touch-manipulation min-h-[44px]"
           >
@@ -155,8 +212,12 @@ export default function NuevoClientePage() {
             className="button-hover flex-1 sm:flex-initial h-10 sm:h-11 text-sm sm:text-base touch-manipulation min-h-[44px]"
           >
             <Save className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">{saving ? 'Guardando...' : 'Guardar Cliente'}</span>
-            <span className="sm:hidden">{saving ? 'Guardando...' : 'Guardar'}</span>
+            <span className="hidden sm:inline">
+              {saving ? 'Guardando...' : 'Guardar Cliente'}
+            </span>
+            <span className="sm:hidden">
+              {saving ? 'Guardando...' : 'Guardar'}
+            </span>
           </Button>
         </div>
       </div>

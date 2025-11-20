@@ -6,6 +6,11 @@ import { TipoPagoForm } from '../ui/TipoPagoForm';
 import { postTipoPago } from '../actions/post-tipo-pago';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import {
+  validateText,
+  sanitizeText,
+  VALIDATION_RULES,
+} from '@/shared/utils/validation';
 
 interface TipoPagoFormValues {
   descripcion: string;
@@ -27,6 +32,16 @@ export default function NuevoTipoPagoPage() {
 
     if (!formValues.descripcion.trim()) {
       newErrors.descripcion = 'La descripción es requerida';
+    } else {
+      const validation = validateText(
+        formValues.descripcion.trim(),
+        VALIDATION_RULES.descripcion.min,
+        VALIDATION_RULES.descripcion.max,
+        false
+      );
+      if (!validation.isValid) {
+        newErrors.descripcion = validation.error || 'Descripción inválida';
+      }
     }
 
     setErrors(newErrors);
@@ -43,7 +58,14 @@ export default function NuevoTipoPagoPage() {
     const dismiss = toast.loading('Creando tipo de pago...');
 
     try {
-      await postTipoPago({ descripcion: formValues.descripcion });
+      await postTipoPago({
+        descripcion: sanitizeText(
+          formValues.descripcion.trim(),
+          VALIDATION_RULES.descripcion.min,
+          VALIDATION_RULES.descripcion.max,
+          false
+        ),
+      });
       toast.success('Tipo de pago creado exitosamente');
       await queryClient.invalidateQueries({ queryKey: ['tipoPagos'] });
       navigate('/admin/tipos-pago');

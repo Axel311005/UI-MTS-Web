@@ -7,6 +7,12 @@ import { postMoneda } from '../actions/post-moneda';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { EstadoActivo } from '@/shared/types/status';
+import {
+  validateText,
+  validatePrecio,
+  sanitizeText,
+  VALIDATION_RULES,
+} from '@/shared/utils/validation';
 
 interface MonedaFormValues {
   descripcion: string;
@@ -30,10 +36,28 @@ export default function NuevaMonedaPage() {
 
     if (!formValues.descripcion.trim()) {
       newErrors.descripcion = 'La descripción es requerida';
+    } else {
+      const descValidation = validateText(
+        formValues.descripcion.trim(),
+        VALIDATION_RULES.descripcion.min,
+        VALIDATION_RULES.descripcion.max,
+        false
+      );
+      if (!descValidation.isValid) {
+        newErrors.descripcion = descValidation.error || 'Descripción inválida';
+      }
     }
 
-    if (formValues.tipoCambio === '' || Number(formValues.tipoCambio) <= 0) {
-      newErrors.tipoCambio = 'El tipo de cambio debe ser mayor a 0';
+    if (formValues.tipoCambio === '') {
+      newErrors.tipoCambio = 'El tipo de cambio es requerido';
+    } else {
+      const tipoCambioValidation = validatePrecio(
+        formValues.tipoCambio,
+        VALIDATION_RULES.precio.max
+      );
+      if (!tipoCambioValidation.isValid) {
+        newErrors.tipoCambio = tipoCambioValidation.error || 'Tipo de cambio inválido';
+      }
     }
 
     setErrors(newErrors);
@@ -51,7 +75,12 @@ export default function NuevaMonedaPage() {
 
     try {
       await postMoneda({
-        descripcion: formValues.descripcion,
+        descripcion: sanitizeText(
+          formValues.descripcion.trim(),
+          VALIDATION_RULES.descripcion.min,
+          VALIDATION_RULES.descripcion.max,
+          false
+        ),
         tipoCambio: Number(formValues.tipoCambio),
         activo: EstadoActivo.ACTIVO,
       });

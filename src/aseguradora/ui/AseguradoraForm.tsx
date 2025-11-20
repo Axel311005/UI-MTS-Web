@@ -3,6 +3,11 @@ import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { Label } from '@/shared/components/ui/label';
+import {
+  sanitizeText,
+  validateText,
+  VALIDATION_RULES,
+} from '@/shared/utils/validation';
 
 type FormValues = {
   descripcion: string;
@@ -50,15 +55,40 @@ export function AseguradoraForm({
 
     if (!values.descripcion.trim()) {
       nextErrors.descripcion = 'La descripción es requerida';
+    } else {
+      const descValidation = validateText(
+        values.descripcion.trim(),
+        VALIDATION_RULES.descripcion.min,
+        VALIDATION_RULES.descripcion.max,
+        false
+      );
+      if (!descValidation.isValid) {
+        nextErrors.descripcion = descValidation.error || 'Descripción inválida';
+      }
     }
     if (!values.telefono.trim()) {
       nextErrors.telefono = 'El teléfono es requerido';
     }
     if (!values.direccion.trim()) {
       nextErrors.direccion = 'La dirección es requerida';
+    } else {
+      const dirValidation = validateText(
+        values.direccion.trim(),
+        VALIDATION_RULES.direccion.min,
+        VALIDATION_RULES.direccion.max,
+        false
+      );
+      if (!dirValidation.isValid) {
+        nextErrors.direccion = dirValidation.error || 'Dirección inválida';
+      }
     }
     if (!values.contacto.trim()) {
       nextErrors.contacto = 'El contacto es requerido';
+    } else {
+      const contactoValidation = validateText(values.contacto.trim(), 2, 100, false);
+      if (!contactoValidation.isValid) {
+        nextErrors.contacto = contactoValidation.error || 'Contacto inválido';
+      }
     }
 
     setErrors(nextErrors);
@@ -66,9 +96,30 @@ export function AseguradoraForm({
   };
 
   const handleChange = (field: keyof FormValues, value: string) => {
+    let sanitized = value;
+    
+    // Aplicar sanitización según el campo
+    if (field === 'descripcion') {
+      sanitized = sanitizeText(
+        value,
+        VALIDATION_RULES.descripcion.min,
+        VALIDATION_RULES.descripcion.max,
+        false
+      );
+    } else if (field === 'direccion') {
+      sanitized = sanitizeText(
+        value,
+        VALIDATION_RULES.direccion.min,
+        VALIDATION_RULES.direccion.max,
+        false
+      );
+    } else if (field === 'contacto') {
+      sanitized = sanitizeText(value, 2, 100, false);
+    }
+    
     setValues((prev) => ({
       ...prev,
-      [field]: value,
+      [field]: sanitized,
     }));
     if (errors[field]) {
       setErrors((prev) => ({
@@ -103,6 +154,7 @@ export function AseguradoraForm({
           value={values.descripcion}
           onChange={(event) => handleChange('descripcion', event.target.value)}
           placeholder="Seguros del Paraguay S.A."
+          maxLength={VALIDATION_RULES.descripcion.max}
         />
         {errors.descripcion && (
           <p className="text-sm text-destructive">{errors.descripcion}</p>
@@ -143,6 +195,7 @@ export function AseguradoraForm({
           onChange={(event) => handleChange('direccion', event.target.value)}
           placeholder="Av. Mariscal López 1234, Asunción"
           rows={3}
+          maxLength={VALIDATION_RULES.direccion.max}
         />
         {errors.direccion && (
           <p className="text-sm text-destructive">{errors.direccion}</p>

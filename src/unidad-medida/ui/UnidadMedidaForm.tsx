@@ -6,6 +6,11 @@ import {
 } from '@/shared/components/ui/card';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
+import {
+  sanitizeText,
+  validateText,
+  VALIDATION_RULES,
+} from '@/shared/utils/validation';
 
 interface UnidadMedidaFormValues {
   descripcion: string;
@@ -23,7 +28,13 @@ export function UnidadMedidaForm({
   errors,
 }: UnidadMedidaFormProps) {
   const handleChange = (field: keyof UnidadMedidaFormValues, value: string) => {
-    onChange({ ...values, [field]: value });
+    const sanitized = sanitizeText(
+      value,
+      VALIDATION_RULES.descripcion.min,
+      VALIDATION_RULES.descripcion.max,
+      false // No permitir 3 caracteres repetidos
+    );
+    onChange({ ...values, [field]: sanitized });
   };
 
   return (
@@ -41,6 +52,7 @@ export function UnidadMedidaForm({
             placeholder="Ej: Kilogramos, Metros, Litros, etc."
             value={values.descripcion}
             onChange={(e) => handleChange('descripcion', e.target.value)}
+            maxLength={VALIDATION_RULES.descripcion.max}
           />
           {errors?.descripcion && (
             <p className="text-sm text-destructive">{errors.descripcion}</p>

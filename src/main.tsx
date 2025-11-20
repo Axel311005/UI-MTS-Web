@@ -3,8 +3,27 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import './app.css';
 import { ThemeProvider } from './shared/components/layouts/ThemeProvider';
+import { initDevToolsProtection } from './shared/utils/devtools-protection';
 
 import { TallerApp } from './TallerApp';
+
+// Inicializar protección contra DevTools INMEDIATAMENTE (solo en producción)
+// Esto debe ejecutarse antes que cualquier otro código para prevenir que scripts externos usen la consola
+if (import.meta.env.PROD) {
+  // Ejecutar inmediatamente, antes de cualquier otro código
+  initDevToolsProtection();
+  
+  // También ejecutar después de un pequeño delay para asegurar que se mantenga
+  // (algunos scripts pueden intentar restaurar console después de la carga)
+  setTimeout(() => {
+    initDevToolsProtection();
+  }, 100);
+  
+  // Ejecutar periódicamente para asegurar que console permanezca bloqueado
+  setInterval(() => {
+    initDevToolsProtection();
+  }, 5000);
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

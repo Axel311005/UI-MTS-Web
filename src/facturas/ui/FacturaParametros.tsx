@@ -6,6 +6,12 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select';
 import { Textarea } from '@/shared/components/ui/textarea';
+import {
+  validateDescuento,
+  validateText,
+  sanitizeText,
+  VALIDATION_RULES,
+} from '@/shared/utils/validation';
 import { Input } from '@/shared/components/ui/input';
 import { cn } from '@/shared/lib/utils';
 import { useMoneda } from '@/moneda/hook/useMoneda';
@@ -174,14 +180,24 @@ export function FacturaParametros({
         <Input
           type="number"
           min="0"
-          max="100"
+          max="90"
           step="0.01"
           value={descuentoPct}
-          onChange={(e) =>
-            onDescuentoPctChange(e.target.value ? Number(e.target.value) : '')
-          }
+          onChange={(e) => {
+            const value = e.target.value ? Number(e.target.value) : '';
+            if (value !== '') {
+              const validation = validateDescuento(value);
+              if (!validation.isValid) {
+                // El error se manejará en la validación del formulario
+              }
+            }
+            onDescuentoPctChange(value);
+          }}
           placeholder="0.00"
         />
+        {errors.descuentoPct && (
+          <p className="text-xs text-destructive">{errors.descuentoPct}</p>
+        )}
       </div>
 
       {/* Recepción (Opcional) */}
@@ -206,14 +222,36 @@ export function FacturaParametros({
         <label className="text-sm font-medium">Comentario</label>
         <Textarea
           value={comentario}
-          onChange={(e) => onComentarioChange(e.target.value)}
+          onChange={(e) => {
+            const sanitized = sanitizeText(
+              e.target.value,
+              VALIDATION_RULES.comentario.min,
+              VALIDATION_RULES.comentario.max,
+              false // No permitir 3 caracteres repetidos
+            );
+            onComentarioChange(sanitized);
+          }}
+          onBlur={(e) => {
+            const validation = validateText(
+              e.target.value,
+              VALIDATION_RULES.comentario.min,
+              VALIDATION_RULES.comentario.max,
+              false
+            );
+            if (!validation.isValid && errors.comentario !== validation.error) {
+              // El error se manejará en la validación del formulario
+            }
+          }}
           placeholder="Agregar comentarios adicionales..."
           className="min-h-[80px]"
-          maxLength={500}
+          maxLength={VALIDATION_RULES.comentario.max}
         />
         <p className="text-xs text-muted-foreground text-right">
-          {comentario.length}/500 caracteres
+          {comentario.length}/{VALIDATION_RULES.comentario.max} caracteres
         </p>
+        {errors.comentario && (
+          <p className="text-xs text-destructive">{errors.comentario}</p>
+        )}
       </div>
     </div>
   );

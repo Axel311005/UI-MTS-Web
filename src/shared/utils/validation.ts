@@ -1,0 +1,275 @@
+/**
+ * Utilidades de validación centralizadas para todo el proyecto
+ */
+
+import {
+  validateNoRepeatedChars,
+  sanitizeStringNoRepeats,
+  sanitizeString,
+} from './security';
+
+/**
+ * Valida longitud de texto con mínimo y máximo
+ */
+export function validateLength(
+  text: string,
+  min: number,
+  max: number
+): { isValid: boolean; error?: string } {
+  if (!text || typeof text !== 'string') {
+    return {
+      isValid: false,
+      error: `Debe tener entre ${min} y ${max} caracteres`,
+    };
+  }
+
+  const trimmed = text.trim();
+  if (trimmed.length < min) {
+    return {
+      isValid: false,
+      error: `Debe tener al menos ${min} caracteres`,
+    };
+  }
+
+  if (trimmed.length > max) {
+    return {
+      isValid: false,
+      error: `No puede tener más de ${max} caracteres`,
+    };
+  }
+
+  return { isValid: true };
+}
+
+/**
+ * Valida texto con longitud y caracteres repetidos
+ */
+export function validateText(
+  text: string,
+  min: number,
+  max: number,
+  allowRepeats: boolean = false
+): { isValid: boolean; error?: string } {
+  // Validar longitud
+  const lengthValidation = validateLength(text, min, max);
+  if (!lengthValidation.isValid) {
+    return lengthValidation;
+  }
+
+  // Validar caracteres repetidos si no se permite
+  if (!allowRepeats && !validateNoRepeatedChars(text.trim())) {
+    return {
+      isValid: false,
+      error: 'No puede tener 3 o más caracteres consecutivos iguales',
+    };
+  }
+
+  return { isValid: true };
+}
+
+/**
+ * Sanitiza texto con validación de longitud y repeticiones
+ */
+export function sanitizeText(
+  text: string,
+  min: number,
+  max: number,
+  allowRepeats: boolean = false
+): string {
+  if (!text || typeof text !== 'string') {
+    return '';
+  }
+
+  let sanitized = text.trim();
+
+  // Eliminar repeticiones si no se permite
+  if (!allowRepeats) {
+    sanitized = sanitizeStringNoRepeats(sanitized, max);
+  } else {
+    sanitized = sanitizeString(sanitized, max);
+  }
+
+  // Limitar a máximo
+  if (sanitized.length > max) {
+    sanitized = sanitized.slice(0, max);
+  }
+
+  return sanitized;
+}
+
+/**
+ * Valida rango de números (precios, cantidades, etc.)
+ */
+export function validateRange(
+  value: number | string,
+  minValue: number,
+  maxValue: number,
+  fieldName: string = 'Valor'
+): { isValid: boolean; error?: string } {
+  const num = typeof value === 'string' ? Number(value) : value;
+
+  if (!Number.isFinite(num)) {
+    return { isValid: false, error: `${fieldName} debe ser un número válido` };
+  }
+
+  if (num < minValue) {
+    return {
+      isValid: false,
+      error: `${fieldName} debe ser al menos ${minValue}`,
+    };
+  }
+
+  if (num > maxValue) {
+    return {
+      isValid: false,
+      error: `${fieldName} no puede ser mayor a ${maxValue}`,
+    };
+  }
+
+  return { isValid: true };
+}
+
+/**
+ * Valida precio (rango razonable)
+ */
+export function validatePrecio(
+  precio: number | string,
+  max: number = 1000000
+): { isValid: boolean; error?: string } {
+  return validateRange(precio, 0, max, 'El precio');
+}
+
+/**
+ * Valida cantidad (mínimo 1, máximo razonable)
+ */
+export function validateCantidad(
+  cantidad: number | string,
+  max: number = 100000
+): { isValid: boolean; error?: string } {
+  const num = typeof cantidad === 'string' ? Number(cantidad) : cantidad;
+
+  if (!Number.isFinite(num) || num <= 0) {
+    return { isValid: false, error: 'La cantidad debe ser mayor a 0' };
+  }
+
+  return validateRange(cantidad, 1, max, 'La cantidad');
+}
+
+/**
+ * Valida descuento (0-90%)
+ */
+export function validateDescuento(descuento: number | string): {
+  isValid: boolean;
+  error?: string;
+} {
+  return validateRange(descuento, 0, 90, 'El descuento');
+}
+
+/**
+ * Valida porcentaje (0-100%)
+ */
+export function validatePorcentaje(
+  porcentaje: number | string,
+  max: number = 100
+): { isValid: boolean; error?: string } {
+  return validateRange(porcentaje, 0, max, 'El porcentaje');
+}
+
+/**
+ * Valida existencia (mínima, máxima, punto de reorden)
+ */
+export function validateExistencia(
+  existencia: number | string,
+  max: number = 1000000
+): { isValid: boolean; error?: string } {
+  return validateRange(existencia, 0, max, 'La existencia');
+}
+
+/**
+ * Valida fechas (rango mínimo y máximo)
+ */
+export function validateFecha(
+  fecha: string | Date,
+  minDate?: Date,
+  maxDate?: Date
+): { isValid: boolean; error?: string } {
+  if (!fecha) {
+    return { isValid: false, error: 'La fecha es requerida' };
+  }
+
+  const date = typeof fecha === 'string' ? new Date(fecha) : fecha;
+
+  if (isNaN(date.getTime())) {
+    return { isValid: false, error: 'La fecha no es válida' };
+  }
+
+  if (minDate && date < minDate) {
+    return {
+      isValid: false,
+      error: `La fecha no puede ser anterior a ${minDate.toLocaleDateString()}`,
+    };
+  }
+
+  if (maxDate && date > maxDate) {
+    return {
+      isValid: false,
+      error: `La fecha no puede ser posterior a ${maxDate.toLocaleDateString()}`,
+    };
+  }
+
+  return { isValid: true };
+}
+
+/**
+ * Valida que una fecha de fin sea posterior a la fecha de inicio
+ */
+export function validateFechaRango(
+  fechaInicio: string | Date,
+  fechaFin: string | Date
+): { isValid: boolean; error?: string } {
+  const inicio =
+    typeof fechaInicio === 'string' ? new Date(fechaInicio) : fechaInicio;
+  const fin = typeof fechaFin === 'string' ? new Date(fechaFin) : fechaFin;
+
+  if (isNaN(inicio.getTime()) || isNaN(fin.getTime())) {
+    return { isValid: false, error: 'Las fechas no son válidas' };
+  }
+
+  if (fin < inicio) {
+    return {
+      isValid: false,
+      error: 'La fecha de fin debe ser posterior a la fecha de inicio',
+    };
+  }
+
+  return { isValid: true };
+}
+
+/**
+ * Constantes de validación para campos comunes
+ */
+export const VALIDATION_RULES = {
+  // Textos generales
+  direccion: { min: 5, max: 200 },
+  notas: { min: 0, max: 1000 },
+  comentario: { min: 0, max: 500 },
+  observaciones: { min: 0, max: 1000 },
+  descripcion: { min: 2, max: 200 },
+  descripcionCorta: { min: 2, max: 100 },
+
+  // Códigos e identificadores
+  codigo: { min: 2, max: 50 },
+  ruc: { min: 10, max: 14 },
+  placa: { min: 3, max: 20 },
+
+  // Números
+  precio: { min: 0, max: 1000000 },
+  cantidad: { min: 1, max: 100000 },
+  descuento: { min: 0, max: 90 },
+  porcentaje: { min: 0, max: 100 },
+  existencia: { min: 0, max: 1000000 },
+
+  // Fechas
+  fechaMinima: new Date('1900-01-01'),
+  fechaMaxima: new Date('2100-12-31'),
+} as const;

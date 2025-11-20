@@ -14,6 +14,11 @@ import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { useMemo } from 'react';
 import { useMoneda } from '@/moneda/hook/useMoneda';
 import { ItemSelect } from '@/shared/components/selects/ItemSelect';
+import {
+  validateCantidad,
+  validatePrecio,
+  VALIDATION_RULES,
+} from '@/shared/utils/validation';
 
 interface CompraLine {
   id?: number;
@@ -176,21 +181,24 @@ export function CompraLineaTabla({
                     <TableCell className="min-w-[80px]">
                       <Input
                         type="number"
-                        min="0"
+                        min="1"
                         step="1"
                         value={line.cantidad}
-                        onChange={(e) =>
-                          updateLine(
-                            index,
-                            'cantidad',
-                            e.target.value ? Number(e.target.value) : ''
-                          )
-                        }
+                        onChange={(e) => {
+                          const value = e.target.value ? Number(e.target.value) : '';
+                          if (value !== '') {
+                            const validation = validateCantidad(value, VALIDATION_RULES.cantidad.max);
+                            if (!validation.isValid) {
+                              // El error se manejará en la validación del formulario
+                            }
+                          }
+                          updateLine(index, 'cantidad', value);
+                        }}
                         className={cn(
                           'w-full',
                           errors[index]?.cantidad && 'border-destructive'
                         )}
-                        placeholder="0"
+                        placeholder="1"
                       />
                       {errors[index]?.cantidad && (
                         <p className="text-xs text-destructive mt-1">
@@ -204,13 +212,16 @@ export function CompraLineaTabla({
                         min="0"
                         step="0.01"
                         value={line.precioUnitario}
-                        onChange={(e) =>
-                          updateLine(
-                            index,
-                            'precioUnitario',
-                            e.target.value ? Number(e.target.value) : ''
-                          )
-                        }
+                        onChange={(e) => {
+                          const value = e.target.value ? Number(e.target.value) : '';
+                          if (value !== '') {
+                            const validation = validatePrecio(value, VALIDATION_RULES.precio.max);
+                            if (!validation.isValid) {
+                              // El error se manejará en la validación del formulario
+                            }
+                          }
+                          updateLine(index, 'precioUnitario', value);
+                        }}
                         className={cn(
                           'w-full min-w-[120px]',
                           errors[index]?.precioUnitario && 'border-destructive'

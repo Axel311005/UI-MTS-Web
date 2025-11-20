@@ -7,6 +7,12 @@ import { postImpuesto } from '../actions/post-impuesto';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { EstadoActivo } from '@/shared/types/status';
+import {
+  validateText,
+  validatePorcentaje,
+  sanitizeText,
+  VALIDATION_RULES,
+} from '@/shared/utils/validation';
 
 interface ImpuestoFormValues {
   descripcion: string;
@@ -30,10 +36,25 @@ export default function NuevaImpuestoPage() {
 
     if (!formValues.descripcion.trim()) {
       newErrors.descripcion = 'La descripción es requerida';
+    } else {
+      const descValidation = validateText(
+        formValues.descripcion.trim(),
+        VALIDATION_RULES.descripcion.min,
+        VALIDATION_RULES.descripcion.max,
+        false
+      );
+      if (!descValidation.isValid) {
+        newErrors.descripcion = descValidation.error || 'Descripción inválida';
+      }
     }
 
-    if (formValues.porcentaje === '' || Number(formValues.porcentaje) < 0 || Number(formValues.porcentaje) > 100) {
-      newErrors.porcentaje = 'El porcentaje debe estar entre 0 y 100';
+    if (formValues.porcentaje === '') {
+      newErrors.porcentaje = 'El porcentaje es requerido';
+    } else {
+      const porcentajeValidation = validatePorcentaje(formValues.porcentaje);
+      if (!porcentajeValidation.isValid) {
+        newErrors.porcentaje = porcentajeValidation.error || 'Porcentaje inválido';
+      }
     }
 
     setErrors(newErrors);
@@ -51,7 +72,12 @@ export default function NuevaImpuestoPage() {
 
     try {
       await postImpuesto({
-        descripcion: formValues.descripcion,
+        descripcion: sanitizeText(
+          formValues.descripcion.trim(),
+          VALIDATION_RULES.descripcion.min,
+          VALIDATION_RULES.descripcion.max,
+          false
+        ),
         porcentaje: Number(formValues.porcentaje),
         activo: EstadoActivo.ACTIVO,
       });

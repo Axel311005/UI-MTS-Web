@@ -14,6 +14,11 @@ import { useVehiculo } from '@/vehiculo/hook/useVehiculo';
 import { EstadoActivo, RecepcionEstado } from '@/shared/types/status';
 import { useAuthStore } from '@/auth/store/auth.store';
 import { ConsecutivoSelect } from '@/shared/components/selects/ConsecutivoSelect';
+import {
+  sanitizeText,
+  validateText,
+  VALIDATION_RULES,
+} from '@/shared/utils/validation';
 
 export type RecepcionFormValues = {
   idVehiculo: number;
@@ -59,8 +64,10 @@ export function RecepcionForm({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const empleadoNombre = user?.empleado
-    ? (user.empleado.nombreCompleto || 
-       [user.empleado.primerNombre, user.empleado.primerApellido].filter(Boolean).join(' '))
+    ? user.empleado.nombreCompleto ||
+      [user.empleado.primerNombre, user.empleado.primerApellido]
+        .filter(Boolean)
+        .join(' ')
     : '—';
 
   const update = (patch: Partial<RecepcionFormValues>) =>
@@ -72,19 +79,36 @@ export function RecepcionForm({
       e.idVehiculo = 'Seleccione un vehículo';
     if (!values.idConsecutivo || values.idConsecutivo <= 0)
       e.idConsecutivo = 'Seleccione un consecutivo';
-    if (!values.fechaRecepcion)
-      e.fechaRecepcion = 'La fecha de recepción es requerida';
-    if (!values.fechaEntregaEstimada)
-      e.fechaEntregaEstimada = 'La fecha estimada es requerida';
 
-    const start = values.fechaRecepcion
-      ? new Date(values.fechaRecepcion)
-      : null;
-    const eta = values.fechaEntregaEstimada
-      ? new Date(values.fechaEntregaEstimada)
-      : null;
-    if (start && eta && eta < start)
-      e.fechaEntregaEstimada = 'No puede ser anterior a la recepción';
+    // Validar fecha de recepción
+    if (!values.fechaRecepcion) {
+      e.fechaRecepcion = 'La fecha de recepción es requerida';
+    }
+
+    // Validar fecha de entrega estimada
+    if (!values.fechaEntregaEstimada) {
+      e.fechaEntregaEstimada = 'La fecha estimada es requerida';
+    } else if (values.fechaRecepcion) {
+      const start = new Date(values.fechaRecepcion);
+      const eta = new Date(values.fechaEntregaEstimada);
+      if (eta < start) {
+        e.fechaEntregaEstimada = 'No puede ser anterior a la recepción';
+      }
+    }
+
+    // Validar observaciones
+    if (values.observaciones?.trim()) {
+      const observacionesValidation = validateText(
+        values.observaciones.trim(),
+        VALIDATION_RULES.observaciones.min,
+        VALIDATION_RULES.observaciones.max,
+        false
+      );
+      if (!observacionesValidation.isValid) {
+        e.observaciones =
+          observacionesValidation.error || 'Observaciones inválidas';
+      }
+    }
 
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -101,7 +125,7 @@ export function RecepcionForm({
       fechaEntregaEstimada: values.fechaEntregaEstimada,
       fechaEntregaReal: null, // Siempre se envía null
       observaciones: values.observaciones?.trim() || undefined,
-    });
+    } as RecepcionFormValues);
   };
 
   return (
@@ -204,7 +228,6 @@ export function RecepcionForm({
             </p>
           )}
         </div>
-
       </div>
 
       <div className="space-y-2">
@@ -212,8 +235,20 @@ export function RecepcionForm({
         <Textarea
           placeholder="Vehículo con daños menores..."
           value={values.observaciones ?? ''}
-          onChange={(e) => update({ observaciones: e.target.value })}
+          onChange={(e) => {
+            const sanitized = sanitizeText(
+              e.target.value,
+              VALIDATION_RULES.observaciones.min,
+              VALIDATION_RULES.observaciones.max,
+              false
+            );
+            update({ observaciones: sanitized });
+          }}
+          maxLength={VALIDATION_RULES.observaciones.max}
         />
+        {errors.observaciones && (
+          <p className="text-sm text-destructive">{errors.observaciones}</p>
+        )}
       </div>
 
       <div className="flex justify-end gap-4">

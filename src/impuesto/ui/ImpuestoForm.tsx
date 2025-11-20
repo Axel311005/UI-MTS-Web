@@ -6,6 +6,12 @@ import {
 } from '@/shared/components/ui/card';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
+import {
+  sanitizeText,
+  validateText,
+  validatePorcentaje,
+  VALIDATION_RULES,
+} from '@/shared/utils/validation';
 
 interface ImpuestoFormValues {
   descripcion: string;
@@ -24,7 +30,17 @@ export function ImpuestoForm({
   errors,
 }: ImpuestoFormProps) {
   const handleChange = (field: keyof ImpuestoFormValues, value: string | number) => {
-    onChange({ ...values, [field]: value });
+    if (field === 'descripcion' && typeof value === 'string') {
+      const sanitized = sanitizeText(
+        value,
+        VALIDATION_RULES.descripcion.min,
+        VALIDATION_RULES.descripcion.max,
+        false // No permitir 3 caracteres repetidos
+      );
+      onChange({ ...values, [field]: sanitized });
+    } else {
+      onChange({ ...values, [field]: value });
+    }
   };
 
   return (
@@ -42,6 +58,7 @@ export function ImpuestoForm({
             placeholder="Ej: IVA 10%, ISV 15%, etc."
             value={values.descripcion}
             onChange={(e) => handleChange('descripcion', e.target.value)}
+            maxLength={VALIDATION_RULES.descripcion.max}
           />
           {errors?.descripcion && (
             <p className="text-sm text-destructive">{errors.descripcion}</p>
@@ -55,7 +72,7 @@ export function ImpuestoForm({
             id="porcentaje"
             type="number"
             min="0"
-            max="100"
+            max={VALIDATION_RULES.porcentaje.max}
             step="0.01"
             placeholder="Ej: 10, 15, 18"
             value={values.porcentaje}

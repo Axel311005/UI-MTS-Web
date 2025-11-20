@@ -249,9 +249,16 @@ export function ProformaForm({
         <Textarea
           placeholder="Proforma para reparación de daños"
           value={values.observaciones}
-          onChange={(e) =>
-            setValues((s) => ({ ...s, observaciones: e.target.value }))
-          }
+          onChange={(e) => {
+            const sanitized = sanitizeText(
+              e.target.value,
+              VALIDATION_RULES.observaciones.min,
+              VALIDATION_RULES.observaciones.max,
+              false
+            );
+            setValues((s) => ({ ...s, observaciones: sanitized }));
+          }}
+          maxLength={VALIDATION_RULES.observaciones.max}
         />
       </div>
 

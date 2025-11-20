@@ -1,45 +1,18 @@
-# robots.txt para MTS - Taller de Motos
-
-# Permitir todos los bots
+# Robots.txt - Control de acceso para crawlers
 User-agent: *
 Allow: /
-Allow: /seguimiento
-Allow: /cotizacion
-Allow: /cita
 
-# Bloquear rutas privadas y administrativas
-Disallow: /admin/
-Disallow: /api/
-Disallow: /login
-Disallow: /register
-Disallow: /_next/
-Disallow: /static/
+# Bloquear acceso a archivos sensibles
+Disallow: /assets/*.map
+Disallow: /*.env
+Disallow: /*.config
+Disallow: /node_modules/
+Disallow: /src/
+Disallow: /.git/
 
-# Configuración específica para Google
-User-agent: Googlebot
-Allow: /
-Allow: /seguimiento
-Allow: /cotizacion
-Allow: /cita
-Disallow: /admin/
-Disallow: /api/
-Disallow: /login
-Disallow: /register
-
-# Configuración para Bing
-User-agent: Bingbot
-Allow: /
-Allow: /seguimiento
-Allow: /cotizacion
-Allow: /cita
-Disallow: /admin/
-Disallow: /api/
-Disallow: /login
-Disallow: /register
-
-# Crawl-delay (opcional, en segundos)
-Crawl-delay: 1
-
-# Sitemap
-Sitemap: https://mts.com/sitemap.xml
-
+# Permitir acceso a recursos públicos
+Allow: /assets/*.js
+Allow: /assets/*.css
+Allow: /assets/*.png
+Allow: /assets/*.jpg
+Allow: /assets/*.svg

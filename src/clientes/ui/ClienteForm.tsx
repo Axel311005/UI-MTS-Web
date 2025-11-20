@@ -12,6 +12,12 @@ import type {
   ClienteFormErrors,
   ClienteFormValues,
 } from './cliente-form.types';
+import { sanitizeStringNoRepeats } from '@/shared/utils/security';
+import {
+  sanitizeText,
+  validateText,
+  VALIDATION_RULES,
+} from '@/shared/utils/validation';
 
 interface ClienteFormProps {
   values: ClienteFormValues;
@@ -24,19 +30,19 @@ interface ClienteFormProps {
 const formatRUC = (value: string) => {
   // Si empieza con J, mantenerla, si no agregarla
   let cleaned = value.toUpperCase().replace(/[^J0-9]/g, '');
-  
+
   // Si no empieza con J, agregarla
   if (!cleaned.startsWith('J')) {
     // Si hay números, agregar J al inicio
     const numbers = cleaned.replace(/J/g, '');
     cleaned = numbers ? `J${numbers}` : 'J';
   }
-  
+
   // Limitar a J + 13 números máximo
   if (cleaned.length > 14) {
     cleaned = cleaned.slice(0, 14);
   }
-  
+
   return cleaned;
 };
 
@@ -52,11 +58,34 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
     field: keyof ClienteFormValues,
     value: string | boolean
   ) => {
-    onChange({ ...values, [field]: value });
+    let sanitizedValue: string | boolean = value;
+
+    // Aplicar sanitización en tiempo real para campos de texto
+    if (typeof value === 'string') {
+      if (field === 'direccion') {
+        sanitizedValue = sanitizeText(
+          value,
+          VALIDATION_RULES.direccion.min,
+          VALIDATION_RULES.direccion.max,
+          false // No permitir 3 caracteres repetidos
+        );
+      } else if (field === 'notas') {
+        sanitizedValue = sanitizeText(
+          value,
+          VALIDATION_RULES.notas.min,
+          VALIDATION_RULES.notas.max,
+          false // No permitir 3 caracteres repetidos
+        );
+      }
+    }
+
+    onChange({ ...values, [field]: sanitizedValue });
   };
 
   const handleRUCChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatRUC(e.target.value);
+    let formatted = formatRUC(e.target.value);
+    // Aplicar sanitización de caracteres repetidos al RUC
+    formatted = sanitizeStringNoRepeats(formatted, 14);
     handleChange('ruc', formatted);
   };
 
@@ -69,7 +98,9 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
     <div className="space-y-4 sm:space-y-6">
       <Card className="card-elegant">
         <CardHeader className="p-4 sm:p-6">
-          <CardTitle className="text-base sm:text-lg">Información General</CardTitle>
+          <CardTitle className="text-base sm:text-lg">
+            Información General
+          </CardTitle>
         </CardHeader>
         <CardContent className="p-4 sm:p-6 pt-0 space-y-3 sm:space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
@@ -85,7 +116,9 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
                 className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
               />
               {errors.primerNombre && (
-                <p className="text-xs sm:text-sm text-destructive">{errors.primerNombre}</p>
+                <p className="text-xs sm:text-sm text-destructive">
+                  {errors.primerNombre}
+                </p>
               )}
             </div>
 
@@ -101,7 +134,9 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
                 className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
               />
               {errors.primerApellido && (
-                <p className="text-xs sm:text-sm text-destructive">{errors.primerApellido}</p>
+                <p className="text-xs sm:text-sm text-destructive">
+                  {errors.primerApellido}
+                </p>
               )}
             </div>
           </div>
@@ -120,11 +155,15 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
                 className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
               />
               {errors.ruc && (
-                <p className="text-xs sm:text-sm text-destructive">{errors.ruc}</p>
+                <p className="text-xs sm:text-sm text-destructive">
+                  {errors.ruc}
+                </p>
               )}
             </div>
             <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="telefono" className="text-sm">Teléfono</Label>
+              <Label htmlFor="telefono" className="text-sm">
+                Teléfono
+              </Label>
               <div className="relative">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs sm:text-sm font-medium pointer-events-none">
                   +505
@@ -144,32 +183,75 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="direccion" className="text-sm">Dirección</Label>
+              <Label htmlFor="direccion" className="text-sm">
+                Dirección
+              </Label>
               <Input
                 id="direccion"
                 value={values.direccion}
                 onChange={(e) => handleChange('direccion', e.target.value)}
+                onBlur={(e) => {
+                  const validation = validateText(
+                    e.target.value,
+                    VALIDATION_RULES.direccion.min,
+                    VALIDATION_RULES.direccion.max,
+                    false
+                  );
+                  if (
+                    !validation.isValid &&
+                    errors.direccion !== validation.error
+                  ) {
+                    // El error se manejará en la validación del formulario
+                  }
+                }}
                 placeholder="Av. Principal 123, Ciudad"
+                maxLength={VALIDATION_RULES.direccion.max}
                 className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
               />
+              {errors.direccion && (
+                <p className="text-xs sm:text-sm text-destructive">
+                  {errors.direccion}
+                </p>
+              )}
             </div>
           </div>
 
           <div className="space-y-1.5 sm:space-y-2">
-            <Label htmlFor="notas" className="text-sm">Notas</Label>
+            <Label htmlFor="notas" className="text-sm">
+              Notas
+            </Label>
             <Textarea
               id="notas"
               value={values.notas}
               onChange={(e) => handleChange('notas', e.target.value)}
+              onBlur={(e) => {
+                const validation = validateText(
+                  e.target.value,
+                  VALIDATION_RULES.notas.min,
+                  VALIDATION_RULES.notas.max,
+                  false
+                );
+                if (!validation.isValid && errors.notas !== validation.error) {
+                  // El error se manejará en la validación del formulario
+                }
+              }}
               placeholder="Información adicional sobre el cliente..."
               rows={4}
+              maxLength={VALIDATION_RULES.notas.max}
               className="text-sm sm:text-base touch-manipulation resize-y"
             />
+            {errors.notas && (
+              <p className="text-xs sm:text-sm text-destructive">
+                {errors.notas}
+              </p>
+            )}
           </div>
 
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-0.5 flex-1">
-              <Label htmlFor="esExonerado" className="text-sm">Cliente Exonerado</Label>
+              <Label htmlFor="esExonerado" className="text-sm">
+                Cliente Exonerado
+              </Label>
               <p className="text-xs sm:text-sm text-muted-foreground">
                 ¿Este cliente está exonerado de impuestos?
               </p>

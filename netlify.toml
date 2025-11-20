@@ -20,10 +20,13 @@
     Expires = "0"
 
 # Assets con hash pueden cachearse indefinidamente (son inmutables)
+# Pero ocultar información del servidor
 [[headers]]
   for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+    X-Content-Type-Options = "nosniff"
+    X-Robots-Tag = "noindex"
 
 [[headers]]
   for = "/*.js"
@@ -36,4 +39,39 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
     Content-Type = "text/css; charset=utf-8"
+
+# Protección de archivos sensibles - Bloquear acceso
+[[headers]]
+  for = "/*.env"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "no-store, no-cache, must-revalidate"
+
+[[headers]]
+  for = "/*.map"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "no-store, no-cache, must-revalidate"
+
+[[headers]]
+  for = "/package.json"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "no-store, no-cache, must-revalidate"
+
+[[headers]]
+  for = "/vite.config.*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "no-store, no-cache, must-revalidate"
+
+# Headers de seguridad generales
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
 

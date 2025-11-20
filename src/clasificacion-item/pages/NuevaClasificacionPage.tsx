@@ -7,6 +7,11 @@ import { toast } from 'sonner';
 import { Button } from '@/shared/components/ui/button';
 import { ClasificacionForm } from '../ui/ClasificacionForm';
 import { postClasificacionItem } from '../actions/post-clasificacion-item';
+import {
+  validateText,
+  sanitizeText,
+  VALIDATION_RULES,
+} from '@/shared/utils/validation';
 
 interface ClasificacionFormValues {
   descripcion: string;
@@ -28,6 +33,16 @@ export default function NuevaClasificacionPage() {
       {};
     if (!formValues.descripcion.trim()) {
       newErrors.descripcion = 'La descripción es requerida';
+    } else {
+      const validation = validateText(
+        formValues.descripcion.trim(),
+        VALIDATION_RULES.descripcion.min,
+        VALIDATION_RULES.descripcion.max,
+        false
+      );
+      if (!validation.isValid) {
+        newErrors.descripcion = validation.error || 'Descripción inválida';
+      }
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -44,7 +59,14 @@ export default function NuevaClasificacionPage() {
     setIsSubmitting(true);
     const dismiss = toast.loading('Creando clasificación...');
     try {
-      await postClasificacionItem({ descripcion: formValues.descripcion });
+      await postClasificacionItem({
+        descripcion: sanitizeText(
+          formValues.descripcion.trim(),
+          VALIDATION_RULES.descripcion.min,
+          VALIDATION_RULES.descripcion.max,
+          false
+        ),
+      });
       toast.success('Clasificación creada correctamente');
       await queryClient.invalidateQueries({
         queryKey: ['clasificacionItems'],

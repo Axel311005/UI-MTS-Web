@@ -18,6 +18,10 @@ import {
 import { useItem } from '@/items/hooks/useItem';
 import { useBodega } from '@/bodega/hook/useBodega';
 import { useState } from 'react';
+import {
+  validateExistencia,
+  VALIDATION_RULES,
+} from '@/shared/utils/validation';
 
 export interface ExistenciaFormData {
   itemId: number;
@@ -63,15 +67,46 @@ export function ExistenciaForm({
     if (!formValues.bodegaId || formValues.bodegaId < 1) {
       newErrors.bodegaId = 'Debe seleccionar una bodega';
     }
+    
+    // Validar existencia máxima
     if (!formValues.existenciaMaxima.trim()) {
       newErrors.existenciaMaxima = 'La existencia máxima es requerida';
+    } else {
+      const validation = validateExistencia(
+        formValues.existenciaMaxima,
+        VALIDATION_RULES.existencia.max
+      );
+      if (!validation.isValid) {
+        newErrors.existenciaMaxima = validation.error || 'Existencia máxima inválida';
+      }
     }
+    
+    // Validar existencia mínima
     if (!formValues.existenciaMinima.trim()) {
       newErrors.existenciaMinima = 'La existencia mínima es requerida';
+    } else {
+      const validation = validateExistencia(
+        formValues.existenciaMinima,
+        VALIDATION_RULES.existencia.max
+      );
+      if (!validation.isValid) {
+        newErrors.existenciaMinima = validation.error || 'Existencia mínima inválida';
+      }
     }
+    
+    // Validar punto de reorden
     if (!formValues.puntoDeReorden.trim()) {
       newErrors.puntoDeReorden = 'El punto de reorden es requerido';
+    } else {
+      const validation = validateExistencia(
+        formValues.puntoDeReorden,
+        VALIDATION_RULES.existencia.max
+      );
+      if (!validation.isValid) {
+        newErrors.puntoDeReorden = validation.error || 'Punto de reorden inválido';
+      }
     }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -169,6 +204,7 @@ export function ExistenciaForm({
               <Input
                 id="existenciaMaxima"
                 type="number"
+                min="0"
                 placeholder="0"
                 value={formValues.existenciaMaxima}
                 onChange={(e) =>
@@ -190,6 +226,7 @@ export function ExistenciaForm({
               <Input
                 id="existenciaMinima"
                 type="number"
+                min="0"
                 placeholder="0"
                 value={formValues.existenciaMinima}
                 onChange={(e) =>
@@ -209,6 +246,7 @@ export function ExistenciaForm({
               <Input
                 id="puntoDeReorden"
                 type="number"
+                min="0"
                 placeholder="0"
                 value={formValues.puntoDeReorden}
                 onChange={(e) => handleChange('puntoDeReorden', e.target.value)}
