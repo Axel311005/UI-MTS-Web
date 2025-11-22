@@ -1,7 +1,19 @@
 /**
- * Protección básica contra DevTools (solo en producción)
- * NOTA: Esto es una medida básica, no es 100% efectiva
- * pero ayuda a disuadir a usuarios casuales
+ * Protección avanzada contra DevTools y código JavaScript malicioso (solo en producción)
+ * 
+ * Esta protección se activa automáticamente en producción (Netlify, Vercel, etc.)
+ * cuando import.meta.env.PROD es true (configurado por Vite automáticamente).
+ * 
+ * Protecciones implementadas:
+ * - Bloquea eval() y Function() constructor (métodos comunes para ejecutar código malicioso)
+ * - Bloquea setTimeout/setInterval con strings
+ * - Protege contra scripts inyectados dinámicamente
+ * - Protege innerHTML/outerHTML contra XSS
+ * - Muestra mensaje de advertencia estilo Facebook/Instagram
+ * - Bloquea acciones en la consola después de mostrar el mensaje
+ * 
+ * NOTA: Esto es una medida de seguridad, no es 100% efectiva contra atacantes avanzados
+ * pero ayuda a disuadir a usuarios casuales y proteger contra scripts maliciosos comunes.
  */
 
 // Tipos para console methods
@@ -134,6 +146,330 @@ export function disableConsoleInProduction(): void {
   };
 }
 
+// Guardar referencia al console original antes de interceptarlo
+let originalConsole: {
+  log: typeof console.log;
+  error?: typeof console.error;
+  warn?: typeof console.warn;
+  info?: typeof console.info;
+  debug?: typeof console.debug;
+} | null = null;
+
+/**
+ * Función para mostrar el mensaje de advertencia de Facebook/Instagram
+ */
+function showSecurityWarning(): void {
+  const windowWithFlag = window as Window & {
+    __securityWarningShown?: boolean;
+  };
+  
+  if (windowWithFlag.__securityWarningShown) {
+    return; // Ya se mostró el mensaje
+  }
+
+  try {
+    // Usar el console original guardado para mostrar el mensaje
+    const originalLog = originalConsole?.log || console.log.bind(console);
+    
+    const style = `
+      color: red;
+      font-size: 20px;
+      font-weight: bold;
+      -webkit-text-stroke: 1px black;
+    `;
+    originalLog('%c¡Detente!', style);
+    originalLog(
+      'Esta función del navegador está pensada para desarrolladores. Si alguien te indicó que copiaras y pegaras algo aquí para habilitar una función de Instagram o para "hackear" la cuenta de alguien, se trata de una estafa. Si lo haces, esta persona podrá acceder a tu cuenta de Instagram.'
+    );
+    windowWithFlag.__securityWarningShown = true;
+  } catch (e) {
+    // Si falla, continuar
+  }
+}
+
+/**
+ * Detecta si DevTools está abierto usando métodos que no dependen de console
+ */
+function detectDevTools(): void {
+  try {
+    // Método 1: Diferencia entre outerHeight e innerHeight
+    const heightDiff = window.outerHeight - window.innerHeight;
+    if (heightDiff > 200) {
+      showSecurityWarning();
+      return;
+    }
+
+    // Método 2: Diferencia entre outerWidth e innerWidth
+    const widthDiff = window.outerWidth - window.innerWidth;
+    if (widthDiff > 200) {
+      showSecurityWarning();
+      return;
+    }
+
+    // Método 3: Usar un getter para detectar cuando DevTools inspecciona
+    // Esto funciona porque DevTools inspecciona propiedades cuando está abierto
+    let devtoolsDetected = false;
+    const element = new Image();
+    Object.defineProperty(element, 'id', {
+      get: function () {
+        if (!devtoolsDetected) {
+          devtoolsDetected = true;
+          showSecurityWarning();
+        }
+        return '';
+      },
+    });
+    
+    // Intentar acceder a la propiedad (DevTools lo hará si está abierto)
+    // Usar setTimeout para evitar bloqueos
+    setTimeout(() => {
+      try {
+        // Esto solo se ejecutará si DevTools está inspeccionando
+        void element.id;
+      } catch (e) {
+        // Ignorar errores
+      }
+    }, 0);
+  } catch (e) {
+    // Si falla, continuar
+  }
+}
+
+/**
+ * Protección contra ejecución de código JavaScript malicioso
+ * Bloquea eval(), Function(), y otros métodos peligrosos
+ */
+function protectAgainstMaliciousCode(): void {
+  if (import.meta.env.DEV) {
+    return; // No proteger en desarrollo
+  }
+
+  try {
+    // Bloquear eval() - método más común para ejecutar código malicioso
+    window.eval = function (): never {
+      showSecurityWarning();
+      throw new Error('eval() está deshabilitado por seguridad');
+    };
+
+    // Intentar hacer eval no configurable
+    try {
+      Object.defineProperty(window, 'eval', {
+        value: window.eval,
+        writable: false,
+        configurable: false,
+      });
+    } catch (e) {
+      // Si falla, continuar
+    }
+
+    // Bloquear Function() constructor - otra forma común de ejecutar código
+    const OriginalFunction = window.Function;
+    window.Function = function (this: FunctionConstructor, ...args: string[]): never {
+      showSecurityWarning();
+      throw new Error('Function() constructor está deshabilitado por seguridad');
+    } as FunctionConstructor;
+
+    // Intentar hacer Function no configurable
+    try {
+      Object.defineProperty(window, 'Function', {
+        value: window.Function,
+        writable: false,
+        configurable: false,
+      });
+    } catch (e) {
+      // Si falla, continuar
+    }
+
+    // Bloquear setTimeout/setInterval con strings (aunque ya no se usa mucho)
+    const originalSetTimeout = window.setTimeout;
+    window.setTimeout = function (
+      handler: TimerHandler,
+      timeout?: number,
+      ...args: any[]
+    ): number {
+      if (typeof handler === 'string') {
+        showSecurityWarning();
+        throw new Error('setTimeout con string está deshabilitado por seguridad');
+      }
+      return originalSetTimeout(handler, timeout, ...args);
+    };
+
+    const originalSetInterval = window.setInterval;
+    window.setInterval = function (
+      handler: TimerHandler,
+      timeout?: number,
+      ...args: any[]
+    ): number {
+      if (typeof handler === 'string') {
+        showSecurityWarning();
+        throw new Error('setInterval con string está deshabilitado por seguridad');
+      }
+      return originalSetInterval(handler, timeout, ...args);
+    };
+
+    // Proteger contra scripts inyectados dinámicamente - BLOQUEAR completamente
+    const originalCreateElement = document.createElement.bind(document);
+    document.createElement = function (tagName: string, options?: ElementCreationOptions): HTMLElement {
+      const element = originalCreateElement(tagName, options);
+      
+      // Si es un script, BLOQUEAR su ejecución si no es de origen confiable
+      if (tagName.toLowerCase() === 'script') {
+        const originalSetAttribute = element.setAttribute.bind(element);
+        const originalAppendChild = element.appendChild.bind(element);
+        const originalInsertBefore = element.insertBefore.bind(element);
+        
+        element.setAttribute = function (name: string, value: string): void {
+          if (name.toLowerCase() === 'src') {
+            // Permitir SOLO scripts de origen confiable
+            const isTrusted = value.startsWith('/') || 
+                             value.startsWith(window.location.origin) ||
+                             value.includes('cdn.') ||
+                             value.includes('unpkg.') ||
+                             value.includes('jsdelivr.');
+            if (!isTrusted) {
+              showSecurityWarning();
+              // BLOQUEAR el script malicioso
+              throw new Error('Scripts de origen no confiable están bloqueados por seguridad');
+            }
+          }
+          originalSetAttribute(name, value);
+        };
+
+        // Bloquear appendChild para scripts maliciosos
+        element.appendChild = function (child: Node): Node {
+          if (child.nodeType === Node.TEXT_NODE && child.textContent) {
+            // Bloquear scripts inline maliciosos
+            if (/<script|javascript:|eval\(|Function\(/i.test(child.textContent)) {
+              showSecurityWarning();
+              throw new Error('Scripts inline maliciosos están bloqueados');
+            }
+          }
+          return originalAppendChild(child);
+        };
+
+        element.insertBefore = function (newNode: Node, referenceNode: Node | null): Node {
+          if (newNode.nodeType === Node.TEXT_NODE && newNode.textContent) {
+            if (/<script|javascript:|eval\(|Function\(/i.test(newNode.textContent)) {
+              showSecurityWarning();
+              throw new Error('Scripts inline maliciosos están bloqueados');
+            }
+          }
+          return originalInsertBefore(newNode, referenceNode);
+        };
+      }
+      
+      return element;
+    };
+
+    // Proteger innerHTML y outerHTML contra XSS - BLOQUEAR código malicioso
+    const protectHTML = (target: any, prop: string): void => {
+      const originalDescriptor = Object.getOwnPropertyDescriptor(
+        Object.getPrototypeOf(target),
+        prop
+      );
+      if (originalDescriptor) {
+        Object.defineProperty(target, prop, {
+          set: function (value: string) {
+            // Detectar y BLOQUEAR intentos de inyección de scripts
+            if (typeof value === 'string') {
+              const maliciousPatterns = [
+                /<script[\s>]/i,
+                /javascript:/i,
+                /on\w+\s*=/i, // onclick=, onerror=, etc.
+                /eval\s*\(/i,
+                /Function\s*\(/i,
+                /<iframe/i,
+                /<embed/i,
+                /<object/i,
+              ];
+              
+              const isMalicious = maliciousPatterns.some(pattern => pattern.test(value));
+              
+              if (isMalicious) {
+                showSecurityWarning();
+                // BLOQUEAR la inyección maliciosa
+                console.error('Intento de inyección de código malicioso bloqueado');
+                return; // No ejecutar el setter original
+              }
+            }
+            if (originalDescriptor.set) {
+              originalDescriptor.set.call(this, value);
+            }
+          },
+          get: originalDescriptor.get,
+          configurable: false,
+        });
+      }
+    };
+
+    // Aplicar protección a elementos comunes
+    const elements = [HTMLElement.prototype, Element.prototype];
+    elements.forEach((proto) => {
+      try {
+        protectHTML(proto, 'innerHTML');
+        protectHTML(proto, 'outerHTML');
+      } catch (e) {
+        // Si falla, continuar
+      }
+    });
+
+    // Bloquear WebAssembly malicioso
+    if (typeof WebAssembly !== 'undefined') {
+      const originalCompile = WebAssembly.compile;
+      WebAssembly.compile = function (bufferSource: BufferSource): Promise<WebAssembly.Module> {
+        showSecurityWarning();
+        throw new Error('WebAssembly.compile está deshabilitado por seguridad');
+      };
+
+      const originalInstantiate = WebAssembly.instantiate;
+      WebAssembly.instantiate = function (
+        bufferSource: BufferSource | WebAssembly.Module,
+        importObject?: WebAssembly.Imports
+      ): Promise<WebAssembly.WebAssemblyInstantiatedSource> {
+        showSecurityWarning();
+        throw new Error('WebAssembly.instantiate está deshabilitado por seguridad');
+      };
+    }
+
+    // Proteger contra Blob URLs maliciosos
+    const originalCreateObjectURL = URL.createObjectURL;
+    URL.createObjectURL = function (object: Blob | MediaSource): string {
+      // Permitir solo tipos seguros
+      if (object instanceof Blob) {
+        const allowedTypes = ['image/', 'video/', 'audio/', 'text/', 'application/json'];
+        const isAllowed = allowedTypes.some(type => object.type.startsWith(type));
+        if (!isAllowed && object.type.includes('javascript') || object.type.includes('script')) {
+          showSecurityWarning();
+          throw new Error('Blob URLs con contenido JavaScript están bloqueados');
+        }
+      }
+      return originalCreateObjectURL(object);
+    };
+
+    // Proteger document.write (método antiguo pero aún peligroso)
+    const originalWrite = document.write.bind(document);
+    document.write = function (markup: string): void {
+      if (typeof markup === 'string' && /<script|javascript:|eval\(|Function\(/i.test(markup)) {
+        showSecurityWarning();
+        throw new Error('document.write con código malicioso está bloqueado');
+      }
+      originalWrite(markup);
+    };
+
+    const originalWriteln = document.writeln.bind(document);
+    document.writeln = function (markup: string): void {
+      if (typeof markup === 'string' && /<script|javascript:|eval\(|Function\(/i.test(markup)) {
+        showSecurityWarning();
+        throw new Error('document.writeln con código malicioso está bloqueado');
+      }
+      originalWriteln(markup);
+    };
+
+  } catch (e) {
+    // Si falla, continuar sin protección adicional
+  }
+}
+
 /**
  * Protección básica contra inspección de código
  * Solo se ejecuta en producción
@@ -143,38 +479,54 @@ export function initDevToolsProtection(): void {
     return; // No proteger en desarrollo
   }
 
+  // Primero proteger contra código malicioso
+  protectAgainstMaliciousCode();
+
+  // Guardar referencias originales del console ANTES de interceptarlo
+  // Esto permite mostrar el mensaje usando el console original
+  if (!originalConsole) {
+    try {
+      const consoleObj = window.console as Console;
+      originalConsole = {
+        log: consoleObj.log.bind(consoleObj),
+        error: consoleObj.error?.bind(consoleObj),
+        warn: consoleObj.warn?.bind(consoleObj),
+        info: consoleObj.info?.bind(consoleObj),
+        debug: consoleObj.debug?.bind(consoleObj),
+      };
+    } catch (e) {
+      // Si falla, continuar sin guardar referencias
+    }
+  }
+
   // Mostrar mensaje de advertencia similar a Facebook cuando alguien intenta usar la consola
   // Esto debe hacerse ANTES de bloquear console.log para que se muestre una vez
   try {
     const consoleObj = window.console as Console;
-    const originalLog = consoleObj.log.bind(consoleObj);
 
-    const logWrapper = function (): void {
-      // Mostrar el mensaje de advertencia solo la primera vez
-      const windowWithFlag = window as Window & {
-        __securityWarningShown?: boolean;
+    // Wrapper para todos los métodos de console que muestre el mensaje
+    const consoleWrapper = function (): () => void {
+      return function (): void {
+        showSecurityWarning();
+        // No ejecutar el método original, solo mostrar el mensaje y bloquear acciones
+        return;
       };
-      if (!windowWithFlag.__securityWarningShown) {
-        const style = `
-          color: red;
-          font-size: 20px;
-          font-weight: bold;
-          -webkit-text-stroke: 1px black;
-        `;
-        originalLog('%c¡Detente!', style);
-        originalLog(
-          'Esta función del navegador está pensada para desarrolladores. Si alguien te indicó que copiaras y pegaras algo aquí para habilitar una función o para "hackear" la cuenta de alguien, se trata de un fraude. Si lo haces, esta persona podrá acceder a tu cuenta.'
-        );
-        windowWithFlag.__securityWarningShown = true;
-      }
-      // Después de mostrar el mensaje, bloquear todos los console.log
-      return;
     };
 
-    consoleObj.log = logWrapper;
+    // Interceptar todos los métodos principales de console
+    consoleObj.log = consoleWrapper();
+    if (originalConsole?.error) consoleObj.error = consoleWrapper();
+    if (originalConsole?.warn) consoleObj.warn = consoleWrapper();
+    if (originalConsole?.info) consoleObj.info = consoleWrapper();
+    if (originalConsole?.debug) consoleObj.debug = consoleWrapper();
   } catch (e) {
     // Si falla, continuar
   }
+
+  // Detectar apertura de DevTools periódicamente
+  setInterval(() => {
+    detectDevTools();
+  }, 1000);
 
   // Deshabilitar console (esto ya incluye error y warn)
   // Esto se ejecuta después del mensaje para bloquear todo lo demás

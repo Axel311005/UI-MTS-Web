@@ -4,10 +4,15 @@ import './index.css';
 import './app.css';
 import { ThemeProvider } from './shared/components/layouts/ThemeProvider';
 import { initDevToolsProtection, initDevToolsProtectionAdvanced } from './shared/utils/devtools-protection';
+import { showConsoleWarning } from './consoleWarning';
 
 import { TallerApp } from './TallerApp';
 
-// Inicializar protección contra DevTools INMEDIATAMENTE (solo en producción)
+// 🚨 Mostrar advertencia de consola siempre (desarrollo y producción)
+// Esto disuade a usuarios de copiar/pegar código malicioso
+showConsoleWarning();
+
+// Inicializar protección avanzada contra DevTools y código malicioso (solo en producción)
 // Esto debe ejecutarse antes que cualquier otro código para prevenir que scripts externos usen la consola
 if (import.meta.env.PROD) {
   // Ejecutar inmediatamente, antes de cualquier otro código
