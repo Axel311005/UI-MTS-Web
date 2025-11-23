@@ -463,8 +463,9 @@ export function validateName(
     }
   }
 
-  // Validar que no sea demasiado repetitivo (más del 40% del mismo carácter)
+  // Validar que no sea demasiado repetitivo
   // Esto detecta basura como "aaaaabbbbb" o "jjjjjkkkkk"
+  // Para nombres cortos (4-5 letras) es más permisivo, para nombres largos es más estricto
   if (sanitized.length >= 4) {
     const counts: Record<string, number> = {};
     for (const char of sanitized.toLowerCase()) {
@@ -472,7 +473,19 @@ export function validateName(
     }
     const maxCount = Math.max(...Object.values(counts));
     const repetitivePercentage = (maxCount / sanitized.length) * 100;
-    if (repetitivePercentage > 40) {
+    
+    // Ajustar umbral según longitud: nombres cortos (4-5) permiten hasta 50%, 
+    // nombres medianos (6-8) permiten 45%, nombres largos (9+) permiten 40%
+    let maxPercentage: number;
+    if (sanitized.length <= 5) {
+      maxPercentage = 50; // Nombres cortos como "Anna", "Ella", "Luis", "Dylan" son válidos
+    } else if (sanitized.length <= 8) {
+      maxPercentage = 45;
+    } else {
+      maxPercentage = 40;
+    }
+    
+    if (repetitivePercentage > maxPercentage) {
       return {
         isValid: false,
         error: 'El nombre contiene demasiadas letras repetidas',
