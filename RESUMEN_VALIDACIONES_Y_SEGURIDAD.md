@@ -67,13 +67,13 @@
 - ✅ **NO acepta espacios** - Se eliminan automáticamente + bloqueo HTML con `onKeyDown`
 - ✅ **NO acepta números** - Se eliminan automáticamente
 - ✅ **NO acepta caracteres especiales** - Solo letras (incluyendo acentos: á, é, í, ó, ú, ñ, Ñ)
-- ✅ **Longitud:** Mínimo 2 letras, máximo 100 letras
+- ✅ **Longitud:** Mínimo 2 letras, máximo 30 letras
 - ✅ **Validación inteligente:**
   - No permite más de 2 caracteres repetidos consecutivos (ej: "aaa" ❌)
   - Debe contener al menos una vocal (ej: "bcdf" ❌)
 - ✅ **Validaciones HTML:**
-  - `pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ]{2,100}"`
-  - `maxLength={100}`, `minLength={2}`
+  - `pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ]{2,30}"`
+  - `maxLength={30}`, `minLength={2}`
   - `onKeyDown` - Bloquea tecla espacio (SOLO en nombres/apellidos)
   - `onPaste` - Sanitiza contenido pegado
 
@@ -239,9 +239,15 @@
   - `PlacaInput` + `validatePlacaFormat()`
   - Selector departamento + input numérico (3-6 dígitos)
 - ✅ **marca:** 
-  - `validateName()` (permite letras, sin espacios)
+  - `sanitizeString()` (previene SQL/JS/XSS)
+  - **PERMITE:** letras, números y espacios
+  - **NO usa:** `sanitizeName()` (ese es solo para nombres de personas)
+  - Ejemplos válidos: "Toyota", "Land Cruiser", "CX-5"
 - ✅ **modelo:** 
-  - `validateName()` (permite letras, sin espacios)
+  - `sanitizeString()` (previene SQL/JS/XSS)
+  - **PERMITE:** letras, números y espacios
+  - **NO usa:** `sanitizeName()` (ese es solo para nombres de personas)
+  - Ejemplos válidos: "Corolla", "Land Cruiser", "CX-5"
 - ✅ **color:** 
   - `smartValidate()` (permite espacios)
 - ✅ **numChasis:** 
@@ -291,9 +297,30 @@
 - ✅ **anio:** 
   - `validateAnio()` (rango 1990 hasta año actual + 1)
   - Tipo: `type="number"` con `min={1990}` y `max={añoActual + 1}`
-- ✅ **marca, modelo, motor, color, numChasis:** 
-  - `sanitizeString()` (previene SQL/JS)
-  - **PERMITE ESPACIOS** - NO tiene bloqueo de espacios
+- ✅ **marca:** 
+  - `sanitizeString()` (previene SQL/JS/XSS)
+  - **PERMITE:** letras, números y espacios
+  - **NO usa:** `sanitizeName()` (ese es solo para nombres de personas)
+  - **NO bloquea:** espacios
+  - Ejemplos válidos: "Toyota", "Land Cruiser", "CX-5", "A4"
+- ✅ **modelo:** 
+  - `sanitizeString()` (previene SQL/JS/XSS)
+  - **PERMITE:** letras, números y espacios
+  - **NO usa:** `sanitizeName()` (ese es solo para nombres de personas)
+  - **NO bloquea:** espacios
+  - Ejemplos válidos: "Corolla", "Land Cruiser", "CX-5", "A4"
+- ✅ **motor:** 
+  - `sanitizeString()` (previene SQL/JS/XSS)
+  - **PERMITE:** letras, números, espacios y guiones
+  - Ejemplos válidos: "2.0 Turbo", "V6", "1.6 TFSI"
+- ✅ **color:** 
+  - `sanitizeString()` (previene SQL/JS/XSS)
+  - **PERMITE:** letras, números y espacios
+  - Ejemplos válidos: "Rojo", "Azul marino", "Blanco perla"
+- ✅ **numChasis:** 
+  - `sanitizeString()` (previene SQL/JS/XSS)
+  - **PERMITE:** letras y números
+  - **NO permite:** símbolos especiales (solo letras y números)
 
 #### 3. **RecepcionForm** (`src/recepcion/ui/RecepcionForm.tsx`)
 - ✅ **fechaRecepcion:** 
@@ -375,7 +402,7 @@
 #### 10. **ItemForm** (`src/items/ui/ItemForm.tsx`)
 - ✅ **codigoItem:** 
   - `sanitizeString()` (previene SQL/JS)
-  - `maxLength={50}`
+  - `maxLength={30}`
 - ✅ **descripcion:** 
   - `sanitizeText()` (previene SQL/JS + validaciones inteligentes)
   - **PERMITE ESPACIOS** - NO tiene bloqueo de espacios
@@ -498,13 +525,25 @@
 - ✅ **Detección SQL** - Detecta y elimina patrones SQL maliciosos
 
 ### **Validaciones de Formato:**
-- ✅ **Nombres/Apellidos:** Solo letras, sin espacios (bloqueo HTML)
-- ✅ **Direcciones/Descripciones:** Permiten espacios, protegidas contra SQL/JS
+- ✅ **Nombres/Apellidos:** Solo letras, sin espacios (bloqueo HTML) - Usa `sanitizeName()` + `validateName()`
+- ✅ **Marca/Modelo de Vehículos:** Letras, números y espacios - Usa `sanitizeString()` (NO `sanitizeName()`)
+- ✅ **Motor/Color de Vehículos:** Letras, números, espacios y guiones - Usa `sanitizeString()`
+- ✅ **Número de Chasis:** Letras y números (sin símbolos) - Usa `sanitizeString()`
+- ✅ **Direcciones/Descripciones:** Permiten espacios, protegidas contra SQL/JS - Usa `sanitizeText()` o `sanitizeString()`
 - ✅ **Fechas:** Rango lógico (1 de enero del año actual hasta hoy + 1 año)
 - ✅ **Años:** Rango lógico (1990 hasta año actual + 1)
 - ✅ **Placas:** Formato específico (departamento + 3-6 dígitos)
 - ✅ **Teléfonos:** 8 dígitos, tipo tel
 - ✅ **Emails:** Validación de formato, tipo email
+
+**⚠️ IMPORTANTE:**
+- `sanitizeName()` y `validateName()` son **SOLO para nombres y apellidos de personas**
+- **NO se usan** para marca, modelo, motor, color u otros campos de vehículos
+- Todos los campos de vehículos usan `sanitizeString()` que:
+  - Previene SQL Injection
+  - Previene XSS
+  - Permite letras, números y espacios
+  - NO bloquea espacios
 
 ### **Validaciones Inteligentes:**
 - ✅ Detecta basura y inputs maliciosos

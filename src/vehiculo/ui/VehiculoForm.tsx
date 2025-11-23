@@ -18,8 +18,8 @@ import {
   getRangoAnios,
 } from '@/shared/utils/security';
 import { COLORES_VEHICULOS } from '../data/colores';
-import { MARCAS_VEHICULOS } from '../data/marcas';
 import { PlacaInput, validatePlacaFormat } from '@/shared/components/PlacaInput';
+import { MarcaSelect } from '@/shared/components/selects/MarcaSelect';
 
 type FormValues = {
   idCliente: number | '';
@@ -244,24 +244,13 @@ export const VehiculoForm = ({
 
       <div className="space-y-2">
         <Label>Marca</Label>
-        <Select
-          value={values.marca || ''}
-          onValueChange={(value) => handleChange('marca', value)}
-        >
-          <SelectTrigger className={errors.marca ? 'border-destructive' : ''}>
-            <SelectValue placeholder="Seleccione una marca" />
-          </SelectTrigger>
-          <SelectContent>
-            {MARCAS_VEHICULOS.map((marca) => (
-              <SelectItem key={marca.value} value={marca.value}>
-                {marca.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {errors.marca && (
-          <p className="text-sm text-destructive">{errors.marca}</p>
-        )}
+        <MarcaSelect
+          selectedValue={values.marca || ''}
+          onSelectValue={(value) => handleChange('marca', value)}
+          onClear={() => handleChange('marca', '')}
+          error={errors.marca}
+          placeholder="Seleccione una marca"
+        />
       </div>
 
       <div className="space-y-2">

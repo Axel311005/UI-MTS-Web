@@ -84,7 +84,7 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
         );
       } else if (field === 'primerNombre' || field === 'primerApellido') {
         // Sanitizar nombres: solo letras, sin espacios, números ni caracteres especiales
-        sanitizedValue = sanitizeName(value, 100);
+        sanitizedValue = sanitizeName(value, 30);
       } else {
         // Sanitizar cualquier otro campo de texto (protección SQL + XSS)
         sanitizedValue = sanitizeString(value, 200);
@@ -130,9 +130,9 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
                 aria-describedby={
                   errors.primerNombre ? 'primerNombre-error' : undefined
                 }
-                pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ]{2,100}"
-                title="Solo letras (mínimo 2, máximo 100). No se permiten espacios, números ni caracteres especiales."
-                maxLength={100}
+                pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ]{2,30}"
+                title="Solo letras (mínimo 2, máximo 30). No se permiten espacios, números ni caracteres especiales."
+                maxLength={30}
                 minLength={2}
                 onKeyDown={(e) => {
                   if (e.key === ' ' || e.key === 'Spacebar') {
@@ -143,7 +143,7 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
                   e.preventDefault();
                   const text = e.clipboardData.getData('text');
                   const cleaned = text.replace(/\s/g, '').replace(/[0-9]/g, '').replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, '');
-                  if (cleaned.length >= 2 && cleaned.length <= 100) {
+                  if (cleaned.length >= 2 && cleaned.length <= 30) {
                     handleChange('primerNombre', cleaned);
                   }
                 }}
@@ -170,6 +170,23 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
                 aria-describedby={
                   errors.primerApellido ? 'primerApellido-error' : undefined
                 }
+                pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ]{2,30}"
+                title="Solo letras (mínimo 2, máximo 30). No se permiten espacios, números ni caracteres especiales."
+                maxLength={30}
+                minLength={2}
+                onKeyDown={(e) => {
+                  if (e.key === ' ' || e.key === 'Spacebar') {
+                    e.preventDefault();
+                  }
+                }}
+                onPaste={(e) => {
+                  e.preventDefault();
+                  const text = e.clipboardData.getData('text');
+                  const cleaned = text.replace(/\s/g, '').replace(/[0-9]/g, '').replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, '');
+                  if (cleaned.length >= 2 && cleaned.length <= 30) {
+                    handleChange('primerApellido', cleaned);
+                  }
+                }}
               />
               {errors.primerApellido && (
                 <ErrorMessage

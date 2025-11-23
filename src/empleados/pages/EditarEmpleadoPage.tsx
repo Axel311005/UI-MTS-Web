@@ -241,14 +241,14 @@ export default function EditarEmpleadoPage() {
                   id="primerNombre"
                   value={formData.primerNombre}
                   onChange={(e) => {
-                    const sanitized = sanitizeName(e.target.value, 100);
+                    const sanitized = sanitizeName(e.target.value, 30);
                     setFormData({ ...formData, primerNombre: sanitized });
                   }}
                   className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
                   required
-                  pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ]{2,100}"
-                  title="Solo letras (mínimo 2, máximo 100). No se permiten espacios, números ni caracteres especiales."
-                  maxLength={100}
+                  pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ]{2,30}"
+                  title="Solo letras (mínimo 2, máximo 30). No se permiten espacios, números ni caracteres especiales."
+                  maxLength={30}
                   minLength={2}
                   onKeyDown={(e) => {
                     if (e.key === ' ' || e.key === 'Spacebar') {
@@ -259,7 +259,7 @@ export default function EditarEmpleadoPage() {
                     e.preventDefault();
                     const text = e.clipboardData.getData('text');
                     const cleaned = text.replace(/\s/g, '').replace(/[0-9]/g, '').replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, '');
-                    if (cleaned.length >= 2 && cleaned.length <= 100) {
+                    if (cleaned.length >= 2 && cleaned.length <= 30) {
                       setFormData({ ...formData, primerNombre: cleaned });
                     }
                   }}
@@ -271,14 +271,14 @@ export default function EditarEmpleadoPage() {
                   id="primerApellido"
                   value={formData.primerApellido}
                   onChange={(e) => {
-                    const sanitized = sanitizeName(e.target.value, 100);
+                    const sanitized = sanitizeName(e.target.value, 30);
                     setFormData({ ...formData, primerApellido: sanitized });
                   }}
                   className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
                   required
-                  pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ]{2,100}"
-                  title="Solo letras (mínimo 2, máximo 100). No se permiten espacios, números ni caracteres especiales."
-                  maxLength={100}
+                  pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ]{2,30}"
+                  title="Solo letras (mínimo 2, máximo 30). No se permiten espacios, números ni caracteres especiales."
+                  maxLength={30}
                   minLength={2}
                   onKeyDown={(e) => {
                     if (e.key === ' ' || e.key === 'Spacebar') {
@@ -289,7 +289,7 @@ export default function EditarEmpleadoPage() {
                     e.preventDefault();
                     const text = e.clipboardData.getData('text');
                     const cleaned = text.replace(/\s/g, '').replace(/[0-9]/g, '').replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, '');
-                    if (cleaned.length >= 2 && cleaned.length <= 100) {
+                    if (cleaned.length >= 2 && cleaned.length <= 30) {
                       setFormData({ ...formData, primerApellido: cleaned });
                     }
                   }}

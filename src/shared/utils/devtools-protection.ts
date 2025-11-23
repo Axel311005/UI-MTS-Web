@@ -9,6 +9,12 @@
  * - Bloquea setTimeout/setInterval con strings
  * - Protege contra scripts inyectados dinámicamente
  * - Protege innerHTML/outerHTML contra XSS
+ * - Bloquea import() dinámico de orígenes no confiables
+ * - Protege contra Proxy malicioso
+ * - Bloquea Reflect.construct/apply con Function/eval
+ * - Protege postMessage malicioso
+ * - Protege contra Prototype Pollution
+ * - Bloquea importScripts malicioso (Web Workers)
  * - Muestra mensaje de advertencia estilo Facebook/Instagram
  * - Bloquea acciones en la consola después de mostrar el mensaje
  * 
@@ -179,7 +185,7 @@ function showSecurityWarning(): void {
     `;
     originalLog('%c¡Detente!', style);
     originalLog(
-      'Esta función del navegador está pensada para desarrolladores. Si alguien te indicó que copiaras y pegaras algo aquí para habilitar una función de Instagram o para "hackear" la cuenta de alguien, se trata de una estafa. Si lo haces, esta persona podrá acceder a tu cuenta de Instagram.'
+      'Esta función del navegador está pensada para desarrolladores. Si alguien te indicó que copiaras y pegaras algo aquí para obtener funciones especiales o para "hackear" algo, se trata de una estafa. Si lo haces, esta persona podrá acceder a tu información personal y comprometer tu seguridad.'
     );
     windowWithFlag.__securityWarningShown = true;
   } catch (e) {
@@ -461,6 +467,168 @@ function protectAgainstMaliciousCode(): void {
       }
       originalWriteln(markup);
     };
+
+    // Bloquear import() dinámico malicioso
+    // Nota: import() es una función global, no una propiedad de window
+    const globalImport = (globalThis as any).import;
+    if (typeof globalImport === 'function') {
+      (globalThis as any).import = function (specifier: string) {
+        // Bloquear imports de orígenes no confiables
+        const isTrusted = specifier.startsWith('/') || 
+                         specifier.startsWith(window.location.origin) ||
+                         specifier.includes('cdn.') ||
+                         specifier.includes('unpkg.') ||
+                         specifier.includes('jsdelivr.');
+        if (!isTrusted) {
+          showSecurityWarning();
+          throw new Error('Import dinámico de origen no confiable bloqueado');
+        }
+        return globalImport(specifier);
+      };
+    }
+
+    // Proteger contra Proxy malicioso
+    const originalProxy = window.Proxy;
+    if (originalProxy) {
+      (window as any).Proxy = function (target: any, handler: ProxyHandler<any>) {
+        // Detectar handlers maliciosos que intentan acceder a eval/Function
+        if (handler && typeof handler.get === 'function') {
+          const originalGet = handler.get;
+          handler.get = function (proxyTarget, prop, receiver) {
+            const propStr = String(prop);
+            if (propStr === 'eval' || propStr === 'Function' || propStr === 'constructor') {
+              showSecurityWarning();
+              throw new Error('Proxy malicioso bloqueado: acceso a ' + propStr);
+            }
+            return originalGet(proxyTarget, prop, receiver);
+          };
+        }
+        if (handler && typeof handler.construct === 'function') {
+          const originalConstruct = handler.construct;
+          handler.construct = function (proxyTarget, args, newTarget) {
+            if (proxyTarget === Function || proxyTarget === eval) {
+              showSecurityWarning();
+              throw new Error('Proxy malicioso bloqueado: construct con Function/eval');
+            }
+            return originalConstruct(proxyTarget, args, newTarget);
+          };
+        }
+        return new originalProxy(target, handler);
+      };
+    }
+
+    // Bloquear Reflect malicioso
+    if (typeof Reflect !== 'undefined') {
+      const originalReflectConstruct = Reflect.construct;
+      (Reflect as any).construct = function (target: any, argumentsList: ReadonlyArray<any>, newTarget?: any) {
+        if (target === Function || target === eval || 
+            (typeof target === 'function' && target.name === 'Function')) {
+          showSecurityWarning();
+          throw new Error('Reflect.construct con Function/eval bloqueado');
+        }
+        return originalReflectConstruct(target, argumentsList, newTarget);
+      };
+
+      // Proteger Reflect.apply con Function/eval
+      const originalReflectApply = Reflect.apply;
+      (Reflect as any).apply = function (target: any, thisArgument: any, argumentsList: ReadonlyArray<any>) {
+        if (target === Function || target === eval) {
+          showSecurityWarning();
+          throw new Error('Reflect.apply con Function/eval bloqueado');
+        }
+        return originalReflectApply(target, thisArgument, argumentsList);
+      };
+    }
+
+    // Proteger postMessage malicioso
+    const originalPostMessage = window.postMessage.bind(window);
+    // Usar función con sobrecarga para manejar ambos casos
+    (window as any).postMessage = function (message: any, targetOriginOrOptions?: string | WindowPostMessageOptions, transfer?: Transferable[]) {
+      // Manejar ambas sobrecargas de postMessage
+      let targetOrigin: string;
+      if (typeof targetOriginOrOptions === 'string') {
+        targetOrigin = targetOriginOrOptions;
+      } else if (targetOriginOrOptions && typeof targetOriginOrOptions === 'object') {
+        targetOrigin = targetOriginOrOptions.targetOrigin || '*';
+      } else {
+        targetOrigin = '*';
+      }
+      
+      // Validar origen - permitir solo mismo origen o wildcard controlado
+      const currentOrigin = window.location.origin;
+      const isAllowed = targetOrigin === '*' || 
+                       targetOrigin === currentOrigin ||
+                       targetOrigin.startsWith(currentOrigin);
+      
+      // Bloquear mensajes a orígenes externos sospechosos
+      if (!isAllowed && targetOrigin !== '*') {
+        // Permitir solo si el mensaje no contiene código ejecutable
+        const messageStr = typeof message === 'string' ? message : JSON.stringify(message);
+        if (/eval|Function|script|javascript:/i.test(messageStr)) {
+          showSecurityWarning();
+          throw new Error('postMessage con código malicioso bloqueado');
+        }
+      }
+      
+      if (typeof targetOriginOrOptions === 'string') {
+        return originalPostMessage(message, targetOriginOrOptions, transfer);
+      } else if (targetOriginOrOptions) {
+        return originalPostMessage(message, targetOriginOrOptions);
+      } else {
+        return originalPostMessage(message, '*');
+      }
+    };
+
+    // Proteger contra Prototype Pollution
+    const originalDefineProperty = Object.defineProperty;
+    Object.defineProperty = function (obj: any, prop: string, descriptor: PropertyDescriptor) {
+      const propStr = String(prop);
+      // Bloquear modificaciones maliciosas a Object.prototype y Array.prototype
+      if (obj === Object.prototype || obj === Array.prototype || 
+          obj === Function.prototype || obj === String.prototype) {
+        if (propStr === '__proto__' || propStr === 'constructor' || propStr === 'prototype') {
+          showSecurityWarning();
+          throw new Error('Prototype pollution bloqueado: modificación de ' + propStr);
+        }
+      }
+      // Bloquear definición de propiedades peligrosas en window
+      if (obj === window && (propStr === 'eval' || propStr === 'Function')) {
+        showSecurityWarning();
+        throw new Error('Modificación de ' + propStr + ' en window bloqueada');
+      }
+      return originalDefineProperty(obj, prop, descriptor);
+    };
+
+    // Proteger Object.setPrototypeOf
+    const originalSetPrototypeOf = Object.setPrototypeOf;
+    Object.setPrototypeOf = function (obj: any, prototype: any) {
+      // Bloquear cambios de prototipo en objetos críticos
+      if (obj === Object.prototype || obj === Array.prototype || 
+          obj === Function.prototype || obj === window) {
+        showSecurityWarning();
+        throw new Error('setPrototypeOf en objeto crítico bloqueado');
+      }
+      return originalSetPrototypeOf(obj, prototype);
+    };
+
+    // Bloquear importScripts (si está disponible, para Web Workers)
+    const globalImportScripts = (globalThis as any).importScripts;
+    if (typeof globalImportScripts === 'function') {
+      (globalThis as any).importScripts = function (...urls: string[]) {
+        for (const url of urls) {
+          const isTrusted = url.startsWith('/') || 
+                          url.startsWith(window.location.origin) ||
+                          url.includes('cdn.') ||
+                          url.includes('unpkg.') ||
+                          url.includes('jsdelivr.');
+          if (!isTrusted) {
+            showSecurityWarning();
+            throw new Error('importScripts de origen no confiable bloqueado: ' + url);
+          }
+        }
+        return globalImportScripts(...urls);
+      };
+    }
 
   } catch (e) {
     // Si falla, continuar sin protección adicional

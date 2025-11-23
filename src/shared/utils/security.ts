@@ -361,13 +361,13 @@ export function escapeHtml(text: string): string {
  * Sanitiza un nombre o apellido: solo letras (incluyendo acentos), sin espacios, números ni caracteres especiales
  * @param name - Nombre a sanitizar
  * @param minLength - Longitud mínima (default: 2)
- * @param maxLength - Longitud máxima (default: 100)
+ * @param maxLength - Longitud máxima (default: 30)
  * @returns Nombre sanitizado
  */
 export function sanitizeName(
   name: string,
   minLength: number = 2,
-  maxLength: number = 100
+  maxLength: number = 30
 ): string {
   if (typeof name !== 'string') {
     return '';
@@ -398,13 +398,13 @@ export function sanitizeName(
  * Valida un nombre o apellido sanitizado
  * @param name - Nombre a validar
  * @param minLength - Longitud mínima (default: 2)
- * @param maxLength - Longitud máxima (default: 100)
+ * @param maxLength - Longitud máxima (default: 30)
  * @returns Objeto con isValid y error opcional
  */
 export function validateName(
   name: string,
   minLength: number = 2,
-  maxLength: number = 100
+  maxLength: number = 30
 ): { isValid: boolean; error?: string } {
   if (!name || typeof name !== 'string') {
     return { isValid: false, error: 'El nombre es requerido' };

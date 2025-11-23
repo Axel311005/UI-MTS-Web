@@ -73,8 +73,8 @@ export default function RegisterPage() {
 
     // Sanitizar todos los inputs
     const emailLimpio = sanitizeText(formData.email, 255).toLowerCase();
-    const primerNombreLimpio = sanitizeName(formData.primerNombre, 100);
-    const primerApellidoLimpio = sanitizeName(formData.primerApellido, 100);
+    const primerNombreLimpio = sanitizeName(formData.primerNombre, 30);
+    const primerApellidoLimpio = sanitizeName(formData.primerApellido, 30);
     const direccionLimpio = sanitizeText(formData.direccion, 200);
 
     // Validaciones de email
@@ -286,7 +286,7 @@ export default function RegisterPage() {
       }));
     } else if (id === 'primerNombre' || id === 'primerApellido') {
       // Sanitizar nombres: solo letras, sin espacios, números ni caracteres especiales
-      const sanitized = sanitizeName(value, 100);
+      const sanitized = sanitizeName(value, 30);
       setFormData((prev) => ({
         ...prev,
         [id]: sanitized,
@@ -407,9 +407,9 @@ export default function RegisterPage() {
                     onChange={handleChange}
                     required
                     className="h-10 sm:h-11"
-                    pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ]{2,100}"
-                    title="Solo letras (mínimo 2, máximo 100). No se permiten espacios, números ni caracteres especiales."
-                    maxLength={100}
+                    pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ]{2,30}"
+                    title="Solo letras (mínimo 2, máximo 30). No se permiten espacios, números ni caracteres especiales."
+                    maxLength={30}
                     minLength={2}
                     onKeyDown={(e) => {
                       if (e.key === ' ' || e.key === 'Spacebar') {
@@ -420,7 +420,7 @@ export default function RegisterPage() {
                       e.preventDefault();
                       const text = e.clipboardData.getData('text');
                       const cleaned = text.replace(/\s/g, '').replace(/[0-9]/g, '').replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, '');
-                      if (cleaned.length >= 2 && cleaned.length <= 100) {
+                      if (cleaned.length >= 2 && cleaned.length <= 30) {
                         handleChange({ target: { id: 'primerNombre', value: cleaned } } as React.ChangeEvent<HTMLInputElement>);
                       }
                     }}
@@ -435,9 +435,9 @@ export default function RegisterPage() {
                     onChange={handleChange}
                     required
                     className="h-10 sm:h-11"
-                    pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ]{2,100}"
-                    title="Solo letras (mínimo 2, máximo 100). No se permiten espacios, números ni caracteres especiales."
-                    maxLength={100}
+                    pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ]{2,30}"
+                    title="Solo letras (mínimo 2, máximo 30). No se permiten espacios, números ni caracteres especiales."
+                    maxLength={30}
                     minLength={2}
                     onKeyDown={(e) => {
                       if (e.key === ' ' || e.key === 'Spacebar') {
@@ -448,7 +448,7 @@ export default function RegisterPage() {
                       e.preventDefault();
                       const text = e.clipboardData.getData('text');
                       const cleaned = text.replace(/\s/g, '').replace(/[0-9]/g, '').replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, '');
-                      if (cleaned.length >= 2 && cleaned.length <= 100) {
+                      if (cleaned.length >= 2 && cleaned.length <= 30) {
                         handleChange({ target: { id: 'primerApellido', value: cleaned } } as React.ChangeEvent<HTMLInputElement>);
                       }
                     }}

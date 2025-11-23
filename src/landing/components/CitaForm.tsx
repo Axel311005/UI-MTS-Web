@@ -28,8 +28,9 @@ import { useLandingAuthStore } from '../store/landing-auth.store';
 import { useAuthStore } from '@/auth/store/auth.store';
 import { useNavigate } from 'react-router';
 import { validateCode, smartValidate, validateFecha, getFechaMinima, getFechaMaxima } from '@/shared/utils/validation';
-import { validateName } from '@/shared/utils/security';
+import { sanitizeString } from '@/shared/utils/security';
 import { PlacaInput, validatePlacaFormat } from '@/shared/components/PlacaInput';
+import { MarcaSelect } from '@/shared/components/selects/MarcaSelect';
 
 interface FormData {
   idMotivoCita: string;
@@ -163,20 +164,13 @@ export function CitaForm() {
     loadData();
   }, [user, isAuthenticated, token]);
 
-  // Sanitizar texto con validaciones inteligentes
-  const sanitizeText = (text: string, maxLength: number = 255): string => {
-    return text.trim().slice(0, maxLength);
-  };
-
-  // Validar campo con validaciones inteligentes
-  const validateField = (value: string, fieldType: 'name' | 'code' | 'text'): { isValid: boolean; error?: string } => {
+  // Validar campo con validaciones inteligentes (solo para color)
+  const validateField = (value: string, fieldType: 'code' | 'text'): { isValid: boolean; error?: string } => {
     if (!value || value.trim().length === 0) {
       return { isValid: false, error: 'Este campo es requerido' };
     }
 
     switch (fieldType) {
-      case 'name':
-        return validateName(value);
       case 'code':
         return validateCode(value);
       case 'text':
@@ -293,13 +287,14 @@ export function CitaForm() {
       return;
     }
 
-    // Sanitizar y validar campos del vehículo con validaciones inteligentes
+    // Sanitizar y validar campos del vehículo
+    // Usar sanitizeString() para todos los campos (previene SQL/JS, permite espacios, letras y números)
     const placaLimpia = vehiculoForm.placa.trim().toUpperCase();
-    const motorLimpio = sanitizeText(vehiculoForm.motor, 50);
-    const marcaLimpia = sanitizeText(vehiculoForm.marca, 50);
-    const modeloLimpio = sanitizeText(vehiculoForm.modelo, 50);
-    const colorLimpio = sanitizeText(vehiculoForm.color, 30);
-    const numChasisLimpio = sanitizeText(vehiculoForm.numChasis, 50);
+    const motorLimpio = sanitizeString(vehiculoForm.motor.trim(), 50);
+    const marcaLimpia = vehiculoForm.marca.trim(); // La marca viene del selector, no necesita sanitización adicional
+    const modeloLimpio = sanitizeString(vehiculoForm.modelo.trim(), 50);
+    const colorLimpio = sanitizeString(vehiculoForm.color.trim(), 30);
+    const numChasisLimpio = sanitizeString(vehiculoForm.numChasis.trim(), 50);
     const anio = Number(vehiculoForm.anio);
 
     // Validar placa con formato departamento + números
@@ -309,15 +304,18 @@ export function CitaForm() {
       return;
     }
 
-    const marcaValidation = validateName(marcaLimpia);
-    if (!marcaValidation.isValid) {
-      toast.error(marcaValidation.error || 'La marca no es válida');
+    // Validar que se haya seleccionado una marca
+    if (!marcaLimpia) {
+      toast.error('Debe seleccionar una marca');
       return;
     }
 
-    const modeloValidation = validateName(modeloLimpio);
-    if (!modeloValidation.isValid) {
-      toast.error(modeloValidation.error || 'El modelo no es válido');
+    if (!modeloLimpio || modeloLimpio.length < 2) {
+      toast.error('El modelo debe tener al menos 2 caracteres');
+      return;
+    }
+    if (modeloLimpio.length > 50) {
+      toast.error('El modelo no puede tener más de 50 caracteres');
       return;
     }
 
@@ -570,15 +568,21 @@ export function CitaForm() {
                       <Label className="font-montserrat font-semibold text-black">
                         Marca <span className="text-destructive">*</span>
                       </Label>
-                      <Input
-                        value={vehiculoForm.marca}
-                        onChange={(e) =>
+                      <MarcaSelect
+                        selectedValue={vehiculoForm.marca}
+                        onSelectValue={(value) =>
                           setVehiculoForm({
                             ...vehiculoForm,
-                            marca: e.target.value,
+                            marca: value,
                           })
                         }
-                        placeholder="Honda, Yamaha, etc."
+                        onClear={() =>
+                          setVehiculoForm({
+                            ...vehiculoForm,
+                            marca: '',
+                          })
+                        }
+                        placeholder="Seleccione una marca"
                         className="h-12 sm:h-14 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all touch-manipulation"
                       />
                     </div>
