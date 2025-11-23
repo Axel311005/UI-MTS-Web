@@ -13,13 +13,13 @@ import {
 import {
   sanitizeString,
   sanitizeNumber,
-  validatePlaca,
   validateAnio,
   sanitizeId,
   getRangoAnios,
 } from '@/shared/utils/security';
 import { COLORES_VEHICULOS } from '../data/colores';
 import { MARCAS_VEHICULOS } from '../data/marcas';
+import { PlacaInput, validatePlacaFormat } from '@/shared/components/PlacaInput';
 
 type FormValues = {
   idCliente: number | '';
@@ -78,13 +78,13 @@ export const VehiculoForm = ({
       e.idCliente = 'Seleccione un cliente';
     }
 
-    // Validar y sanitizar placa
+    // Validar placa con formato departamento + números
     if (!values.placa || !values.placa.trim()) {
       e.placa = 'La placa es requerida';
     } else {
-      const placaSanitizada = sanitizeString(values.placa.trim(), 20);
-      if (!validatePlaca(placaSanitizada)) {
-        e.placa = 'La placa tiene un formato inválido';
+      const placaValidation = validatePlacaFormat(values.placa.trim());
+      if (!placaValidation.isValid) {
+        e.placa = placaValidation.error || 'La placa tiene un formato inválido';
       }
     }
 
@@ -143,8 +143,8 @@ export const VehiculoForm = ({
       // El ClienteSelect maneja esto, pero lo validamos aquí también
       sanitizedValue = value;
     } else if (field === 'placa') {
-      // Sanitizar placa (máximo 20 caracteres)
-      sanitizedValue = sanitizeString(value, 20).toUpperCase();
+      // La placa se maneja con el componente PlacaInput
+      sanitizedValue = value.toUpperCase();
     } else if (
       field === 'marca' ||
       field === 'modelo' ||
@@ -189,7 +189,7 @@ export const VehiculoForm = ({
 
     await onSubmit({
       idCliente: clienteId,
-      placa: sanitizeString(values.placa.trim(), 20).toUpperCase(),
+      placa: values.placa.trim().toUpperCase(),
       motor: values.motor?.trim()
         ? sanitizeString(values.motor.trim(), 50)
         : undefined,
@@ -235,18 +235,12 @@ export const VehiculoForm = ({
         )}
       </div>
 
-      <div className="space-y-2">
-        <Label>Placa</Label>
-        <Input
-          value={values.placa}
-          onChange={(e) => handleChange('placa', e.target.value)}
-          placeholder="ABC-123"
-          className={errors.placa ? 'border-destructive' : ''}
-        />
-        {errors.placa && (
-          <p className="text-sm text-destructive">{errors.placa}</p>
-        )}
-      </div>
+      <PlacaInput
+        value={values.placa}
+        onChange={(value) => handleChange('placa', value)}
+        error={errors.placa}
+        required
+      />
 
       <div className="space-y-2">
         <Label>Marca</Label>

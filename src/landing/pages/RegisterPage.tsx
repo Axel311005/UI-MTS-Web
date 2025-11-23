@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 import { registerAction } from '../actions/auth.actions';
 import { useLandingAuthStore } from '../store/landing-auth.store';
 import { UserPlus, Eye, EyeOff } from 'lucide-react';
-import { validateName, validateAddress, smartValidate } from '@/shared/utils/validation';
+import { validateName, validateAddress } from '@/shared/utils/validation';
 
 export default function RegisterPage() {
   const navigate = useNavigate();

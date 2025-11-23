@@ -28,6 +28,7 @@ import { useLandingAuthStore } from '../store/landing-auth.store';
 import { useAuthStore } from '@/auth/store/auth.store';
 import { useNavigate } from 'react-router';
 import { validateName, validateCode, smartValidate } from '@/shared/utils/validation';
+import { PlacaInput, validatePlacaFormat } from '@/shared/components/PlacaInput';
 
 interface FormData {
   idMotivoCita: string;
@@ -295,7 +296,7 @@ export function CitaForm() {
     }
 
     // Sanitizar y validar campos del vehículo con validaciones inteligentes
-    const placaLimpia = sanitizeText(vehiculoForm.placa, 20).toUpperCase();
+    const placaLimpia = vehiculoForm.placa.trim().toUpperCase();
     const motorLimpio = sanitizeText(vehiculoForm.motor, 50);
     const marcaLimpia = sanitizeText(vehiculoForm.marca, 50);
     const modeloLimpio = sanitizeText(vehiculoForm.modelo, 50);
@@ -303,8 +304,8 @@ export function CitaForm() {
     const numChasisLimpio = sanitizeText(vehiculoForm.numChasis, 50);
     const anio = Number(vehiculoForm.anio);
 
-    // Validaciones inteligentes
-    const placaValidation = validateCode(placaLimpia);
+    // Validar placa con formato departamento + números
+    const placaValidation = validatePlacaFormat(placaLimpia);
     if (!placaValidation.isValid) {
       toast.error(placaValidation.error || 'La placa no es válida');
       return;
@@ -539,22 +540,18 @@ export function CitaForm() {
                     )}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    <div className="space-y-2">
-                      <Label className="font-montserrat font-semibold text-black">
-                        Placa <span className="text-destructive">*</span>
-                      </Label>
-                      <Input
-                        value={vehiculoForm.placa}
-                        onChange={(e) =>
-                          setVehiculoForm({
-                            ...vehiculoForm,
-                            placa: e.target.value.toUpperCase(),
-                          })
-                        }
-                        placeholder="ABC-123"
-                        className="h-12 sm:h-14 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all touch-manipulation"
-                      />
-                    </div>
+                    <PlacaInput
+                      value={vehiculoForm.placa}
+                      onChange={(value) =>
+                        setVehiculoForm({
+                          ...vehiculoForm,
+                          placa: value,
+                        })
+                      }
+                      label="Placa"
+                      required
+                      className="font-montserrat"
+                    />
                     <div className="space-y-2">
                       <Label className="font-montserrat font-semibold text-black">
                         Motor <span className="text-destructive">*</span>
