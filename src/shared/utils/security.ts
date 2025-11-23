@@ -451,6 +451,35 @@ export function validateName(
     };
   }
 
+  // Validar que no tenga demasiadas consonantes seguidas (más de 4)
+  // Esto detecta basura como "bcdfgh" o "qwerty"
+  if (sanitized.length > 5) {
+    const consonantPattern = /[^aeiouáéíóúAEIOUÁÉÍÓÚ]{5,}/;
+    if (consonantPattern.test(sanitized)) {
+      return {
+        isValid: false,
+        error: 'El nombre contiene demasiadas consonantes seguidas sin vocales',
+      };
+    }
+  }
+
+  // Validar que no sea demasiado repetitivo (más del 40% del mismo carácter)
+  // Esto detecta basura como "aaaaabbbbb" o "jjjjjkkkkk"
+  if (sanitized.length >= 4) {
+    const counts: Record<string, number> = {};
+    for (const char of sanitized.toLowerCase()) {
+      counts[char] = (counts[char] || 0) + 1;
+    }
+    const maxCount = Math.max(...Object.values(counts));
+    const repetitivePercentage = (maxCount / sanitized.length) * 100;
+    if (repetitivePercentage > 40) {
+      return {
+        isValid: false,
+        error: 'El nombre contiene demasiadas letras repetidas',
+      };
+    }
+  }
+
   return { isValid: true };
 }
 

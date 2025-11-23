@@ -127,7 +127,7 @@
 **Ubicación:** `src/shared/utils/validation.ts`
 
 **Características:**
-- ✅ **Fecha mínima:** Hoy (por defecto)
+- ✅ **Fecha mínima:** Inicio del año actual (1 de enero) (por defecto)
 - ✅ **Fecha máxima:** Hoy + 1 año (por defecto)
 - ✅ **Validación HTML:** `min` y `max` en inputs `type="date"` y `type="datetime-local"`
 
@@ -140,9 +140,9 @@
 
 **Ejemplo:**
 - Si hoy es 2025-11-22:
-  - Fecha mínima: 2025-11-22 ✅
-  - Fecha máxima: 2026-11-22 ✅
-  - Fecha 2025-11-21 → ❌ Error
+  - Fecha mínima: 2025-01-01 ✅ (1 de enero del año actual)
+  - Fecha máxima: 2026-11-22 ✅ (hoy + 1 año)
+  - Fecha 2024-12-31 → ❌ Error: "no puede ser anterior a 2025-01-01"
   - Fecha 2026-11-23 → ❌ Error
 
 ---
@@ -500,7 +500,7 @@
 ### **Validaciones de Formato:**
 - ✅ **Nombres/Apellidos:** Solo letras, sin espacios (bloqueo HTML)
 - ✅ **Direcciones/Descripciones:** Permiten espacios, protegidas contra SQL/JS
-- ✅ **Fechas:** Rango lógico (hoy hasta hoy + 1 año)
+- ✅ **Fechas:** Rango lógico (1 de enero del año actual hasta hoy + 1 año)
 - ✅ **Años:** Rango lógico (1990 hasta año actual + 1)
 - ✅ **Placas:** Formato específico (departamento + 3-6 dígitos)
 - ✅ **Teléfonos:** 8 dígitos, tipo tel

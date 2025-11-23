@@ -235,18 +235,23 @@ export function getFechaMaxima(): Date {
 }
 
 /**
- * Obtiene la fecha mínima permitida (hoy)
- * @returns Fecha mínima (hoy)
+ * Obtiene la fecha mínima permitida (inicio del año actual: 1 de enero)
+ * @returns Fecha mínima (1 de enero del año actual)
  */
 export function getFechaMinima(): Date {
-  return new Date();
+  const hoy = new Date();
+  const añoActual = hoy.getFullYear();
+  const fechaMinima = new Date(añoActual, 0, 1); // 1 de enero del año actual
+  fechaMinima.setHours(0, 0, 0, 0); // Normalizar a inicio del día
+  return fechaMinima;
 }
 
 /**
  * Valida fechas (rango mínimo y máximo)
+ * Por defecto, la fecha mínima es el inicio del año actual (1 de enero)
  * Por defecto, la fecha máxima es hoy + 1 año
  * @param fecha - Fecha a validar
- * @param minDate - Fecha mínima permitida (default: hoy)
+ * @param minDate - Fecha mínima permitida (default: 1 de enero del año actual)
  * @param maxDate - Fecha máxima permitida (default: hoy + 1 año)
  * @returns Objeto con isValid y error opcional
  */
@@ -265,7 +270,7 @@ export function validateFecha(
     return { isValid: false, error: 'La fecha no es válida' };
   }
 
-  // Usar fecha mínima por defecto (hoy) si no se especifica
+  // Usar fecha mínima por defecto (1 de enero del año actual) si no se especifica
   const fechaMinima = minDate ?? getFechaMinima();
   if (date < fechaMinima) {
     return {

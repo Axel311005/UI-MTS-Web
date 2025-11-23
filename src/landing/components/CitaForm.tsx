@@ -27,7 +27,7 @@ import type { MotivoCita, Vehiculo } from '../types/cita.types';
 import { useLandingAuthStore } from '../store/landing-auth.store';
 import { useAuthStore } from '@/auth/store/auth.store';
 import { useNavigate } from 'react-router';
-import { validateCode, smartValidate, validateFecha, getFechaMaxima } from '@/shared/utils/validation';
+import { validateCode, smartValidate, validateFecha, getFechaMinima, getFechaMaxima } from '@/shared/utils/validation';
 import { validateName } from '@/shared/utils/security';
 import { PlacaInput, validatePlacaFormat } from '@/shared/components/PlacaInput';
 
@@ -681,7 +681,7 @@ export function CitaForm() {
                   onChange={(e) =>
                     setFormData({ ...formData, fechaInicio: e.target.value })
                   }
-                  min={new Date().toISOString().split('T')[0]}
+                  min={getFechaMinima().toISOString().split('T')[0]}
                   max={getFechaMaxima().toISOString().split('T')[0]}
                   className="h-12 sm:h-14 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all touch-manipulation"
                   disabled={submitting}
