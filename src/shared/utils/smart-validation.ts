@@ -293,6 +293,8 @@ export function validateName(name: string): SmartValidationResult {
 
 /**
  * Valida una dirección
+ * Más flexible que otras validaciones para permitir direcciones reales
+ * como "Managua", "Ciudad Sandino, Zona 6", etc.
  */
 export function validateAddress(address: string): SmartValidationResult {
   return smartValidate(address, {
@@ -300,11 +302,11 @@ export function validateAddress(address: string): SmartValidationResult {
     maxLength: 200,
     allowNumbers: true,
     allowSpecialChars: true,
-    maxRepetitions: 3,
-    maxConsonantsInRow: 5,
-    maxRepetitivePercentage: 30,
-    maxSymbolPercentage: 15,
-    allowedChars: /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s.,#-]+$/,
+    maxRepetitions: 4, // Permite hasta 4 caracteres consecutivos iguales (ej: "Calle 1111")
+    maxConsonantsInRow: 6, // Más permisivo para nombres de lugares
+    maxRepetitivePercentage: 60, // Aumentado de 30 a 60 para permitir ciudades como "Managua" (42.86%)
+    maxSymbolPercentage: 25, // Aumentado de 15 a 25 para permitir más comas, números, etc.
+    allowedChars: /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s.,#-]+$/, // Letras, números, espacios, comas, puntos, #, guiones
   });
 }
 

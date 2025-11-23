@@ -98,8 +98,26 @@ export function validateEmail(email: string): boolean {
     return false;
   }
 
+  // Validar formato básico del email
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email) && email.length <= 255;
+  if (!emailRegex.test(email)) {
+    return false;
+  }
+
+  // Separar la parte local (antes del @) y el dominio
+  const [localPart] = email.split('@');
+
+  // La parte local (antes del @) debe tener mínimo 7 caracteres
+  if (!localPart || localPart.length < 7) {
+    return false;
+  }
+
+  // Longitud máxima total del email
+  if (email.length > 255) {
+    return false;
+  }
+
+  return true;
 }
 
 /**
@@ -406,11 +424,19 @@ export function validateName(
   minLength: number = 2,
   maxLength: number = 30
 ): { isValid: boolean; error?: string } {
+  console.log('🔵 validateName INICIO - Input:', name);
+
   if (!name || typeof name !== 'string') {
     return { isValid: false, error: 'El nombre es requerido' };
   }
 
   const sanitized = sanitizeName(name, minLength, maxLength);
+  console.log(
+    '🔵 validateName - Sanitizado:',
+    sanitized,
+    'Longitud:',
+    sanitized.length
+  );
 
   // Validar longitud mínima
   if (sanitized.length < minLength) {
@@ -473,26 +499,47 @@ export function validateName(
     }
     const maxCount = Math.max(...Object.values(counts));
     const repetitivePercentage = (maxCount / sanitized.length) * 100;
-    
-    // Ajustar umbral según longitud: nombres cortos (4-5) permiten hasta 50%, 
-    // nombres medianos (6-8) permiten 45%, nombres largos (9+) permiten 40%
+
+    // Ajustar umbral según longitud: nombres cortos (4-6) permiten hasta 50%,
+    // nombres medianos (7-8) permiten 45%, nombres largos (9+) permiten 40%
     let maxPercentage: number;
-    if (sanitized.length <= 5) {
-      maxPercentage = 50; // Nombres cortos como "Anna", "Ella", "Luis", "Dylan" son válidos
+    if (sanitized.length <= 6) {
+      maxPercentage = 50; // Nombres cortos como "Anna", "Ella", "Luis", "Dylan", "Araica" son válidos
     } else if (sanitized.length <= 8) {
       maxPercentage = 45;
     } else {
       maxPercentage = 40;
     }
-    
+
+    console.log('🔵 validateName - Validación de repeticiones:');
+    console.log('  - Conteo de letras:', counts);
+    console.log('  - MaxCount:', maxCount);
+    console.log(
+      '  - Porcentaje repetitivo:',
+      repetitivePercentage.toFixed(2) + '%'
+    );
+    console.log('  - Umbral máximo:', maxPercentage + '%');
+    console.log(
+      '  - Comparación:',
+      repetitivePercentage,
+      '>',
+      maxPercentage,
+      '=',
+      repetitivePercentage > maxPercentage
+    );
+
     if (repetitivePercentage > maxPercentage) {
+      console.error('❌ validateName - RECHAZADO por repeticiones');
       return {
         isValid: false,
         error: 'El nombre contiene demasiadas letras repetidas',
       };
+    } else {
+      console.log('✅ validateName - PASÓ validación de repeticiones');
     }
   }
 
+  console.log('✅ validateName - VÁLIDO');
   return { isValid: true };
 }
 

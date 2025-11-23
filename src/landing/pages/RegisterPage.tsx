@@ -59,8 +59,30 @@ export default function RegisterPage() {
 
   // Validar email
   const validateEmail = (email: string): boolean => {
+    if (!email || typeof email !== 'string') {
+      return false;
+    }
+
+    // Validar formato básico del email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email) && email.length <= 255;
+    if (!emailRegex.test(email)) {
+      return false;
+    }
+
+    // Separar la parte local (antes del @) y el dominio
+    const [localPart] = email.split('@');
+
+    // La parte local (antes del @) debe tener mínimo 7 caracteres
+    if (!localPart || localPart.length < 7) {
+      return false;
+    }
+
+    // Longitud máxima total del email
+    if (email.length > 255) {
+      return false;
+    }
+
+    return true;
   };
 
   // Sanitizar texto
@@ -78,7 +100,26 @@ export default function RegisterPage() {
     const direccionLimpio = sanitizeText(formData.direccion, 200);
 
     // Validaciones de email
-    if (!emailLimpio || !validateEmail(emailLimpio)) {
+    if (!emailLimpio) {
+      toast.error('El correo electrónico es requerido', {
+        position: 'top-right',
+      });
+      return;
+    }
+
+    // Validar que la parte local (antes del @) tenga mínimo 7 caracteres
+    const [localPart] = emailLimpio.split('@');
+    if (!localPart || localPart.length < 7) {
+      toast.error(
+        'El correo electrónico debe tener al menos 7 caracteres antes del @',
+        {
+          position: 'top-right',
+        }
+      );
+      return;
+    }
+
+    if (!validateEmail(emailLimpio)) {
       toast.error('El correo electrónico no es válido', {
         position: 'top-right',
       });
@@ -96,7 +137,13 @@ export default function RegisterPage() {
 
     const apellidoValidation = validateName(primerApellidoLimpio);
     if (!apellidoValidation.isValid) {
-      toast.error(apellidoValidation.error || 'El primer apellido no es válido', {
+      // Personalizar el mensaje de error para apellidos
+      const errorMessage = apellidoValidation.error
+        ? apellidoValidation.error
+            .replace('nombre', 'apellido')
+            .replace('El nombre', 'El apellido')
+        : 'El primer apellido no es válido';
+      toast.error(errorMessage, {
         position: 'top-right',
       });
       return;
@@ -419,9 +466,14 @@ export default function RegisterPage() {
                     onPaste={(e) => {
                       e.preventDefault();
                       const text = e.clipboardData.getData('text');
-                      const cleaned = text.replace(/\s/g, '').replace(/[0-9]/g, '').replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, '');
+                      const cleaned = text
+                        .replace(/\s/g, '')
+                        .replace(/[0-9]/g, '')
+                        .replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, '');
                       if (cleaned.length >= 2 && cleaned.length <= 30) {
-                        handleChange({ target: { id: 'primerNombre', value: cleaned } } as React.ChangeEvent<HTMLInputElement>);
+                        handleChange({
+                          target: { id: 'primerNombre', value: cleaned },
+                        } as React.ChangeEvent<HTMLInputElement>);
                       }
                     }}
                   />
@@ -447,9 +499,14 @@ export default function RegisterPage() {
                     onPaste={(e) => {
                       e.preventDefault();
                       const text = e.clipboardData.getData('text');
-                      const cleaned = text.replace(/\s/g, '').replace(/[0-9]/g, '').replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, '');
+                      const cleaned = text
+                        .replace(/\s/g, '')
+                        .replace(/[0-9]/g, '')
+                        .replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, '');
                       if (cleaned.length >= 2 && cleaned.length <= 30) {
-                        handleChange({ target: { id: 'primerApellido', value: cleaned } } as React.ChangeEvent<HTMLInputElement>);
+                        handleChange({
+                          target: { id: 'primerApellido', value: cleaned },
+                        } as React.ChangeEvent<HTMLInputElement>);
                       }
                     }}
                   />
