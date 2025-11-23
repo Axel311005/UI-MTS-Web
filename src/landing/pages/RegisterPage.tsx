@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { registerAction } from '../actions/auth.actions';
 import { useLandingAuthStore } from '../store/landing-auth.store';
 import { UserPlus, Eye, EyeOff } from 'lucide-react';
+import { validateName, validateAddress, smartValidate } from '@/shared/utils/validation';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -83,16 +84,18 @@ export default function RegisterPage() {
       return;
     }
 
-    // Validaciones de nombres
-    if (!primerNombreLimpio || primerNombreLimpio.length < 2) {
-      toast.error('El primer nombre debe tener al menos 2 caracteres', {
+    // Validaciones inteligentes de nombres
+    const nombreValidation = validateName(primerNombreLimpio);
+    if (!nombreValidation.isValid) {
+      toast.error(nombreValidation.error || 'El primer nombre no es válido', {
         position: 'top-right',
       });
       return;
     }
 
-    if (!primerApellidoLimpio || primerApellidoLimpio.length < 2) {
-      toast.error('El primer apellido debe tener al menos 2 caracteres', {
+    const apellidoValidation = validateName(primerApellidoLimpio);
+    if (!apellidoValidation.isValid) {
+      toast.error(apellidoValidation.error || 'El primer apellido no es válido', {
         position: 'top-right',
       });
       return;
@@ -106,9 +109,10 @@ export default function RegisterPage() {
       return;
     }
 
-    // Validación de dirección
-    if (!direccionLimpio || direccionLimpio.length < 5) {
-      toast.error('La dirección debe tener al menos 5 caracteres', {
+    // Validación inteligente de dirección
+    const direccionValidation = validateAddress(direccionLimpio);
+    if (!direccionValidation.isValid) {
+      toast.error(direccionValidation.error || 'La dirección no es válida', {
         position: 'top-right',
       });
       return;

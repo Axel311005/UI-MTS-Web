@@ -32,30 +32,7 @@ export default defineConfig({
   build: {
     // Configuración básica de build sin chunks manuales
     chunkSizeWarningLimit: 1000,
-    minify: 'terser', // Usar terser para mejor minificación y ofuscación
-    terserOptions: {
-      compress: {
-        drop_console: true, // Eliminar console.log en producción
-        drop_debugger: true, // Eliminar debugger
-        pure_funcs: [
-          'console.log',
-          'console.info',
-          'console.debug',
-          'console.warn',
-          'console.error',
-        ], // Eliminar todas las funciones de console
-        passes: 2, // Múltiples pases para mejor compresión
-      },
-      format: {
-        comments: false, // Eliminar comentarios
-      },
-      mangle: {
-        properties: false, // No ofuscar propiedades (puede romper código)
-        toplevel: true, // Ofuscar variables de nivel superior
-        keep_classnames: false, // Ofuscar nombres de clases
-        keep_fnames: false, // Ofuscar nombres de funciones
-      },
-    },
+    minify: 'esbuild', // Usar esbuild (más rápido, ya configurado arriba)
     rollupOptions: {
       output: {
         // Asegurar que los chunks se generen con rutas relativas

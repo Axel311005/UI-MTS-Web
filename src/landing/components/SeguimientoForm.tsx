@@ -31,6 +31,7 @@ import { io, Socket } from 'socket.io-client';
 import { SOCKET_URL_CLIENTE } from '@/shared/config/socket.config';
 import { useLandingAuthStore } from '../store/landing-auth.store';
 import { useAuthStore } from '@/auth/store/auth.store';
+import { validateCode } from '@/shared/utils/validation';
 
 const estadoConfig: Record<
   string,
@@ -214,7 +215,7 @@ export function SeguimientoForm() {
       return;
     }
 
-    // Sanitizar y validar código
+    // Sanitizar y validar código con validaciones inteligentes
     const codigoLimpio = codigo.trim().toUpperCase();
 
     if (!codigoLimpio) {
@@ -222,16 +223,10 @@ export function SeguimientoForm() {
       return;
     }
 
-    // Validar longitud del código (máximo 50 caracteres)
-    if (codigoLimpio.length > 50) {
-      toast.error('El código es demasiado largo');
-      return;
-    }
-
-    // Validar formato del código (solo letras, números y guiones)
-    const codigoRegex = /^[A-Z0-9\-]+$/;
-    if (!codigoRegex.test(codigoLimpio)) {
-      toast.error('El código contiene caracteres inválidos');
+    // Validar con validaciones inteligentes
+    const codigoValidation = validateCode(codigoLimpio);
+    if (!codigoValidation.isValid) {
+      toast.error(codigoValidation.error || 'El código no es válido');
       return;
     }
 

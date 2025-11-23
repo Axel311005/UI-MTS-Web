@@ -8,6 +8,7 @@ import {
   sanitizeString,
   detectSQLInjection,
 } from './security';
+import { smartValidate } from './smart-validation';
 
 /**
  * Resultado de una validación
@@ -52,6 +53,7 @@ export function validateLength(
 
 /**
  * Valida texto con longitud, caracteres repetidos y SQL Injection
+ * Ahora incluye validaciones inteligentes para reducir basura
  */
 export function validateText(
   text: string,
@@ -78,6 +80,25 @@ export function validateText(
     return {
       isValid: false,
       error: 'No puede tener 3 o más caracteres consecutivos iguales',
+    };
+  }
+
+  // Aplicar validaciones inteligentes adicionales
+  const smartResult = smartValidate(text.trim(), {
+    minLength: min,
+    maxLength: max,
+    allowNumbers: true,
+    allowSpecialChars: true,
+    maxRepetitions: allowRepeats ? 10 : 3,
+    maxConsonantsInRow: 5,
+    maxRepetitivePercentage: 50,
+    maxSymbolPercentage: 20,
+  });
+
+  if (!smartResult.isValid) {
+    return {
+      isValid: false,
+      error: smartResult.error || 'El texto no es válido',
     };
   }
 
@@ -290,3 +311,16 @@ export const VALIDATION_RULES = {
   fechaMinima: new Date('1900-01-01'),
   fechaMaxima: new Date('2100-12-31'),
 } as const;
+
+/**
+ * Validaciones inteligentes exportadas para uso directo
+ */
+export {
+  smartValidate,
+  validateName,
+  validateAddress,
+  validateDescription,
+  validateCode,
+  validateSearch,
+  type SmartValidationResult,
+} from './smart-validation';

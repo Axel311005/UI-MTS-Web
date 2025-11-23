@@ -263,11 +263,10 @@ function protectAgainstMaliciousCode(): void {
     }
 
     // Bloquear Function() constructor - otra forma común de ejecutar código
-    const OriginalFunction = window.Function;
-    window.Function = function (this: FunctionConstructor, ...args: string[]): never {
+    window.Function = function (..._args: string[]): never {
       showSecurityWarning();
       throw new Error('Function() constructor está deshabilitado por seguridad');
-    } as FunctionConstructor;
+    } as unknown as FunctionConstructor;
 
     // Intentar hacer Function no configurable
     try {
@@ -281,31 +280,31 @@ function protectAgainstMaliciousCode(): void {
     }
 
     // Bloquear setTimeout/setInterval con strings (aunque ya no se usa mucho)
-    const originalSetTimeout = window.setTimeout;
+    const originalSetTimeout = window.setTimeout.bind(window);
     window.setTimeout = function (
       handler: TimerHandler,
       timeout?: number,
       ...args: any[]
-    ): number {
+    ) {
       if (typeof handler === 'string') {
         showSecurityWarning();
         throw new Error('setTimeout con string está deshabilitado por seguridad');
       }
       return originalSetTimeout(handler, timeout, ...args);
-    };
+    } as typeof window.setTimeout;
 
-    const originalSetInterval = window.setInterval;
+    const originalSetInterval = window.setInterval.bind(window);
     window.setInterval = function (
       handler: TimerHandler,
       timeout?: number,
       ...args: any[]
-    ): number {
+    ) {
       if (typeof handler === 'string') {
         showSecurityWarning();
         throw new Error('setInterval con string está deshabilitado por seguridad');
       }
       return originalSetInterval(handler, timeout, ...args);
-    };
+    } as typeof window.setInterval;
 
     // Proteger contra scripts inyectados dinámicamente - BLOQUEAR completamente
     const originalCreateElement = document.createElement.bind(document);
@@ -336,7 +335,7 @@ function protectAgainstMaliciousCode(): void {
         };
 
         // Bloquear appendChild para scripts maliciosos
-        element.appendChild = function (child: Node): Node {
+        element.appendChild = function <T extends Node>(child: T): T {
           if (child.nodeType === Node.TEXT_NODE && child.textContent) {
             // Bloquear scripts inline maliciosos
             if (/<script|javascript:|eval\(|Function\(/i.test(child.textContent)) {
@@ -344,17 +343,17 @@ function protectAgainstMaliciousCode(): void {
               throw new Error('Scripts inline maliciosos están bloqueados');
             }
           }
-          return originalAppendChild(child);
+          return originalAppendChild(child) as T;
         };
 
-        element.insertBefore = function (newNode: Node, referenceNode: Node | null): Node {
+        element.insertBefore = function <T extends Node>(newNode: T, referenceNode: Node | null): T {
           if (newNode.nodeType === Node.TEXT_NODE && newNode.textContent) {
             if (/<script|javascript:|eval\(|Function\(/i.test(newNode.textContent)) {
               showSecurityWarning();
               throw new Error('Scripts inline maliciosos están bloqueados');
             }
           }
-          return originalInsertBefore(newNode, referenceNode);
+          return originalInsertBefore(newNode, referenceNode) as T;
         };
       }
       
@@ -415,20 +414,18 @@ function protectAgainstMaliciousCode(): void {
 
     // Bloquear WebAssembly malicioso
     if (typeof WebAssembly !== 'undefined') {
-      const originalCompile = WebAssembly.compile;
-      WebAssembly.compile = function (bufferSource: BufferSource): Promise<WebAssembly.Module> {
+      WebAssembly.compile = function (_bufferSource: BufferSource): Promise<WebAssembly.Module> {
         showSecurityWarning();
         throw new Error('WebAssembly.compile está deshabilitado por seguridad');
       };
 
-      const originalInstantiate = WebAssembly.instantiate;
       WebAssembly.instantiate = function (
-        bufferSource: BufferSource | WebAssembly.Module,
-        importObject?: WebAssembly.Imports
-      ): Promise<WebAssembly.WebAssemblyInstantiatedSource> {
+        _bufferSource: BufferSource | WebAssembly.Module,
+        _importObject?: WebAssembly.Imports
+      ): Promise<WebAssembly.Instance> {
         showSecurityWarning();
         throw new Error('WebAssembly.instantiate está deshabilitado por seguridad');
-      };
+      } as typeof WebAssembly.instantiate;
     }
 
     // Proteger contra Blob URLs maliciosos

@@ -27,6 +27,7 @@ import type { MotivoCita, Vehiculo } from '../types/cita.types';
 import { useLandingAuthStore } from '../store/landing-auth.store';
 import { useAuthStore } from '@/auth/store/auth.store';
 import { useNavigate } from 'react-router';
+import { validateName, validateCode, smartValidate } from '@/shared/utils/validation';
 
 interface FormData {
   idMotivoCita: string;
@@ -160,9 +161,36 @@ export function CitaForm() {
     loadData();
   }, [user, isAuthenticated, token]);
 
-  // Sanitizar texto
+  // Sanitizar texto con validaciones inteligentes
   const sanitizeText = (text: string, maxLength: number = 255): string => {
     return text.trim().slice(0, maxLength);
+  };
+
+  // Validar campo con validaciones inteligentes
+  const validateField = (value: string, fieldType: 'name' | 'code' | 'text'): { isValid: boolean; error?: string } => {
+    if (!value || value.trim().length === 0) {
+      return { isValid: false, error: 'Este campo es requerido' };
+    }
+
+    switch (fieldType) {
+      case 'name':
+        return validateName(value);
+      case 'code':
+        return validateCode(value);
+      case 'text':
+        return smartValidate(value, {
+          minLength: 2,
+          maxLength: 50,
+          allowNumbers: true,
+          allowSpecialChars: false,
+          maxRepetitions: 3,
+          maxConsonantsInRow: 4,
+          maxRepetitivePercentage: 50,
+          maxSymbolPercentage: 10,
+        });
+      default:
+        return { isValid: true };
+    }
   };
 
   // Validar fecha y hora
@@ -266,7 +294,7 @@ export function CitaForm() {
       return;
     }
 
-    // Sanitizar y validar campos del vehículo
+    // Sanitizar y validar campos del vehículo con validaciones inteligentes
     const placaLimpia = sanitizeText(vehiculoForm.placa, 20).toUpperCase();
     const motorLimpio = sanitizeText(vehiculoForm.motor, 50);
     const marcaLimpia = sanitizeText(vehiculoForm.marca, 50);
@@ -275,19 +303,28 @@ export function CitaForm() {
     const numChasisLimpio = sanitizeText(vehiculoForm.numChasis, 50);
     const anio = Number(vehiculoForm.anio);
 
-    // Validaciones
-    if (!placaLimpia || placaLimpia.length < 3) {
-      toast.error('La placa debe tener al menos 3 caracteres');
+    // Validaciones inteligentes
+    const placaValidation = validateCode(placaLimpia);
+    if (!placaValidation.isValid) {
+      toast.error(placaValidation.error || 'La placa no es válida');
       return;
     }
 
-    if (!marcaLimpia || marcaLimpia.length < 2) {
-      toast.error('La marca debe tener al menos 2 caracteres');
+    const marcaValidation = validateName(marcaLimpia);
+    if (!marcaValidation.isValid) {
+      toast.error(marcaValidation.error || 'La marca no es válida');
       return;
     }
 
-    if (!modeloLimpio || modeloLimpio.length < 2) {
-      toast.error('El modelo debe tener al menos 2 caracteres');
+    const modeloValidation = validateName(modeloLimpio);
+    if (!modeloValidation.isValid) {
+      toast.error(modeloValidation.error || 'El modelo no es válido');
+      return;
+    }
+
+    const colorValidation = validateField(colorLimpio, 'text');
+    if (!colorValidation.isValid) {
+      toast.error(colorValidation.error || 'El color no es válido');
       return;
     }
 
