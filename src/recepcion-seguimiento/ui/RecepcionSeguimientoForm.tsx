@@ -68,8 +68,8 @@ export function RecepcionSeguimientoForm({
     } else {
       const descripcionValidation = validateText(
         values.descripcion.trim(),
-        VALIDATION_RULES.observaciones.min,
-        VALIDATION_RULES.observaciones.max,
+        VALIDATION_RULES.descripcionSeguimiento.min,
+        VALIDATION_RULES.descripcionSeguimiento.max,
         false
       );
       if (!descripcionValidation.isValid) {
@@ -90,8 +90,8 @@ export function RecepcionSeguimientoForm({
       estado: values.estado,
       descripcion: sanitizeText(
         values.descripcion.trim(),
-        VALIDATION_RULES.observaciones.min,
-        VALIDATION_RULES.observaciones.max,
+        VALIDATION_RULES.descripcionSeguimiento.min,
+        VALIDATION_RULES.descripcionSeguimiento.max,
         false
       ),
     });
@@ -192,14 +192,14 @@ export function RecepcionSeguimientoForm({
           onChange={(e) => {
             const sanitized = sanitizeText(
               e.target.value,
-              VALIDATION_RULES.observaciones.min,
-              VALIDATION_RULES.observaciones.max,
+              VALIDATION_RULES.descripcionSeguimiento.min,
+              VALIDATION_RULES.descripcionSeguimiento.max,
               false
             );
             update({ descripcion: sanitized });
           }}
           rows={4}
-          maxLength={VALIDATION_RULES.observaciones.max}
+          maxLength={VALIDATION_RULES.descripcionSeguimiento.max}
         />
         {errors.descripcion && (
           <p className="text-sm text-destructive">{errors.descripcion}</p>

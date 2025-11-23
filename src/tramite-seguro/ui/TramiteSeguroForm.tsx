@@ -19,8 +19,10 @@ import {
   validateText,
   validateFecha,
   validateFechaRango,
+  validateLength,
   VALIDATION_RULES,
 } from '@/shared/utils/validation';
+import { sanitizeString } from '@/shared/utils/security';
 
 type FormValues = {
   idVehiculo: number | '';
@@ -95,6 +97,9 @@ export function TramiteSeguroForm({
         VALIDATION_RULES.observaciones.max,
         false // No permitir 3 caracteres repetidos
       );
+    } else if (field === 'numeroTramite') {
+      // Sanitizar número de trámite
+      sanitizedValue = sanitizeString(value, VALIDATION_RULES.numeroTramite.max);
     }
     
     setValues((prev) => ({ ...prev, [field]: sanitizedValue }));
@@ -118,6 +123,15 @@ export function TramiteSeguroForm({
 
     if (!values.numeroTramite.trim()) {
       nextErrors.numeroTramite = 'El número de trámite es requerido';
+    } else {
+      const numeroTramiteValidation = validateLength(
+        values.numeroTramite.trim(),
+        VALIDATION_RULES.numeroTramite.min,
+        VALIDATION_RULES.numeroTramite.max
+      );
+      if (!numeroTramiteValidation.isValid) {
+        nextErrors.numeroTramite = numeroTramiteValidation.error || 'Número de trámite inválido';
+      }
     }
 
     // Validar fecha de inicio
@@ -257,6 +271,7 @@ export function TramiteSeguroForm({
               handleInputChange('numeroTramite', event.target.value)
             }
             placeholder="TRAM-2024-001"
+            maxLength={VALIDATION_RULES.numeroTramite.max}
             disabled={isSubmitting}
           />
           {errors.numeroTramite && (

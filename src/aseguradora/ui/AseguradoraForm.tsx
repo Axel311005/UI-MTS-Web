@@ -85,7 +85,12 @@ export function AseguradoraForm({
     if (!values.contacto.trim()) {
       nextErrors.contacto = 'El contacto es requerido';
     } else {
-      const contactoValidation = validateText(values.contacto.trim(), 2, 100, false);
+      const contactoValidation = validateText(
+        values.contacto.trim(),
+        VALIDATION_RULES.contacto.min,
+        VALIDATION_RULES.contacto.max,
+        false
+      );
       if (!contactoValidation.isValid) {
         nextErrors.contacto = contactoValidation.error || 'Contacto inválido';
       }

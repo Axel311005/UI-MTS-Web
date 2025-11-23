@@ -321,17 +321,26 @@ export function validateFechaRango(
  */
 export const VALIDATION_RULES = {
   // Textos generales
-  direccion: { min: 5, max: 200 },
-  notas: { min: 0, max: 1000 },
-  comentario: { min: 0, max: 500 },
-  observaciones: { min: 0, max: 1000 },
+  direccion: { min: 5, max: 300 },
+  notas: { min: 0, max: 400 },
+  comentario: { min: 0, max: 400 },
+  observaciones: { min: 0, max: 400 },
   descripcion: { min: 2, max: 200 },
   descripcionCorta: { min: 2, max: 100 },
+  descripcionSeguimiento: { min: 0, max: 500 },
 
   // Códigos e identificadores
-  codigo: { min: 2, max: 50 },
+  codigo: { min: 2, max: 100 },
   ruc: { min: 10, max: 14 },
   placa: { min: 3, max: 20 },
+  canal: { min: 1, max: 50 },
+  numeroTramite: { min: 1, max: 50 },
+  documento: { min: 1, max: 50 },
+  mascara: { min: 1, max: 50 },
+  contacto: { min: 2, max: 100 },
+  usuarioUltModif: { min: 1, max: 50 },
+  nombreCliente: { min: 2, max: 100 },
+  email: { min: 5, max: 100 },
 
   // Números
   precio: { min: 0, max: 1000000 },
