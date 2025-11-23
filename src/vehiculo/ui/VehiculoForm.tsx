@@ -303,7 +303,7 @@ export const VehiculoForm = ({
             }
           }}
           placeholder="2020"
-          min={1900}
+          min={1990}
           max={getRangoAnios().max}
         />
         {errors.anio && (

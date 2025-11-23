@@ -17,6 +17,8 @@ import { ConsecutivoSelect } from '@/shared/components/selects/ConsecutivoSelect
 import {
   sanitizeText,
   validateText,
+  validateFecha,
+  validateFechaRango,
   VALIDATION_RULES,
 } from '@/shared/utils/validation';
 
@@ -83,16 +85,25 @@ export function RecepcionForm({
     // Validar fecha de recepción
     if (!values.fechaRecepcion) {
       e.fechaRecepcion = 'La fecha de recepción es requerida';
+    } else {
+      const fechaRecepcionValidation = validateFecha(values.fechaRecepcion);
+      if (!fechaRecepcionValidation.isValid) {
+        e.fechaRecepcion = fechaRecepcionValidation.error || 'Fecha de recepción inválida';
+      }
     }
 
     // Validar fecha de entrega estimada
     if (!values.fechaEntregaEstimada) {
       e.fechaEntregaEstimada = 'La fecha estimada es requerida';
-    } else if (values.fechaRecepcion) {
-      const start = new Date(values.fechaRecepcion);
-      const eta = new Date(values.fechaEntregaEstimada);
-      if (eta < start) {
-        e.fechaEntregaEstimada = 'No puede ser anterior a la recepción';
+    } else {
+      const fechaEntregaValidation = validateFecha(values.fechaEntregaEstimada);
+      if (!fechaEntregaValidation.isValid) {
+        e.fechaEntregaEstimada = fechaEntregaValidation.error || 'Fecha estimada inválida';
+      } else if (values.fechaRecepcion) {
+        const rangoValidation = validateFechaRango(values.fechaRecepcion, values.fechaEntregaEstimada);
+        if (!rangoValidation.isValid) {
+          e.fechaEntregaEstimada = rangoValidation.error || 'La fecha estimada debe ser posterior a la recepción';
+        }
       }
     }
 

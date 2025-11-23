@@ -15,6 +15,7 @@ import type {
 import {
   sanitizeStringNoRepeats,
   sanitizeString,
+  sanitizeName,
 } from '@/shared/utils/security';
 import {
   sanitizeText,
@@ -82,8 +83,8 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
           false // No permitir 3 caracteres repetidos
         );
       } else if (field === 'primerNombre' || field === 'primerApellido') {
-        // Sanitizar nombres (protección SQL + XSS, sin validar caracteres repetidos)
-        sanitizedValue = sanitizeString(value, 100);
+        // Sanitizar nombres: solo letras, sin espacios, números ni caracteres especiales
+        sanitizedValue = sanitizeName(value, 100);
       } else {
         // Sanitizar cualquier otro campo de texto (protección SQL + XSS)
         sanitizedValue = sanitizeString(value, 200);
@@ -129,6 +130,23 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
                 aria-describedby={
                   errors.primerNombre ? 'primerNombre-error' : undefined
                 }
+                pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ]{2,100}"
+                title="Solo letras (mínimo 2, máximo 100). No se permiten espacios, números ni caracteres especiales."
+                maxLength={100}
+                minLength={2}
+                onKeyDown={(e) => {
+                  if (e.key === ' ' || e.key === 'Spacebar') {
+                    e.preventDefault();
+                  }
+                }}
+                onPaste={(e) => {
+                  e.preventDefault();
+                  const text = e.clipboardData.getData('text');
+                  const cleaned = text.replace(/\s/g, '').replace(/[0-9]/g, '').replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, '');
+                  if (cleaned.length >= 2 && cleaned.length <= 100) {
+                    handleChange('primerNombre', cleaned);
+                  }
+                }}
               />
               {errors.primerNombre && (
                 <ErrorMessage

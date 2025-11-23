@@ -23,6 +23,7 @@ import {
 import { getEmpleadoById } from "../actions/get-empleado-by-id";
 import { patchEmpleadoAction } from "../actions/patch-empleado";
 import { EstadoActivo } from "@/shared/types/status";
+import { sanitizeName } from "@/shared/utils/security";
 
 export default function EditarEmpleadoPage() {
   const navigate = useNavigate();
@@ -239,11 +240,29 @@ export default function EditarEmpleadoPage() {
                 <Input
                   id="primerNombre"
                   value={formData.primerNombre}
-                  onChange={(e) =>
-                    setFormData({ ...formData, primerNombre: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const sanitized = sanitizeName(e.target.value, 100);
+                    setFormData({ ...formData, primerNombre: sanitized });
+                  }}
                   className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
                   required
+                  pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ]{2,100}"
+                  title="Solo letras (mínimo 2, máximo 100). No se permiten espacios, números ni caracteres especiales."
+                  maxLength={100}
+                  minLength={2}
+                  onKeyDown={(e) => {
+                    if (e.key === ' ' || e.key === 'Spacebar') {
+                      e.preventDefault();
+                    }
+                  }}
+                  onPaste={(e) => {
+                    e.preventDefault();
+                    const text = e.clipboardData.getData('text');
+                    const cleaned = text.replace(/\s/g, '').replace(/[0-9]/g, '').replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, '');
+                    if (cleaned.length >= 2 && cleaned.length <= 100) {
+                      setFormData({ ...formData, primerNombre: cleaned });
+                    }
+                  }}
                 />
               </div>
               <div className="space-y-1.5 sm:space-y-2">
@@ -251,11 +270,29 @@ export default function EditarEmpleadoPage() {
                 <Input
                   id="primerApellido"
                   value={formData.primerApellido}
-                  onChange={(e) =>
-                    setFormData({ ...formData, primerApellido: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const sanitized = sanitizeName(e.target.value, 100);
+                    setFormData({ ...formData, primerApellido: sanitized });
+                  }}
                   className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
                   required
+                  pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ]{2,100}"
+                  title="Solo letras (mínimo 2, máximo 100). No se permiten espacios, números ni caracteres especiales."
+                  maxLength={100}
+                  minLength={2}
+                  onKeyDown={(e) => {
+                    if (e.key === ' ' || e.key === 'Spacebar') {
+                      e.preventDefault();
+                    }
+                  }}
+                  onPaste={(e) => {
+                    e.preventDefault();
+                    const text = e.clipboardData.getData('text');
+                    const cleaned = text.replace(/\s/g, '').replace(/[0-9]/g, '').replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, '');
+                    if (cleaned.length >= 2 && cleaned.length <= 100) {
+                      setFormData({ ...formData, primerApellido: cleaned });
+                    }
+                  }}
                 />
               </div>
             </div>
@@ -284,12 +321,14 @@ export default function EditarEmpleadoPage() {
                 </div>
                 <Input
                   id="telefono"
+                  type="tel"
                   value={formData.telefono}
                   onChange={(e) => handleTelefonoChange(e.target.value)}
                   placeholder="87781633"
                   maxLength={8}
                   className="pl-14 h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
                   required
+                  inputMode="numeric"
                 />
               </div>
               <p className="text-xs text-muted-foreground">

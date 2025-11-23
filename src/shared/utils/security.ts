@@ -211,8 +211,8 @@ export function validateAnio(anio: number | string | undefined): boolean {
 export function getRangoAnios(): { min: number; max: number } {
   const añoActual = new Date().getFullYear();
   return {
-    min: 1900,
-    max: añoActual + 1,
+    min: 1990, // Desde 1990
+    max: añoActual + 1, // Hasta año actual + 1
   };
 }
 
@@ -355,6 +355,103 @@ export function escapeHtml(text: string): string {
   };
 
   return text.replace(/[&<>"']/g, (m) => map[m]);
+}
+
+/**
+ * Sanitiza un nombre o apellido: solo letras (incluyendo acentos), sin espacios, números ni caracteres especiales
+ * @param name - Nombre a sanitizar
+ * @param minLength - Longitud mínima (default: 2)
+ * @param maxLength - Longitud máxima (default: 100)
+ * @returns Nombre sanitizado
+ */
+export function sanitizeName(
+  name: string,
+  minLength: number = 2,
+  maxLength: number = 100
+): string {
+  if (typeof name !== 'string') {
+    return '';
+  }
+
+  // Eliminar espacios, números y caracteres especiales
+  // Solo permitir letras (incluyendo acentos y ñ)
+  const sanitized = name
+    .replace(/\s/g, '') // Eliminar espacios
+    .replace(/[0-9]/g, '') // Eliminar números
+    .replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, '') // Solo letras y acentos
+    .trim();
+
+  // Limitar longitud máxima
+  if (sanitized.length > maxLength) {
+    return sanitized.slice(0, maxLength);
+  }
+
+  // Si es muy corto, devolver vacío (se validará después)
+  if (sanitized.length < minLength) {
+    return sanitized;
+  }
+
+  return sanitized;
+}
+
+/**
+ * Valida un nombre o apellido sanitizado
+ * @param name - Nombre a validar
+ * @param minLength - Longitud mínima (default: 2)
+ * @param maxLength - Longitud máxima (default: 100)
+ * @returns Objeto con isValid y error opcional
+ */
+export function validateName(
+  name: string,
+  minLength: number = 2,
+  maxLength: number = 100
+): { isValid: boolean; error?: string } {
+  if (!name || typeof name !== 'string') {
+    return { isValid: false, error: 'El nombre es requerido' };
+  }
+
+  const sanitized = sanitizeName(name, minLength, maxLength);
+
+  // Validar longitud mínima
+  if (sanitized.length < minLength) {
+    return {
+      isValid: false,
+      error: `El nombre debe tener al menos ${minLength} letras`,
+    };
+  }
+
+  // Validar longitud máxima
+  if (sanitized.length > maxLength) {
+    return {
+      isValid: false,
+      error: `El nombre no puede tener más de ${maxLength} letras`,
+    };
+  }
+
+  // Validar que no esté vacío después de sanitizar
+  if (sanitized.trim().length === 0) {
+    return { isValid: false, error: 'El nombre no puede estar vacío' };
+  }
+
+  // Validar que no tenga más de 2 caracteres repetidos consecutivos
+  const repeatedPattern = /(.)\1{2,}/;
+  if (repeatedPattern.test(sanitized.toLowerCase())) {
+    return {
+      isValid: false,
+      error: 'El nombre no puede tener más de 2 letras iguales consecutivas',
+    };
+  }
+
+  // Validar que no sea solo consonantes (sin vocales)
+  const vowels = /[aeiouáéíóúAEIOUÁÉÍÓÚ]/;
+  if (!vowels.test(sanitized)) {
+    return {
+      isValid: false,
+      error: 'El nombre debe contener al menos una vocal',
+    };
+  }
+
+  return { isValid: true };
 }
 
 /**

@@ -14,7 +14,8 @@ import { toast } from 'sonner';
 import { registerAction } from '../actions/auth.actions';
 import { useLandingAuthStore } from '../store/landing-auth.store';
 import { UserPlus, Eye, EyeOff } from 'lucide-react';
-import { validateName, validateAddress } from '@/shared/utils/validation';
+import { validateAddress } from '@/shared/utils/validation';
+import { sanitizeName, validateName } from '@/shared/utils/security';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -72,8 +73,8 @@ export default function RegisterPage() {
 
     // Sanitizar todos los inputs
     const emailLimpio = sanitizeText(formData.email, 255).toLowerCase();
-    const primerNombreLimpio = sanitizeText(formData.primerNombre, 100);
-    const primerApellidoLimpio = sanitizeText(formData.primerApellido, 100);
+    const primerNombreLimpio = sanitizeName(formData.primerNombre, 100);
+    const primerApellidoLimpio = sanitizeName(formData.primerApellido, 100);
     const direccionLimpio = sanitizeText(formData.direccion, 200);
 
     // Validaciones de email
@@ -278,11 +279,17 @@ export default function RegisterPage() {
 
     // Si es teléfono, usar el formateador especial
     if (id === 'telefono') {
-      // Si es teléfono, usar el formateador especial
       const formatted = formatPhone(value);
       setFormData((prev) => ({
         ...prev,
         [id]: formatted,
+      }));
+    } else if (id === 'primerNombre' || id === 'primerApellido') {
+      // Sanitizar nombres: solo letras, sin espacios, números ni caracteres especiales
+      const sanitized = sanitizeName(value, 100);
+      setFormData((prev) => ({
+        ...prev,
+        [id]: sanitized,
       }));
     } else {
       setFormData((prev) => ({
@@ -400,6 +407,23 @@ export default function RegisterPage() {
                     onChange={handleChange}
                     required
                     className="h-10 sm:h-11"
+                    pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ]{2,100}"
+                    title="Solo letras (mínimo 2, máximo 100). No se permiten espacios, números ni caracteres especiales."
+                    maxLength={100}
+                    minLength={2}
+                    onKeyDown={(e) => {
+                      if (e.key === ' ' || e.key === 'Spacebar') {
+                        e.preventDefault();
+                      }
+                    }}
+                    onPaste={(e) => {
+                      e.preventDefault();
+                      const text = e.clipboardData.getData('text');
+                      const cleaned = text.replace(/\s/g, '').replace(/[0-9]/g, '').replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, '');
+                      if (cleaned.length >= 2 && cleaned.length <= 100) {
+                        handleChange({ target: { id: 'primerNombre', value: cleaned } } as React.ChangeEvent<HTMLInputElement>);
+                      }
+                    }}
                   />
                 </div>
                 <div className="space-y-2">
@@ -411,6 +435,23 @@ export default function RegisterPage() {
                     onChange={handleChange}
                     required
                     className="h-10 sm:h-11"
+                    pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ]{2,100}"
+                    title="Solo letras (mínimo 2, máximo 100). No se permiten espacios, números ni caracteres especiales."
+                    maxLength={100}
+                    minLength={2}
+                    onKeyDown={(e) => {
+                      if (e.key === ' ' || e.key === 'Spacebar') {
+                        e.preventDefault();
+                      }
+                    }}
+                    onPaste={(e) => {
+                      e.preventDefault();
+                      const text = e.clipboardData.getData('text');
+                      const cleaned = text.replace(/\s/g, '').replace(/[0-9]/g, '').replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, '');
+                      if (cleaned.length >= 2 && cleaned.length <= 100) {
+                        handleChange({ target: { id: 'primerApellido', value: cleaned } } as React.ChangeEvent<HTMLInputElement>);
+                      }
+                    }}
                   />
                 </div>
               </div>

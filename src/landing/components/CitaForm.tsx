@@ -27,7 +27,8 @@ import type { MotivoCita, Vehiculo } from '../types/cita.types';
 import { useLandingAuthStore } from '../store/landing-auth.store';
 import { useAuthStore } from '@/auth/store/auth.store';
 import { useNavigate } from 'react-router';
-import { validateName, validateCode, smartValidate } from '@/shared/utils/validation';
+import { validateCode, smartValidate, validateFecha, getFechaMaxima } from '@/shared/utils/validation';
+import { validateName } from '@/shared/utils/security';
 import { PlacaInput, validatePlacaFormat } from '@/shared/components/PlacaInput';
 
 interface FormData {
@@ -199,16 +200,13 @@ export function CitaForm() {
     try {
       const fechaHora = `${fecha}T${hora}:00`;
       const date = new Date(fechaHora);
-      // Verificar que la fecha sea válida y no sea en el pasado
+      // Verificar que la fecha sea válida
       if (isNaN(date.getTime())) {
         return false;
       }
-      // La fecha debe ser en el futuro o hoy
-      const now = new Date();
-      now.setHours(0, 0, 0, 0);
-      const fechaDate = new Date(fecha);
-      fechaDate.setHours(0, 0, 0, 0);
-      return fechaDate >= now;
+      // Validar que la fecha esté en el rango permitido (hoy hasta hoy + 1 año)
+      const fechaValidation = validateFecha(fecha);
+      return fechaValidation.isValid;
     } catch {
       return false;
     }
@@ -684,6 +682,7 @@ export function CitaForm() {
                     setFormData({ ...formData, fechaInicio: e.target.value })
                   }
                   min={new Date().toISOString().split('T')[0]}
+                  max={getFechaMaxima().toISOString().split('T')[0]}
                   className="h-12 sm:h-14 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all touch-manipulation"
                   disabled={submitting}
                   required

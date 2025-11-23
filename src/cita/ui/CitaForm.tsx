@@ -14,6 +14,7 @@ import { useVehiculo } from '@/vehiculo/hook/useVehiculo';
 import { EstadoActivo } from '@/shared/types/status';
 import { ClienteSelect } from '@/facturas/ui/ClienteSelect';
 import { useMotivoCita } from '../hook/useMotivoCita';
+import { validateFecha, getFechaMinima, getFechaMaxima } from '@/shared/utils/validation';
 
 export type CitaFormValues = {
   idCliente: number;
@@ -85,7 +86,15 @@ export function CitaForm({
       e.idVehiculo = 'Seleccione un vehículo';
     if (!values.idMotivoCita || values.idMotivoCita <= 0)
       e.idMotivoCita = 'Seleccione un motivo de cita';
-    if (!values.fechaInicio) e.fechaInicio = 'La fecha es requerida';
+    if (!values.fechaInicio) {
+      e.fechaInicio = 'La fecha es requerida';
+    } else {
+      // Validar fecha con rango (hoy hasta hoy + 1 año)
+      const fechaValidation = validateFecha(values.fechaInicio);
+      if (!fechaValidation.isValid) {
+        e.fechaInicio = fechaValidation.error || 'Fecha inválida';
+      }
+    }
 
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -175,6 +184,8 @@ export function CitaForm({
             type="datetime-local"
             value={values.fechaInicio}
             onChange={(e) => update({ fechaInicio: e.target.value })}
+            min={toDateTimeLocal(getFechaMinima())}
+            max={toDateTimeLocal(getFechaMaxima())}
           />
           {errors.fechaInicio && (
             <p className="text-sm text-destructive">{errors.fechaInicio}</p>

@@ -49,6 +49,7 @@ import { EstadoActivo } from "@/shared/types/status";
 import { useNavigate } from "react-router";
 import { CustomSearchControl } from "@/shared/components/custom/CustomSearchControl";
 import { useDebounce } from "@/shared/hooks/use-debounce";
+import { sanitizeName } from "@/shared/utils/security";
 
 interface RegisterEmployeePayload {
   email: string;
@@ -394,14 +395,35 @@ export default function AdministracionPage() {
                   type="text"
                   placeholder="Juan"
                   value={empleadoForm.primerNombre}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const sanitized = sanitizeName(e.target.value, 100);
                     setEmpleadoForm({
                       ...empleadoForm,
-                      primerNombre: e.target.value,
-                    })
-                  }
+                      primerNombre: sanitized,
+                    });
+                  }}
                   className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
                   required
+                  pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ]{2,100}"
+                  title="Solo letras (mínimo 2, máximo 100). No se permiten espacios, números ni caracteres especiales."
+                  maxLength={100}
+                  minLength={2}
+                  onKeyDown={(e) => {
+                    if (e.key === ' ' || e.key === 'Spacebar') {
+                      e.preventDefault();
+                    }
+                  }}
+                  onPaste={(e) => {
+                    e.preventDefault();
+                    const text = e.clipboardData.getData('text');
+                    const cleaned = text.replace(/\s/g, '').replace(/[0-9]/g, '').replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, '');
+                    if (cleaned.length >= 2 && cleaned.length <= 100) {
+                      setEmpleadoForm({
+                        ...empleadoForm,
+                        primerNombre: cleaned,
+                      });
+                    }
+                  }}
                 />
               </div>
               <div className="space-y-1.5 sm:space-y-2">
@@ -411,14 +433,35 @@ export default function AdministracionPage() {
                   type="text"
                   placeholder="Pérez"
                   value={empleadoForm.primerApellido}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const sanitized = sanitizeName(e.target.value, 100);
                     setEmpleadoForm({
                       ...empleadoForm,
-                      primerApellido: e.target.value,
-                    })
-                  }
+                      primerApellido: sanitized,
+                    });
+                  }}
                   className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
                   required
+                  pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ]{2,100}"
+                  title="Solo letras (mínimo 2, máximo 100). No se permiten espacios, números ni caracteres especiales."
+                  maxLength={100}
+                  minLength={2}
+                  onKeyDown={(e) => {
+                    if (e.key === ' ' || e.key === 'Spacebar') {
+                      e.preventDefault();
+                    }
+                  }}
+                  onPaste={(e) => {
+                    e.preventDefault();
+                    const text = e.clipboardData.getData('text');
+                    const cleaned = text.replace(/\s/g, '').replace(/[0-9]/g, '').replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, '');
+                    if (cleaned.length >= 2 && cleaned.length <= 100) {
+                      setEmpleadoForm({
+                        ...empleadoForm,
+                        primerApellido: cleaned,
+                      });
+                    }
+                  }}
                 />
               </div>
               <div className="space-y-1.5 sm:space-y-2">

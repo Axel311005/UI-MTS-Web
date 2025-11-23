@@ -224,12 +224,36 @@ export function validateExistencia(
 }
 
 /**
+ * Obtiene la fecha máxima permitida (hoy + 1 año)
+ * @returns Fecha máxima (hoy + 1 año)
+ */
+export function getFechaMaxima(): Date {
+  const hoy = new Date();
+  const maxDate = new Date(hoy);
+  maxDate.setFullYear(hoy.getFullYear() + 1);
+  return maxDate;
+}
+
+/**
+ * Obtiene la fecha mínima permitida (hoy)
+ * @returns Fecha mínima (hoy)
+ */
+export function getFechaMinima(): Date {
+  return new Date();
+}
+
+/**
  * Valida fechas (rango mínimo y máximo)
+ * Por defecto, la fecha máxima es hoy + 1 año
+ * @param fecha - Fecha a validar
+ * @param minDate - Fecha mínima permitida (default: hoy)
+ * @param maxDate - Fecha máxima permitida (default: hoy + 1 año)
+ * @returns Objeto con isValid y error opcional
  */
 export function validateFecha(
   fecha: string | Date,
-  minDate?: Date,
-  maxDate?: Date
+  minDate?: Date | null,
+  maxDate?: Date | null
 ): { isValid: boolean; error?: string } {
   if (!fecha) {
     return { isValid: false, error: 'La fecha es requerida' };
@@ -241,17 +265,21 @@ export function validateFecha(
     return { isValid: false, error: 'La fecha no es válida' };
   }
 
-  if (minDate && date < minDate) {
+  // Usar fecha mínima por defecto (hoy) si no se especifica
+  const fechaMinima = minDate ?? getFechaMinima();
+  if (date < fechaMinima) {
     return {
       isValid: false,
-      error: `La fecha no puede ser anterior a ${minDate.toLocaleDateString()}`,
+      error: `La fecha no puede ser anterior a ${fechaMinima.toLocaleDateString()}`,
     };
   }
 
-  if (maxDate && date > maxDate) {
+  // Usar fecha máxima por defecto (hoy + 1 año) si no se especifica
+  const fechaMaxima = maxDate ?? getFechaMaxima();
+  if (date > fechaMaxima) {
     return {
       isValid: false,
-      error: `La fecha no puede ser posterior a ${maxDate.toLocaleDateString()}`,
+      error: `La fecha no puede ser posterior a ${fechaMaxima.toLocaleDateString()}`,
     };
   }
 
@@ -307,9 +335,13 @@ export const VALIDATION_RULES = {
   porcentaje: { min: 0, max: 100 },
   existencia: { min: 0, max: 1000000 },
 
-  // Fechas
-  fechaMinima: new Date('1900-01-01'),
-  fechaMaxima: new Date('2100-12-31'),
+  // Fechas (se calculan dinámicamente)
+  get fechaMinima() {
+    return getFechaMinima();
+  },
+  get fechaMaxima() {
+    return getFechaMaxima();
+  },
 } as const;
 
 /**

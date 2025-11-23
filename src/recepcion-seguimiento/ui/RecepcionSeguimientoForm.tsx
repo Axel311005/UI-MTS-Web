@@ -12,6 +12,7 @@ import {
 } from '@/shared/components/ui/select';
 import { useRecepcion } from '@/recepcion/hook/useRecepcion';
 import { RecepcionSeguimientoEstado } from '@/shared/types/status';
+import { sanitizeText, validateText, validateFecha, getFechaMinima, getFechaMaxima, VALIDATION_RULES } from '@/shared/utils/validation';
 
 export type RecepcionSeguimientoFormValues = {
   idRecepcion: number;
@@ -53,10 +54,28 @@ export function RecepcionSeguimientoForm({
     const e: Record<string, string> = {};
     if (!values.idRecepcion || values.idRecepcion <= 0)
       e.idRecepcion = 'Seleccione una recepción';
-    if (!values.fecha) e.fecha = 'La fecha es requerida';
+    if (!values.fecha) {
+      e.fecha = 'La fecha es requerida';
+    } else {
+      const fechaValidation = validateFecha(values.fecha);
+      if (!fechaValidation.isValid) {
+        e.fecha = fechaValidation.error || 'Fecha inválida';
+      }
+    }
     if (!values.estado) e.estado = 'El estado es requerido';
-    if (!values.descripcion?.trim())
+    if (!values.descripcion?.trim()) {
       e.descripcion = 'La descripción es requerida';
+    } else {
+      const descripcionValidation = validateText(
+        values.descripcion.trim(),
+        VALIDATION_RULES.observaciones.min,
+        VALIDATION_RULES.observaciones.max,
+        false
+      );
+      if (!descripcionValidation.isValid) {
+        e.descripcion = descripcionValidation.error || 'Descripción inválida';
+      }
+    }
 
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -69,7 +88,12 @@ export function RecepcionSeguimientoForm({
       idRecepcion: Number(values.idRecepcion),
       fecha: values.fecha,
       estado: values.estado,
-      descripcion: values.descripcion.trim(),
+      descripcion: sanitizeText(
+        values.descripcion.trim(),
+        VALIDATION_RULES.observaciones.min,
+        VALIDATION_RULES.observaciones.max,
+        false
+      ),
     });
   };
 
@@ -105,6 +129,8 @@ export function RecepcionSeguimientoForm({
             type="date"
             value={values.fecha}
             onChange={(e) => update({ fecha: e.target.value })}
+            min={getFechaMinima().toISOString().split('T')[0]}
+            max={getFechaMaxima().toISOString().split('T')[0]}
           />
           {errors.fecha && (
             <p className="text-sm text-destructive">{errors.fecha}</p>
@@ -163,8 +189,17 @@ export function RecepcionSeguimientoForm({
         <Textarea
           placeholder="Se inició el diagnóstico del vehículo..."
           value={values.descripcion}
-          onChange={(e) => update({ descripcion: e.target.value })}
+          onChange={(e) => {
+            const sanitized = sanitizeText(
+              e.target.value,
+              VALIDATION_RULES.observaciones.min,
+              VALIDATION_RULES.observaciones.max,
+              false
+            );
+            update({ descripcion: sanitized });
+          }}
           rows={4}
+          maxLength={VALIDATION_RULES.observaciones.max}
         />
         {errors.descripcion && (
           <p className="text-sm text-destructive">{errors.descripcion}</p>

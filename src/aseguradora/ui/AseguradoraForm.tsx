@@ -165,6 +165,7 @@ export function AseguradoraForm({
         <Label htmlFor="telefono">Teléfono</Label>
         <Input
           id="telefono"
+          type="tel"
           value={values.telefono}
           onChange={(event) => handleChange('telefono', event.target.value)}
           placeholder="+595 21 123 456"
