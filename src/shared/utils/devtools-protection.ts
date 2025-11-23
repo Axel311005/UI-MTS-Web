@@ -387,6 +387,10 @@ function protectAgainstMaliciousCode(): void {
     };
 
     // Proteger innerHTML y outerHTML contra XSS - BLOQUEAR código malicioso
+    // IMPORTANTE: DESHABILITADO porque interfiere con React
+    // React necesita manipular el DOM libremente y ya tiene protecciones contra XSS
+    // Si necesitas protección adicional, usa DOMPurify en componentes específicos
+    /*
     const protectHTML = (target: any, prop: string): void => {
       const originalDescriptor = Object.getOwnPropertyDescriptor(
         Object.getPrototypeOf(target),
@@ -395,18 +399,37 @@ function protectAgainstMaliciousCode(): void {
       if (originalDescriptor) {
         Object.defineProperty(target, prop, {
           set: function (value: string) {
-            // Detectar y BLOQUEAR intentos de inyección de scripts
+            // PERMITIR operaciones en elementos controlados por React
+            // React usa innerHTML internamente y necesita funcionar normalmente
+            const isReactElement = 
+              this.id === 'root' ||
+              this.classList?.contains('react-root') ||
+              this.getAttribute?.('data-reactroot') !== null ||
+              (this.parentElement && this.parentElement.id === 'root');
+            
+            // Si es un elemento de React, permitir sin restricciones
+            if (isReactElement) {
+              if (originalDescriptor.set) {
+                originalDescriptor.set.call(this, value);
+              }
+              return;
+            }
+            
+            // Detectar y BLOQUEAR intentos de inyección de scripts SOLO en otros elementos
             if (typeof value === 'string') {
+              // Patrones más específicos - NO bloquear onclick= que React usa legítimamente
               const maliciousPatterns = [
-                /<script[\s>]/i,
-                /javascript:/i,
-                /on\w+\s*=/i, // onclick=, onerror=, etc.
-                /eval\s*\(/i,
-                /Function\s*\(/i,
-                /<iframe/i,
-                /<embed/i,
-                /<object/i,
+                /<script[\s>]/i, // Bloquear etiquetas <script>
+                /javascript:\s*void/i, // Bloquear javascript: void
+                /eval\s*\(/i, // Bloquear eval(
+                /Function\s*\(/i, // Bloquear Function(
+                /<iframe[^>]*src/i, // Bloquear iframes con src
+                /<embed[^>]*src/i, // Bloquear embeds con src
+                /<object[^>]*data/i, // Bloquear objects con data
               ];
+              
+              // NO bloquear onclick=, onerror=, etc. porque React los usa legítimamente
+              // Solo bloquear si hay un <script> real o javascript: malicioso
               
               const isMalicious = maliciousPatterns.some(pattern => pattern.test(value));
               
@@ -427,16 +450,23 @@ function protectAgainstMaliciousCode(): void {
       }
     };
 
-    // Aplicar protección a elementos comunes
-    const elements = [HTMLElement.prototype, Element.prototype];
-    elements.forEach((proto) => {
-      try {
-        protectHTML(proto, 'innerHTML');
-        protectHTML(proto, 'outerHTML');
-      } catch (e) {
-        // Si falla, continuar
-      }
-    });
+    // DESHABILITAR protección de innerHTML/outerHTML porque interfiere con React
+    // React ya tiene sus propias protecciones contra XSS y necesita manipular el DOM libremente
+    // Esta protección estaba causando errores de "removeChild" y bloqueando operaciones legítimas
+    // 
+    // Si necesitas protección adicional contra XSS, usa DOMPurify en el backend
+    // o en componentes específicos que rendericen HTML dinámico (como SafeHTML)
+    //
+    // const elements = [HTMLElement.prototype, Element.prototype];
+    // elements.forEach((proto) => {
+    //   try {
+    //     protectHTML(proto, 'innerHTML');
+    //     protectHTML(proto, 'outerHTML');
+    //   } catch (e) {
+    //     // Si falla, continuar
+    //   }
+    // });
+    */
 
     // Bloquear WebAssembly malicioso
     if (typeof WebAssembly !== 'undefined') {
@@ -770,39 +800,7 @@ export function initDevToolsProtection(): void {
   }
 
   // No deshabilitar clic derecho para mejor UX
-
-  // Deshabilitar atajos de teclado comunes para DevTools
-  document.addEventListener('keydown', (e) => {
-    // F12
-    if (e.key === 'F12') {
-      e.preventDefault();
-      return false;
-    }
-
-    // Ctrl+Shift+I (DevTools)
-    if (e.ctrlKey && e.shiftKey && e.key === 'I') {
-      e.preventDefault();
-      return false;
-    }
-
-    // Ctrl+Shift+J (Console)
-    if (e.ctrlKey && e.shiftKey && e.key === 'J') {
-      e.preventDefault();
-      return false;
-    }
-
-    // Ctrl+U (View Source)
-    if (e.ctrlKey && e.key === 'u') {
-      e.preventDefault();
-      return false;
-    }
-
-    // Ctrl+S (Save Page)
-    if (e.ctrlKey && e.key === 's') {
-      e.preventDefault();
-      return false;
-    }
-  });
+  // No bloquear atajos de teclado - permitir que los usuarios usen DevTools normalmente
 
   // No bloquear DevTools completamente, solo deshabilitar console
   // Esto permite debugging si es necesario pero sin exponer información
