@@ -15,7 +15,8 @@ export default defineConfig({
     }),
   ],
   esbuild: {
-    drop: ['console', 'debugger'],
+    // NO eliminar console en producción - necesitamos console.error para debuggear
+    // drop: ['console', 'debugger'], // ← COMENTADO temporalmente para debuggear pantalla en blanco
     legalComments: 'none', // Eliminar comentarios legales
     minifyIdentifiers: true, // Minificar identificadores
     minifySyntax: true, // Minificar sintaxis

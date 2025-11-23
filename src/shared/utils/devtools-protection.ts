@@ -53,8 +53,8 @@ export function disableConsoleInProduction(): void {
     return; // No hacer nada en desarrollo
   }
 
-  // Sobrescribir TODOS los console methods con funciones vacías
-  // Esto incluye error y warn para evitar que se muestren errores en producción
+  // Sobrescribir console methods con funciones vacías
+  // IMPORTANTE: NO bloqueamos 'error' para poder ver errores críticos en producción
   const noop = (): void => {};
   const methods: ConsoleMethodNames[] = [
     // 'log' se maneja por separado en initDevToolsProtection para mostrar el mensaje primero
@@ -64,8 +64,8 @@ export function disableConsoleInProduction(): void {
     'table',
     'group',
     'groupEnd',
-    'error', // Bloquear también errores
-    'warn', // Bloquear también advertencias
+    // 'error' - NO bloqueamos para poder ver errores críticos
+    'warn', // Bloquear advertencias
     'assert',
     'clear',
     'count',
@@ -100,17 +100,37 @@ export function disableConsoleInProduction(): void {
     }
   });
 
-  // Interceptar errores globales para evitar que se muestren en consola
-  window.onerror = function () {
-    // No hacer nada, solo prevenir que se muestre en consola
-    return true; // Prevenir el comportamiento por defecto
+  // Interceptar errores globales pero PERMITIR que se muestren en consola
+  // Esto es crítico para poder debuggear problemas en producción
+  window.onerror = function (message, source, lineno, colno, error) {
+    // Mostrar el error en consola usando el console original si está disponible
+    if (originalConsole?.error) {
+      originalConsole.error('Error:', message, 'en', source, 'línea', lineno, 'columna', colno);
+      if (error) {
+        originalConsole.error('Stack:', error.stack);
+      }
+    } else if (typeof console !== 'undefined' && console.error) {
+      // Fallback: usar console.error directamente
+      console.error('Error:', message, 'en', source, 'línea', lineno);
+    }
+    // NO prevenir el comportamiento por defecto - permitir que se muestre
+    return false; // false = permitir que el error se muestre normalmente
   };
 
-  // Interceptar promesas rechazadas no manejadas
+  // Interceptar promesas rechazadas no manejadas pero PERMITIR que se muestren
   window.onunhandledrejection = function (event) {
-    // Prevenir que se muestre en consola
-    event.preventDefault();
-    return true;
+    // Mostrar el error en consola
+    if (originalConsole?.error) {
+      originalConsole.error('Unhandled Promise Rejection:', event.reason);
+      if (event.reason && event.reason.stack) {
+        originalConsole.error('Stack:', event.reason.stack);
+      }
+    } else if (typeof console !== 'undefined' && console.error) {
+      console.error('Unhandled Promise Rejection:', event.reason);
+    }
+    // NO prevenir completamente - permitir que se muestre
+    // event.preventDefault(); // Comentado para permitir que se muestre
+    return false;
   };
 
   // Interceptar errores de addEventListener para evitar que se muestren
@@ -679,8 +699,10 @@ export function initDevToolsProtection(): void {
     };
 
     // Interceptar todos los métodos principales de console
+    // IMPORTANTE: NO interceptar console.error para poder ver errores críticos
     consoleObj.log = consoleWrapper();
-    if (originalConsole?.error) consoleObj.error = consoleWrapper();
+    // NO interceptar console.error - necesitamos ver errores en producción
+    // if (originalConsole?.error) consoleObj.error = consoleWrapper(); // ← COMENTADO - Permitir errores
     if (originalConsole?.warn) consoleObj.warn = consoleWrapper();
     if (originalConsole?.info) consoleObj.info = consoleWrapper();
     if (originalConsole?.debug) consoleObj.debug = consoleWrapper();
@@ -717,21 +739,23 @@ export function initDevToolsProtection(): void {
     // Ignorar si falla
   }
 
-  // Asegurar que console.error y console.warn estén bloqueados
+  // Asegurar que console.warn esté bloqueado (pero NO console.error para poder debuggear)
   // Esto es redundante pero asegura que estén bloqueados incluso si algo los restaura
   try {
     const consoleObj = window.console as Console;
     if (consoleObj) {
       const noop = (): void => {};
-      consoleObj.error = noop;
+      // NO bloquear console.error - necesitamos ver errores críticos
+      // consoleObj.error = noop; // ← COMENTADO - Permitir errores
       consoleObj.warn = noop;
       // Intentar hacerlos no configurables
       try {
-        Object.defineProperty(window.console, 'error', {
-          value: noop,
-          writable: false,
-          configurable: false,
-        });
+        // NO bloquear error
+        // Object.defineProperty(window.console, 'error', {
+        //   value: noop,
+        //   writable: false,
+        //   configurable: false,
+        // });
         Object.defineProperty(window.console, 'warn', {
           value: noop,
           writable: false,
