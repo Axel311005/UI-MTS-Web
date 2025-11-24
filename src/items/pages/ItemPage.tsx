@@ -71,7 +71,7 @@ export const ItemPage = () => {
     setPage(1); // Resetear a primera página al limpiar filtros
   };
 
-  const totalPages = Math.ceil(totalItems / pageSize);
+  const totalPages = Math.max(1, totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1);
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);

@@ -512,7 +512,13 @@ export function CotizacionForm() {
         </CardHeader>
         <CardContent className="p-4 sm:p-6 md:p-8 lg:p-10">
           <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
-            {lineas.length > 0 && (
+            {lineas.length === 0 ? (
+              <div className="text-center py-8 bg-gradient-to-br from-orange-50/30 to-white rounded-xl border-2 border-orange-500/20">
+                <p className="text-black/70 font-montserrat text-sm sm:text-base">
+                  No hay items agregados. Agrega items para generar una cotización.
+                </p>
+              </div>
+            ) : (
               <div className="space-y-4">
                 {lineas.map((linea, index) => {
                   const totalLineaValue = Number.isFinite(linea.totalLinea)

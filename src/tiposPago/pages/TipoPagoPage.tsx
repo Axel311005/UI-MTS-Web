@@ -1,14 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router";
-import { Eye, Edit, Trash2, CreditCard } from "@/shared/icons";
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router';
+import { Eye, Edit, Trash2, CreditCard } from '@/shared/icons';
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/shared/components/ui/card";
-import { Button } from "@/shared/components/ui/button";
-import { Badge } from "@/shared/components/ui/badge";
+} from '@/shared/components/ui/card';
+import { Button } from '@/shared/components/ui/button';
+import { Badge } from '@/shared/components/ui/badge';
 import {
   Table,
   TableBody,
@@ -16,23 +16,23 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/shared/components/ui/table";
+} from '@/shared/components/ui/table';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/shared/components/ui/dropdown-menu";
-import { Pagination } from "@/shared/components/ui/pagination";
-import { TipoPagoHeader } from "../ui/TipoPagoHeader";
-import { TipoPagoSearchBar } from "../ui/TipoPagoSearchBar";
-import { useTipoPago } from "../hook/useTipoPago";
-import { patchTipoPago } from "../actions/patch-tipo-pago";
-import { EstadoActivo } from "@/shared/types/status";
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { formatDate } from "@/shared/utils/formatters";
-import type { TipoPago } from "../types/tipoPago.interface";
+} from '@/shared/components/ui/dropdown-menu';
+import { Pagination } from '@/shared/components/ui/pagination';
+import { TipoPagoHeader } from '../ui/TipoPagoHeader';
+import { TipoPagoSearchBar } from '../ui/TipoPagoSearchBar';
+import { useTipoPago } from '../hook/useTipoPago';
+import { patchTipoPago } from '../actions/patch-tipo-pago';
+import { EstadoActivo } from '@/shared/types/status';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { formatDate } from '@/shared/utils/formatters';
+import type { TipoPago } from '../types/tipoPago.interface';
 
 export function TiposPagoPage() {
   const navigate = useNavigate();
@@ -41,7 +41,7 @@ export function TiposPagoPage() {
   const [pageSize, setPageSize] = useState(10);
   const limit = pageSize;
   const offset = (page - 1) * pageSize;
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const { tipoPagos, totalItems = 0 } = useTipoPago({
     usePagination: true,
@@ -55,7 +55,7 @@ export function TiposPagoPage() {
     if (!term) return items;
 
     return items.filter((tipo) => {
-      const descripcion = tipo.descripcion?.toLowerCase() ?? "";
+      const descripcion = tipo.descripcion?.toLowerCase() ?? '';
       return descripcion.includes(term);
     });
   }, [tipoPagos, searchTerm]);
@@ -74,17 +74,17 @@ export function TiposPagoPage() {
   const handleDelete = async (id: number) => {
     try {
       await patchTipoPago(id, { activo: EstadoActivo.INACTIVO });
-      toast.success("Tipo de pago eliminado");
-      await queryClient.invalidateQueries({ queryKey: ["tipoPagos"] });
+      toast.success('Tipo de pago eliminado');
+      await queryClient.invalidateQueries({ queryKey: ['tipoPagos'] });
     } catch (error: any) {
-      toast.error("No se pudo eliminar el tipo de pago");
+      toast.error('No se pudo eliminar el tipo de pago');
     }
   };
 
   return (
     <div className="space-y-6">
       <TipoPagoHeader
-        onNewTipoPago={() => navigate("/admin/tipos-pago/nuevo")}
+        onNewTipoPago={() => navigate('/admin/tipos-pago/nuevo')}
       />
 
       <TipoPagoSearchBar
@@ -118,59 +118,70 @@ export function TiposPagoPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredTiposPago.map((tipo) => (
-                <TableRow key={tipo.idTipoPago} className="table-row-hover">
-                  <TableCell className="font-medium">
-                    <div className="flex items-center space-x-2">
-                      <CreditCard className="h-4 w-4 text-muted-foreground" />
-                      <span>{tipo.descripcion}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        tipo.activo === EstadoActivo.ACTIVO
-                          ? "default"
-                          : "secondary"
-                      }
-                    >
-                      {tipo.activo === EstadoActivo.ACTIVO
-                        ? "Activo"
-                        : "Inactivo"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{formatDate(tipo.fechaCreacion)}</TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">Abrir menú</span>
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() =>
-                            navigate(
-                              `/admin/tipos-pago/${tipo.idTipoPago}/editar`
-                            )
-                          }
-                        >
-                          <Edit className="mr-2 h-4 w-4" />
-                          Editar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="text-destructive"
-                          onClick={() => handleDelete(tipo.idTipoPago)}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Eliminar
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+              {filteredTiposPago.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={4}
+                    className="h-24 text-center text-sm text-muted-foreground"
+                  >
+                    No hay tipos de pago registrados
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filteredTiposPago.map((tipo) => (
+                  <TableRow key={tipo.idTipoPago} className="table-row-hover">
+                    <TableCell className="font-medium">
+                      <div className="flex items-center space-x-2">
+                        <CreditCard className="h-4 w-4 text-muted-foreground" />
+                        <span>{tipo.descripcion}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          tipo.activo === EstadoActivo.ACTIVO
+                            ? 'default'
+                            : 'secondary'
+                        }
+                      >
+                        {tipo.activo === EstadoActivo.ACTIVO
+                          ? 'Activo'
+                          : 'Inactivo'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{formatDate(tipo.fechaCreacion)}</TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Abrir menú</span>
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() =>
+                              navigate(
+                                `/admin/tipos-pago/${tipo.idTipoPago}/editar`
+                              )
+                            }
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-destructive"
+                            onClick={() => handleDelete(tipo.idTipoPago)}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Eliminar
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>
@@ -182,7 +193,7 @@ export function TiposPagoPage() {
             totalItems={totalItems}
             onPageChange={(newPage) => {
               setPage(newPage);
-              window.scrollTo({ top: 0, behavior: "smooth" });
+              window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
             onPageSizeChange={(newSize) => {
               setPageSize(newSize);

@@ -141,13 +141,13 @@ export const FacturasPage = () => {
     ]
   );
 
-  const { facturas, totalItems: totalFacturas = 0 } = useFactura({
+  const { facturas, totalItems: totalFacturas = 0, isLoading: isLoadingFacturas } = useFactura({
     usePagination: !hasAnyFilter,
     limit,
     offset,
   });
 
-  const { data: facturasFiltradasResponse } = useQuery<
+  const { data: facturasFiltradasResponse, isLoading: isLoadingFiltradas } = useQuery<
     PaginatedResponse<Factura>
   >({
     queryKey: [
@@ -224,8 +224,9 @@ export const FacturasPage = () => {
     return data;
   }, [hasAnyFilter, facturasFiltradas, facturas]);
 
+  const isLoading = hasAnyFilter ? isLoadingFiltradas : isLoadingFacturas;
   const totalRows = hasAnyFilter ? totalFiltradas : totalFacturas;
-  const totalPages = totalRows > 0 ? Math.ceil(totalRows / pageSize) : 1;
+  const totalPages = Math.max(1, totalRows > 0 ? Math.ceil(totalRows / pageSize) : 1);
 
   // Sincronizar página con URL cuando cambian los datos
   useEffect(() => {
@@ -322,85 +323,107 @@ export const FacturasPage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {rows.map((factura) => {
-                  const estadoNorm = normalizeEstado(factura.estado);
-                  return (
-                    <TableRow
-                      key={factura.id_factura}
-                      className="table-row-hover"
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={10}
+                      className="h-24 text-center text-sm"
                     >
-                      <TableCell className="font-medium">
-                        {factura.codigoFactura}
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">
-                            {factura.cliente
-                              ? getClienteNombre(factura.cliente)
-                              : "—"}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {factura.cliente?.ruc}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>{formatDate(factura.fecha)}</TableCell>
-                      <TableCell data-mobile-hidden>
-                        {factura.bodega?.descripcion ?? "—"}
-                      </TableCell>
-                      <TableCell data-mobile-hidden>
-                        {factura.moneda?.descripcion ?? "—"}
-                      </TableCell>
-                      <TableCell className="font-semibold" data-mobile-keep>
-                        {formatMoney(factura.total, factura.moneda?.descripcion)}
-                      </TableCell>
-                      <TableCell data-mobile-keep>
-                        <Badge variant={getEstadoBadgeVariant(estadoNorm)}>
-                          {estadoNorm}
-                        </Badge>
-                      </TableCell>
-                      <TableCell data-mobile-hidden>
-                        {factura.tipoPago?.descripcion ?? "—"}
-                      </TableCell>
-                      <TableCell data-mobile-hidden>
-                        {factura.proforma ? (
-                          <Badge
-                            variant="secondary"
-                            className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                          >
-                            Desde Proforma
-                          </Badge>
-                        ) : factura.recepcion || (factura as any)?.recepcionId ? (
-                          <Badge
-                            variant="secondary"
-                            className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                          >
-                            Desde Recepción
-                          </Badge>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">
-                            Directa
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell
-                        className="text-right"
-                        data-mobile-keep
-                        data-mobile-actions
+                      Cargando facturas...
+                    </TableCell>
+                  </TableRow>
+                ) : rows.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={10}
+                      className="h-24 text-center text-sm text-muted-foreground"
+                    >
+                      {hasAnyFilter
+                        ? 'No se encontraron facturas con los filtros aplicados'
+                        : 'No hay facturas registradas'}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  rows.map((factura) => {
+                    const estadoNorm = normalizeEstado(factura.estado);
+                    return (
+                      <TableRow
+                        key={factura.id_factura}
+                        className="table-row-hover"
                       >
-                        <Suspense
-                          fallback={
-                            <div className="text-xs text-muted-foreground">
-                              …
+                        <TableCell className="font-medium">
+                          {factura.codigoFactura}
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">
+                              {factura.cliente
+                                ? getClienteNombre(factura.cliente)
+                                : "—"}
                             </div>
-                          }
+                            <div className="text-xs text-muted-foreground">
+                              {factura.cliente?.ruc}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>{formatDate(factura.fecha)}</TableCell>
+                        <TableCell data-mobile-hidden>
+                          {factura.bodega?.descripcion ?? "—"}
+                        </TableCell>
+                        <TableCell data-mobile-hidden>
+                          {factura.moneda?.descripcion ?? "—"}
+                        </TableCell>
+                        <TableCell className="font-semibold" data-mobile-keep>
+                          {formatMoney(factura.total, factura.moneda?.descripcion)}
+                        </TableCell>
+                        <TableCell data-mobile-keep>
+                          <Badge variant={getEstadoBadgeVariant(estadoNorm)}>
+                            {estadoNorm}
+                          </Badge>
+                        </TableCell>
+                        <TableCell data-mobile-hidden>
+                          {factura.tipoPago?.descripcion ?? "—"}
+                        </TableCell>
+                        <TableCell data-mobile-hidden>
+                          {factura.proforma ? (
+                            <Badge
+                              variant="secondary"
+                              className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                            >
+                              Desde Proforma
+                            </Badge>
+                          ) : factura.recepcion || (factura as any)?.recepcionId ? (
+                            <Badge
+                              variant="secondary"
+                              className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                            >
+                              Desde Recepción
+                            </Badge>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">
+                              Directa
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell
+                          className="text-right"
+                          data-mobile-keep
+                          data-mobile-actions
                         >
-                          <FacturaRowActions factura={factura} />
-                        </Suspense>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                          <Suspense
+                            fallback={
+                              <div className="text-xs text-muted-foreground">
+                                …
+                              </div>
+                            }
+                          >
+                            <FacturaRowActions factura={factura} />
+                          </Suspense>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
               </TableBody>
             </Table>
             </div>

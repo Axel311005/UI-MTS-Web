@@ -114,7 +114,7 @@ export default function RecepcionesPage() {
     }
   }, [isLoading, page, pageSize, searchParams, setSearchParams, totalFiltered]);
 
-  const totalPages = totalFiltered ? Math.ceil(totalFiltered / pageSize) : 1;
+  const totalPages = Math.max(1, totalFiltered > 0 ? Math.ceil(totalFiltered / pageSize) : 1);
   const showEmpty = !isLoading && totalFiltered === 0;
 
   return (

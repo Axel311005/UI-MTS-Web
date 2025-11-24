@@ -5,6 +5,7 @@ import {
   sanitizeText,
   VALIDATION_RULES,
 } from '@/shared/utils/validation';
+import { validateNoRandomString } from '@/shared/utils/no-random-string';
 import { useNavigate } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Save } from 'lucide-react';
@@ -37,6 +38,7 @@ export default function NuevoItemPage() {
     if (!formValues.codigoItem.trim()) {
       newErrors.codigoItem = 'El código es requerido';
     } else {
+      // Validación básica de texto
       const codigoValidation = validateText(
         formValues.codigoItem.trim(),
         VALIDATION_RULES.codigo.min,
@@ -45,6 +47,12 @@ export default function NuevoItemPage() {
       );
       if (!codigoValidation.isValid) {
         newErrors.codigoItem = codigoValidation.error || 'Código inválido';
+      } else {
+        // Validación adicional: no permitir cadenas aleatorias
+        const noRandomValidation = validateNoRandomString(formValues.codigoItem.trim());
+        if (!noRandomValidation.isValid) {
+          newErrors.codigoItem = noRandomValidation.error || 'El código parece ser una cadena aleatoria sin sentido';
+        }
       }
     }
     

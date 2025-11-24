@@ -122,7 +122,17 @@ export function UnidadesMedidaPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredUnidades.map((unidad) => (
+              {filteredUnidades.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={4}
+                    className="h-24 text-center text-sm text-muted-foreground"
+                  >
+                    No hay unidades de medida registradas
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredUnidades.map((unidad) => (
                 <TableRow
                   key={unidad.idUnidadMedida}
                   className="table-row-hover"
@@ -175,9 +185,10 @@ export function UnidadesMedidaPage() {
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>

@@ -54,92 +54,95 @@ export function ItemTable({ items }: ItemTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {activos.map((item) => {
-              const clasificacion = item.clasificacion?.descripcion ?? "—";
-              const precioCordobaValue = Number.parseFloat(
-                item.precioBaseLocal ?? "0"
-              );
-              const precioCordoba = Number.isFinite(precioCordobaValue)
-                ? precioCordobaValue
-                : 0;
-              const precioDolarValue = Number.parseFloat(
-                item.precioBaseDolar ?? "0"
-              );
-              const precioDolar = Number.isFinite(precioDolarValue)
-                ? precioDolarValue
-                : 0;
-              const estado = item.estado || item.activo;
-              const stockDisponible = Array.isArray(item.existencias)
-                ? item.existencias.reduce((total, existencia) => {
-                    const cantidad = Number.parseFloat(
-                      existencia.cantDisponible ?? "0"
-                    );
-                    return Number.isFinite(cantidad) ? total + cantidad : total;
-                  }, 0)
-                : 0;
-
-              return (
-                <TableRow key={item.idItem} className="table-row-hover">
-                  <TableCell className="font-mono text-sm">
-                    {item.codigoItem}
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {item.descripcion}
-                  </TableCell>
-                  <TableCell data-mobile-hidden>
-                    <Badge
-                      variant={
-                        item.tipo === "PRODUCTO" ? "default" : "secondary"
-                      }
-                    >
-                      {item.tipo === "PRODUCTO" ? "Producto" : "Servicio"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell data-mobile-hidden>
-                    <Badge variant="outline">{clasificacion}</Badge>
-                  </TableCell>
-                  <TableCell className="text-right font-mono" data-mobile-keep>
-                    {precioCordoba.toLocaleString("es-NI", {
-                      style: "currency",
-                      currency: "NIO",
-                      minimumFractionDigits: 2,
-                    })}
-                  </TableCell>
-                  <TableCell className="text-right font-mono" data-mobile-hidden>
-                    {precioDolar.toLocaleString("en-US", {
-                      style: "currency",
-                      currency: "USD",
-                      minimumFractionDigits: 2,
-                    })}
-                  </TableCell>
-                  <TableCell className="text-right font-mono" data-mobile-keep>
-                    {stockDisponible.toLocaleString("es-PE", {
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 2,
-                    })}
-                  </TableCell>
-                  <TableCell data-mobile-keep>
-                    <Badge
-                      variant={estado === "ACTIVO" ? "default" : "secondary"}
-                    >
-                      {estado === "ACTIVO" ? "Activo" : "Inactivo"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell data-mobile-keep data-mobile-actions>
-                    <ItemRowActions item={item} />
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-            {items.length === 0 && (
+            {activos.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={9}
                   className="h-24 text-center text-sm text-muted-foreground"
                 >
-                  No se encontraron productos.
+                  {items.length === 0
+                    ? 'No hay productos registrados'
+                    : 'No se encontraron productos activos'}
                 </TableCell>
               </TableRow>
+            ) : (
+              activos.map((item) => {
+                const clasificacion = item.clasificacion?.descripcion ?? "—";
+                const precioCordobaValue = Number.parseFloat(
+                  item.precioBaseLocal ?? "0"
+                );
+                const precioCordoba = Number.isFinite(precioCordobaValue)
+                  ? precioCordobaValue
+                  : 0;
+                const precioDolarValue = Number.parseFloat(
+                  item.precioBaseDolar ?? "0"
+                );
+                const precioDolar = Number.isFinite(precioDolarValue)
+                  ? precioDolarValue
+                  : 0;
+                const estado = item.estado || item.activo;
+                const stockDisponible = Array.isArray(item.existencias)
+                  ? item.existencias.reduce((total, existencia) => {
+                      const cantidad = Number.parseFloat(
+                        existencia.cantDisponible ?? "0"
+                      );
+                      return Number.isFinite(cantidad) ? total + cantidad : total;
+                    }, 0)
+                  : 0;
+
+                return (
+                  <TableRow key={item.idItem} className="table-row-hover">
+                    <TableCell className="font-mono text-sm">
+                      {item.codigoItem}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {item.descripcion}
+                    </TableCell>
+                    <TableCell data-mobile-hidden>
+                      <Badge
+                        variant={
+                          item.tipo === "PRODUCTO" ? "default" : "secondary"
+                        }
+                      >
+                        {item.tipo === "PRODUCTO" ? "Producto" : "Servicio"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell data-mobile-hidden>
+                      <Badge variant="outline">{clasificacion}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right font-mono" data-mobile-keep>
+                      {precioCordoba.toLocaleString("es-NI", {
+                        style: "currency",
+                        currency: "NIO",
+                        minimumFractionDigits: 2,
+                      })}
+                    </TableCell>
+                    <TableCell className="text-right font-mono" data-mobile-hidden>
+                      {precioDolar.toLocaleString("en-US", {
+                        style: "currency",
+                        currency: "USD",
+                        minimumFractionDigits: 2,
+                      })}
+                    </TableCell>
+                    <TableCell className="text-right font-mono" data-mobile-keep>
+                      {stockDisponible.toLocaleString("es-PE", {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 2,
+                      })}
+                    </TableCell>
+                    <TableCell data-mobile-keep>
+                      <Badge
+                        variant={estado === "ACTIVO" ? "default" : "secondary"}
+                      >
+                        {estado === "ACTIVO" ? "Activo" : "Inactivo"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell data-mobile-keep data-mobile-actions>
+                      <ItemRowActions item={item} />
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>

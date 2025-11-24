@@ -128,13 +128,13 @@ export function ComprasPage() {
     ]
   );
 
-  const { compras, totalItems: totalCompras = 0 } = useCompra({
+  const { compras, totalItems: totalCompras = 0, isLoading: isLoadingCompras } = useCompra({
     usePagination: !hasAnyFilter,
     limit: !hasAnyFilter ? limit : undefined,
     offset: !hasAnyFilter ? offset : undefined,
   });
 
-  const { data: comprasFiltradasResponse } = useQuery<PaginatedResponse<any>>({
+  const { data: comprasFiltradasResponse, isLoading: isLoadingFiltradas } = useQuery<PaginatedResponse<any>>({
     queryKey: [
       "compras.search",
       codigoLike,
@@ -201,7 +201,8 @@ export function ComprasPage() {
 
   const rows = hasAnyFilter ? comprasFiltradas : compras;
   const totalRows = hasAnyFilter ? totalFiltradas : totalCompras;
-  const totalPages = Math.ceil(totalRows / pageSize);
+  const totalPages = Math.max(1, totalRows > 0 ? Math.ceil(totalRows / pageSize) : 1);
+  const isLoading = hasAnyFilter ? isLoadingFiltradas : isLoadingCompras;
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -267,44 +268,66 @@ export function ComprasPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {rows.map((compra) => (
-                  <TableRow key={compra.idCompra} className="table-row-hover">
-                    <TableCell className="font-medium">
-                      {compra.codigoCompra}
-                    </TableCell>
-                    <TableCell>{formatDate(compra.fecha)}</TableCell>
-                    <TableCell data-mobile-hidden>{compra.bodega?.descripcion ?? "—"}</TableCell>
-                    <TableCell data-mobile-hidden>{compra.moneda?.descripcion ?? "—"}</TableCell>
-                    <TableCell className="font-semibold" data-mobile-keep>
-                      {formatMoney(compra.total, compra.moneda?.descripcion)}
-                    </TableCell>
-                    <TableCell data-mobile-keep>
-                      <Badge
-                        variant={
-                          (compra.estado ?? "").toString().toUpperCase() ===
-                          "COMPLETADA"
-                            ? "default"
-                            : (compra.estado ?? "").toString().toUpperCase() ===
-                              "ANULADA"
-                            ? "destructive"
-                            : "secondary"
-                        }
-                      >
-                        {compra.estado}
-                      </Badge>
-                    </TableCell>
-                    <TableCell data-mobile-hidden>{compra.tipoPago?.descripcion ?? "—"}</TableCell>
-                    <TableCell className="text-right" data-mobile-keep data-mobile-actions>
-                      <Suspense
-                        fallback={
-                          <div className="text-xs text-muted-foreground">…</div>
-                        }
-                      >
-                        <CompraRowActions compra={compra} />
-                      </Suspense>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={8}
+                      className="h-24 text-center text-sm"
+                    >
+                      Cargando compras...
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : rows.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={8}
+                      className="h-24 text-center text-sm text-muted-foreground"
+                    >
+                      {hasAnyFilter
+                        ? 'No se encontraron compras con los filtros aplicados'
+                        : 'No hay compras registradas'}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  rows.map((compra) => (
+                    <TableRow key={compra.idCompra} className="table-row-hover">
+                      <TableCell className="font-medium">
+                        {compra.codigoCompra}
+                      </TableCell>
+                      <TableCell>{formatDate(compra.fecha)}</TableCell>
+                      <TableCell data-mobile-hidden>{compra.bodega?.descripcion ?? "—"}</TableCell>
+                      <TableCell data-mobile-hidden>{compra.moneda?.descripcion ?? "—"}</TableCell>
+                      <TableCell className="font-semibold" data-mobile-keep>
+                        {formatMoney(compra.total, compra.moneda?.descripcion)}
+                      </TableCell>
+                      <TableCell data-mobile-keep>
+                        <Badge
+                          variant={
+                            (compra.estado ?? "").toString().toUpperCase() ===
+                            "COMPLETADA"
+                              ? "default"
+                              : (compra.estado ?? "").toString().toUpperCase() ===
+                                "ANULADA"
+                              ? "destructive"
+                              : "secondary"
+                          }
+                        >
+                          {compra.estado}
+                        </Badge>
+                      </TableCell>
+                      <TableCell data-mobile-hidden>{compra.tipoPago?.descripcion ?? "—"}</TableCell>
+                      <TableCell className="text-right" data-mobile-keep data-mobile-actions>
+                        <Suspense
+                          fallback={
+                            <div className="text-xs text-muted-foreground">…</div>
+                          }
+                        >
+                          <CompraRowActions compra={compra} />
+                        </Suspense>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
             </div>

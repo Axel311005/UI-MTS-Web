@@ -439,52 +439,60 @@ export function SeguimientoForm() {
                     <div className="absolute left-6 top-0 bottom-0 w-1.5 bg-gradient-to-b from-orange-500 via-orange-400 to-orange-500 rounded-full"></div>
 
                     <div className="space-y-6">
-                      {seguimiento.seguimientos.map((seg, index) => {
-                        const config =
-                          estadoConfig[seg.estado] || estadoConfig.PENDIENTE;
-                        const Icon = config.icon;
-                        const isLast =
-                          index === seguimiento.seguimientos.length - 1;
+                      {seguimiento.seguimientos.length === 0 ? (
+                        <div className="text-center py-8">
+                          <p className="text-black/70 font-montserrat text-sm sm:text-base">
+                            No hay seguimientos registrados para esta recepción.
+                          </p>
+                        </div>
+                      ) : (
+                        seguimiento.seguimientos.map((seg, index) => {
+                          const config =
+                            estadoConfig[seg.estado] || estadoConfig.PENDIENTE;
+                          const Icon = config.icon;
+                          const isLast =
+                            index === seguimiento.seguimientos.length - 1;
 
-                        return (
-                          <div
-                            key={seg.id}
-                            className="flex gap-4 md:gap-6 relative"
-                          >
-                            <div className="flex flex-col items-center relative z-10">
-                              <div
-                                className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-lg border-4 border-white ${config.bg}`}
-                              >
-                                <Icon
-                                  className={`h-6 w-6 md:h-7 md:w-7 ${config.color}`}
-                                />
-                              </div>
-                              {!isLast && (
-                                <div className="w-1.5 h-full bg-gradient-to-b from-orange-500/40 via-orange-400/30 to-orange-500/20 my-2 rounded-full"></div>
-                              )}
-                            </div>
-                            <div className="flex-1 pb-4 sm:pb-6 bg-gradient-to-br from-white to-orange-50/20 p-4 sm:p-5 md:p-6 rounded-xl border-2 border-orange-500/20 shadow-sm hover:shadow-md hover:border-orange-500/40 transition-all duration-300">
-                              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                                <span
-                                  className={`font-bold text-sm sm:text-base md:text-lg ${config.color} break-words`}
+                          return (
+                            <div
+                              key={seg.id}
+                              className="flex gap-4 md:gap-6 relative"
+                            >
+                              <div className="flex flex-col items-center relative z-10">
+                                <div
+                                  className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-lg border-4 border-white ${config.bg}`}
                                 >
-                                  {seg.estado}
-                                </span>
-                                <span className="text-xs sm:text-sm md:text-base text-black/70 bg-orange-500/10 px-2 sm:px-3 py-1 rounded-full font-montserrat w-fit">
-                                  {format(
-                                    new Date(seg.fecha),
-                                    "d MMM yyyy 'a las' HH:mm",
-                                    { locale: es }
-                                  )}
-                                </span>
+                                  <Icon
+                                    className={`h-6 w-6 md:h-7 md:w-7 ${config.color}`}
+                                  />
+                                </div>
+                                {!isLast && (
+                                  <div className="w-1.5 h-full bg-gradient-to-b from-orange-500/40 via-orange-400/30 to-orange-500/20 my-2 rounded-full"></div>
+                                )}
                               </div>
-                              <p className="text-black/80 leading-relaxed font-montserrat text-xs sm:text-sm md:text-base break-words">
-                                {seg.descripcion}
-                              </p>
+                              <div className="flex-1 pb-4 sm:pb-6 bg-gradient-to-br from-white to-orange-50/20 p-4 sm:p-5 md:p-6 rounded-xl border-2 border-orange-500/20 shadow-sm hover:shadow-md hover:border-orange-500/40 transition-all duration-300">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                                  <span
+                                    className={`font-bold text-sm sm:text-base md:text-lg ${config.color} break-words`}
+                                  >
+                                    {seg.estado}
+                                  </span>
+                                  <span className="text-xs sm:text-sm md:text-base text-black/70 bg-orange-500/10 px-2 sm:px-3 py-1 rounded-full font-montserrat w-fit">
+                                    {format(
+                                      new Date(seg.fecha),
+                                      "d MMM yyyy 'a las' HH:mm",
+                                      { locale: es }
+                                    )}
+                                  </span>
+                                </div>
+                                <p className="text-black/80 leading-relaxed font-montserrat text-xs sm:text-sm md:text-base break-words">
+                                  {seg.descripcion}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })
+                      )}
                     </div>
                   </div>
                 </CardContent>

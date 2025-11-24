@@ -107,7 +107,7 @@ export function Pagination({
         <div className="flex items-center gap-1 px-2 sm:px-3">
           <p className="text-xs sm:text-sm font-medium whitespace-nowrap">
             <span className="sm:hidden">{currentPage}</span>
-            <span className="hidden sm:inline">Página {currentPage} de {totalPages || 1}</span>
+            <span className="hidden sm:inline">Página {currentPage} de {Math.max(1, totalPages)}</span>
           </p>
         </div>
 

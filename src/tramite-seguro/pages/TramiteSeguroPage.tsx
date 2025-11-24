@@ -147,7 +147,7 @@ export default function TramitesSegurosPage() {
     }
   }, [isLoading, page, pageSize, searchParams, setSearchParams, totalFiltered]);
 
-  const totalPages = totalFiltered ? Math.ceil(totalFiltered / pageSize) : 1;
+  const totalPages = Math.max(1, totalFiltered > 0 ? Math.ceil(totalFiltered / pageSize) : 1);
   const showEmptyState = !isLoading && totalFiltered === 0;
 
   const handleSearchChange = (value: string) => {
