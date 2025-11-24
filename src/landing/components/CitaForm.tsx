@@ -182,7 +182,7 @@ export function CitaForm() {
           maxRepetitions: 3,
           maxConsonantsInRow: 4,
           maxRepetitivePercentage: 50,
-          maxSymbolPercentage: 10,
+          maxSymbolPercentage: 25, // Aumentado de 10 a 25 para permitir códigos y números
         });
       default:
         return { isValid: true };

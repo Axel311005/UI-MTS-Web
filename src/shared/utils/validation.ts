@@ -90,7 +90,7 @@ export function validateText(
     allowNumbers: true,
     allowSpecialChars: true,
     maxRepetitions: allowRepeats ? 10 : 3,
-    maxConsonantsInRow: 5,
+    maxConsonantsInRow: 6, // Aumentado de 5 a 6 para permitir textos técnicos
     maxRepetitivePercentage: 50,
     maxSymbolPercentage: 20,
   });

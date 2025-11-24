@@ -320,8 +320,8 @@ export function validateDescription(description: string): SmartValidationResult 
     allowNumbers: true,
     allowSpecialChars: true,
     maxRepetitions: 3,
-    maxConsonantsInRow: 5,
-    maxRepetitivePercentage: 35,
+    maxConsonantsInRow: 6, // Aumentado de 5 a 6 para permitir términos técnicos
+    maxRepetitivePercentage: 55, // Aumentado de 35 a 55 para permitir descripciones reales
     maxSymbolPercentage: 25,
   });
 }
