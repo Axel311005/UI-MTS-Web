@@ -97,14 +97,15 @@ export function validateNotTooRepetitive(
     return true; // Textos muy cortos no se validan
   }
 
-  const counts: Record<string, number> = {};
-  const cleanText = text.replace(/\s/g, ''); // Ignorar espacios
+  // Ignorar espacios y caracteres comunes de direcciones (comas, puntos, guiones, #)
+  const cleanText = text.replace(/\s/g, '').replace(/[.,#-]/g, '');
 
   if (cleanText.length === 0) {
     return true;
   }
 
   // Contar ocurrencias de cada carácter
+  const counts: Record<string, number> = {};
   for (const char of cleanText.toLowerCase()) {
     counts[char] = (counts[char] || 0) + 1;
   }
@@ -113,7 +114,25 @@ export function validateNotTooRepetitive(
   const maxCount = Math.max(...Object.values(counts));
   const percentage = (maxCount / cleanText.length) * 100;
 
-  return percentage <= maxPercentage;
+  // Si el porcentaje es menor al máximo, está bien
+  if (percentage <= maxPercentage) {
+    return true;
+  }
+
+  // Si supera el máximo, verificar si es texto real o basura
+  // Texto real tiene vocales distribuidas, basura no (como "asdkjaskdjasd")
+  const vowels = /[aeiouáéíóúAEIOUÁÉÍÓÚ]/;
+  const vowelCount = (cleanText.match(vowels) || []).length;
+  const vowelPercentage = (vowelCount / cleanText.length) * 100;
+
+  // Si tiene al menos 20% de vocales, probablemente es texto real (permitir)
+  // Si tiene menos del 20% de vocales Y es muy repetitivo, es basura (bloquear)
+  if (vowelPercentage >= 20) {
+    return true; // Texto real con vocales, permitir aunque sea un poco repetitivo
+  }
+
+  // Si no tiene suficientes vocales Y es muy repetitivo, es basura
+  return false;
 }
 
 /**
@@ -256,12 +275,22 @@ export function smartValidate(
   }
 
   // 6. Validar que no sea demasiado repetitivo
+  // Para direcciones y campos permisivos, ser más inteligente: solo bloquear basura obvia
   if (!validateNotTooRepetitive(trimmed, maxRepetitivePercentage)) {
-    return {
-      isValid: false,
-      error: 'El texto es demasiado repetitivo',
-      reason: 'repetitive',
-    };
+    // Verificar si es texto real (tiene vocales distribuidas) o basura
+    const vowels = /[aeiouáéíóúAEIOUÁÉÍÓÚ]/;
+    const vowelCount = (trimmed.match(vowels) || []).length;
+    const vowelPercentage = (vowelCount / trimmed.length) * 100;
+    
+    // Si tiene al menos 15% de vocales, probablemente es texto real (permitir)
+    if (vowelPercentage < 15) {
+      return {
+        isValid: false,
+        error: 'El texto es demasiado repetitivo',
+        reason: 'repetitive',
+      };
+    }
+    // Si tiene vocales, es texto real aunque sea un poco repetitivo, permitir
   }
 
   // 7. Validar que no sea demasiado "ruidoso" (muchos símbolos)

@@ -85,7 +85,7 @@ export function AseguradoraForm({
         values.descripcion.trim(),
         VALIDATION_RULES.descripcion.min,
         VALIDATION_RULES.descripcion.max,
-        false
+        true // allowRepeats: true para ser más permisivo con descripciones
       );
       if (!descValidation.isValid) {
         nextErrors.descripcion = descValidation.error || 'Descripción inválida';
@@ -103,7 +103,7 @@ export function AseguradoraForm({
         values.direccion.trim(),
         VALIDATION_RULES.direccion.min,
         VALIDATION_RULES.direccion.max,
-        false
+        true // allowRepeats: true para ser más permisivo con direcciones
       );
       if (!dirValidation.isValid) {
         nextErrors.direccion = dirValidation.error || 'Dirección inválida';
@@ -116,7 +116,7 @@ export function AseguradoraForm({
         values.contacto.trim(),
         VALIDATION_RULES.contacto.min,
         VALIDATION_RULES.contacto.max,
-        false
+        true // allowRepeats: true para permitir nombres con espacios y apellidos
       );
       if (!contactoValidation.isValid) {
         nextErrors.contacto = contactoValidation.error || 'Contacto inválido';
@@ -136,7 +136,7 @@ export function AseguradoraForm({
         value,
         VALIDATION_RULES.descripcion.min,
         VALIDATION_RULES.descripcion.max,
-        false, // No permitir 3 caracteres repetidos
+        true, // allowRepeats: true para ser más permisivo con descripciones
         true // Preservar espacios (permitir espacios en descripción)
       );
     } else if (field === 'direccion') {
@@ -144,7 +144,7 @@ export function AseguradoraForm({
         value,
         VALIDATION_RULES.direccion.min,
         VALIDATION_RULES.direccion.max,
-        false, // No permitir 3 caracteres repetidos
+        true, // allowRepeats: true para ser más permisivo con direcciones
         true // Preservar espacios (permitir espacios en dirección)
       );
     } else if (field === 'contacto') {
@@ -152,7 +152,7 @@ export function AseguradoraForm({
         value,
         2,
         100,
-        false, // No permitir 3 caracteres repetidos
+        true, // allowRepeats: true para permitir nombres con espacios y apellidos
         true // Preservar espacios (permitir espacios en contacto)
       );
     }
@@ -188,31 +188,34 @@ export function AseguradoraForm({
     ev.preventDefault();
     if (!validate()) return;
 
-    // Convertir teléfono de formato frontend (87781633) a backend (50587781633)
-    // Solo números, todo pegado, con código de país 505 (sin el signo +)
-    const telefonoLimpio = values.telefono.replace(/\D/g, ''); // Solo números
+    // Convertir teléfono a formato backend: SIEMPRE 505 + 8 dígitos (sin espacios, sin +)
+    const telefonoLimpio = values.telefono.replace(/\D/g, ''); // Solo números, sin espacios ni +
 
-    // Siempre agregar 505 si tiene 8 dígitos
+    // Garantizar formato: 505 + 8 dígitos
     let telefonoBackend: string;
     if (telefonoLimpio.length === 8) {
+      // Si tiene exactamente 8 dígitos, agregar 505 al inicio
       telefonoBackend = `505${telefonoLimpio}`;
-    } else if (telefonoLimpio.length > 0) {
-      // Si tiene dígitos pero no son 8, verificar si ya tiene 505
-      if (values.telefono.startsWith('505')) {
-        telefonoBackend = values.telefono.replace(/\D/g, ''); // Solo números
-      } else if (values.telefono.startsWith('+505')) {
-        // Si viene con +505, quitar el + y dejar solo 505
-        telefonoBackend = values.telefono.replace('+', '').replace(/\D/g, '');
-      } else if (values.telefono.startsWith('+')) {
-        // Si tiene + pero no 505, quitar el + y agregar 505
-        const numeros = values.telefono.replace(/\D/g, '');
-        telefonoBackend = `505${numeros}`;
+    } else if (telefonoLimpio.length > 8) {
+      // Si tiene más de 8 dígitos, verificar si empieza con 505
+      if (telefonoLimpio.startsWith('505')) {
+        // Si ya tiene 505, tomar solo los primeros 11 dígitos (505 + 8)
+        telefonoBackend = telefonoLimpio.substring(0, 11);
       } else {
-        telefonoBackend = `505${telefonoLimpio}`;
+        // Si no tiene 505, tomar los últimos 8 dígitos y agregar 505
+        const ultimos8 = telefonoLimpio.slice(-8);
+        telefonoBackend = `505${ultimos8}`;
       }
+    } else if (telefonoLimpio.length > 0 && telefonoLimpio.length < 8) {
+      // Si tiene menos de 8 dígitos, rellenar con ceros a la izquierda
+      const relleno = telefonoLimpio.padStart(8, '0');
+      telefonoBackend = `505${relleno}`;
     } else {
       telefonoBackend = '';
     }
+
+    // Garantía final: remover cualquier + o espacio que pueda haber quedado
+    telefonoBackend = telefonoBackend.replace(/[+\s]/g, '');
 
     const payload = {
       descripcion: values.descripcion.trim(),
@@ -248,7 +251,7 @@ export function AseguradoraForm({
         <Label htmlFor="telefono">Teléfono</Label>
         <div className="relative">
           <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium pointer-events-none">
-            +505
+            505
           </div>
           <Input
             id="telefono"
@@ -299,7 +302,7 @@ export function AseguradoraForm({
                 trimmed,
                 VALIDATION_RULES.direccion.min,
                 VALIDATION_RULES.direccion.max,
-                false
+                true // allowRepeats: true para ser más permisivo con direcciones
               );
               if (!validation.isValid) {
                 setErrors((prev) => ({

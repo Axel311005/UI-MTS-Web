@@ -80,12 +80,33 @@ export function validateText(
     return lengthValidation;
   }
 
-  // Validar SQL Injection
-  if (detectSQLInjection(text)) {
-    return {
-      isValid: false,
-      error: 'El texto contiene patrones no permitidos (SQL Injection)',
-    };
+  // Validar SQL Injection (pero ser más permisivo para direcciones cuando allowRepeats es true)
+  // Las direcciones pueden contener comas, puntos, números, etc. que no son SQL injection
+  if (allowRepeats) {
+    // Para direcciones, solo detectar patrones SQL muy obvios
+    const strictSQLPatterns = [
+      /\bUNION\s+SELECT\b/gi,
+      /\bDROP\s+(TABLE|DATABASE)\b/gi,
+      /\bDELETE\s+FROM\b/gi,
+      /;\s*(DROP|DELETE|UPDATE|INSERT)/gi,
+    ];
+    const hasStrictSQL = strictSQLPatterns.some((pattern) =>
+      pattern.test(text)
+    );
+    if (hasStrictSQL) {
+      return {
+        isValid: false,
+        error: 'El texto contiene patrones no permitidos (SQL Injection)',
+      };
+    }
+  } else {
+    // Para otros campos, usar detección completa de SQL injection
+    if (detectSQLInjection(text)) {
+      return {
+        isValid: false,
+        error: 'El texto contiene patrones no permitidos (SQL Injection)',
+      };
+    }
   }
 
   // Validar caracteres repetidos si no se permite
@@ -99,7 +120,9 @@ export function validateText(
   // Aplicar validaciones inteligentes adicionales
   // PERO hacer más permisivo para campos de texto libre (comentarios, observaciones, notas, direcciones)
   // Estos campos tienen min: 0, así que los identificamos así
+  // También ser más permisivo cuando allowRepeats es true (para direcciones)
   const isFreeTextField = min === 0;
+  const isPermissiveField = isFreeTextField || allowRepeats; // Direcciones también son permisivas
 
   const smartResult = smartValidate(text.trim(), {
     minLength: min,
@@ -107,9 +130,9 @@ export function validateText(
     allowNumbers: true,
     allowSpecialChars: true,
     maxRepetitions: allowRepeats ? 10 : 3,
-    maxConsonantsInRow: isFreeTextField ? 10 : 6, // Más permisivo para texto libre (permite hasta 10 consonantes seguidas)
-    maxRepetitivePercentage: isFreeTextField ? 70 : 50, // Más permisivo para texto libre
-    maxSymbolPercentage: isFreeTextField ? 40 : 20, // Más permisivo para texto libre (permite más símbolos)
+    maxConsonantsInRow: isPermissiveField ? 10 : 6, // Más permisivo para texto libre y direcciones (permite hasta 10 consonantes seguidas)
+    maxRepetitivePercentage: isPermissiveField ? 70 : 50, // Más permisivo para texto libre y direcciones
+    maxSymbolPercentage: isPermissiveField ? 50 : 20, // Más permisivo para texto libre y direcciones (permite más símbolos como comas, puntos, etc.)
   });
 
   if (!smartResult.isValid) {

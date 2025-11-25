@@ -16,7 +16,7 @@ export const postAseguradoraAction = async (
   // Limpiar campos opcionales: si están vacíos, enviar undefined en lugar de string vacío
   const body = {
     descripcion: payload.descripcion.trim(),
-    telefono: payload.telefono?.trim() || undefined,
+    telefono: payload.telefono?.replace(/[+\s]/g, '').trim() || undefined, // Remover + y espacios por seguridad
     direccion: payload.direccion?.trim() || undefined,
     contacto: payload.contacto?.trim() || undefined,
     activo: EstadoActivo.ACTIVO,
