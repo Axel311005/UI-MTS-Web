@@ -17,8 +17,7 @@ export default function NuevoVehiculoPage() {
 
   const handleSubmit = async (data: any) => {
     try {
-      // Los datos ya vienen sanitizados del VehiculoForm
-      // pero aplicamos una capa adicional de seguridad aquí
+      // VehiculoForm ya sanitiza con sanitizeString antes de enviar
       await postVehiculoAction({
         idCliente: Number(data.idCliente),
         placa: data.placa,

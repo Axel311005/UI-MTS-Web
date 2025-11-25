@@ -18,6 +18,7 @@ import { CompraParametros } from '../ui/CompraParametros';
 import { CompraLineaTabla } from '../ui/CompraLineaTabla';
 import { CompraTotalCard } from '../ui/CompraTotalCard';
 import { useQueryClient } from '@tanstack/react-query';
+import { sanitizeString } from '@/shared/utils/security';
 
 export default function NuevaCompraPage() {
   const navigate = useNavigate();
@@ -197,8 +198,11 @@ export default function NuevaCompraPage() {
           ? Number(formValues.descuentoPct)
           : 0,
         tipoCambioUsado: getTipoCambioUsado(),
-        comentario: formValues.comentario ?? '',
+        comentario: formValues.comentario
+          ? sanitizeString(formValues.comentario.trim(), 500)
+          : '',
       };
+      
       const { compraId: newCompraId } = await postCompra(payload);
       setCompraId(newCompraId);
       toast.success('Compra guardada. Ahora puedes guardar las líneas.');
@@ -234,6 +238,8 @@ export default function NuevaCompraPage() {
         toast.warning('No hay líneas válidas para guardar');
         return;
       }
+      
+      // Las líneas solo tienen números (itemId, cantidad, precioUnitario, totalLinea) - no necesitan sanitización
       await Promise.all(linesPayload.map((p) => postCompraLinea(p)));
       toast.success('Líneas de compra guardadas correctamente');
 

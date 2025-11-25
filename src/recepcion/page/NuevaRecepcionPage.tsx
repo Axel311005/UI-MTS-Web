@@ -26,6 +26,7 @@ export default function NuevaRecepcionPage() {
 
   const handleSubmit = async (data: RecepcionFormValues) => {
     try {
+      // RecepcionForm ya sanitiza observaciones en tiempo real
       await postRecepcionAction({
         idVehiculo: data.idVehiculo,
         idEmpleado: empleadoId,

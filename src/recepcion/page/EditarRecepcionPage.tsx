@@ -41,6 +41,7 @@ export default function EditarRecepcionPage() {
 
   const handleSubmit = async (data: RecepcionFormValues) => {
     try {
+      // RecepcionForm ya sanitiza observaciones en tiempo real
       await patchRecepcionAction(idRecepcion, {
         idVehiculo: data.idVehiculo,
         fechaRecepcion: data.fechaRecepcion,

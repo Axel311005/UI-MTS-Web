@@ -258,38 +258,24 @@ export function validateTelefono(
  * @param ruc - RUC a validar
  * @returns true si es válido
  */
+/**
+ * Valida el formato del RUC: J seguido de 13 dígitos
+ * Ejemplo válido: J1234567890123
+ * No valida dígito verificador, solo el formato
+ */
 export function validateRUC(ruc: string): boolean {
   if (!ruc || typeof ruc !== 'string') {
     return false;
   }
 
-  // Limpiar espacios y guiones
-  const cleaned = ruc.trim().replace(/[-\s]/g, '');
+  // Limpiar y convertir a mayúsculas
+  const cleaned = ruc.trim().toUpperCase();
 
-  // Debe ser solo números y tener entre 10 y 14 dígitos
-  if (!/^\d{10,14}$/.test(cleaned)) {
-    return false;
-  }
+  // Debe ser J seguido de exactamente 13 dígitos
+  // Formato: J1234567890123
+  const rucPattern = /^J\d{13}$/;
 
-  // Algoritmo de validación de dígito verificador (algoritmo común para RUC)
-  // Este es un algoritmo simplificado, puede necesitar ajustes según el país
-  const digits = cleaned.split('').map(Number);
-  const base = digits.slice(0, -1); // Todos excepto el último
-  const checkDigit = digits[digits.length - 1]; // Último dígito
-
-  // Pesos para el cálculo (varían según el país, aquí usamos un algoritmo común)
-  const weights = [3, 2, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1, 1];
-  const weightsForLength = weights.slice(-base.length).reverse();
-
-  let sum = 0;
-  for (let i = 0; i < base.length; i++) {
-    sum += base[i] * weightsForLength[i];
-  }
-
-  const remainder = sum % 11;
-  const calculatedCheckDigit = remainder < 2 ? remainder : 11 - remainder;
-
-  return calculatedCheckDigit === checkDigit;
+  return rucPattern.test(cleaned);
 }
 
 /**

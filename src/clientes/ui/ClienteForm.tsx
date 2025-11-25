@@ -13,7 +13,6 @@ import type {
   ClienteFormValues,
 } from './cliente-form.types';
 import {
-  sanitizeStringNoRepeats,
   sanitizeString,
   sanitizeName,
 } from '@/shared/utils/security';
@@ -33,17 +32,22 @@ interface ClienteFormProps {
 
 // Formatear RUC automáticamente (J + 13 números)
 const formatRUC = (value: string) => {
-  // Si empieza con J, mantenerla, si no agregarla
-  let cleaned = value.toUpperCase().replace(/[^J0-9]/g, '');
-
-  // Si no empieza con J, agregarla
-  if (!cleaned.startsWith('J')) {
+  // Convertir a mayúsculas
+  let cleaned = value.toUpperCase();
+  
+  // Si ya tiene una J al inicio, solo permitir números después (no más Js ni letras)
+  if (cleaned.startsWith('J')) {
+    // Remover todas las letras (incluyendo Js adicionales) y solo dejar números después de la primera J
+    const afterJ = cleaned.slice(1).replace(/[^0-9]/g, '');
+    cleaned = `J${afterJ}`;
+  } else {
+    // Si no empieza con J, remover todas las letras y solo dejar números
+    const numbers = cleaned.replace(/[^0-9]/g, '');
     // Si hay números, agregar J al inicio
-    const numbers = cleaned.replace(/J/g, '');
-    cleaned = numbers ? `J${numbers}` : 'J';
+    cleaned = numbers ? `J${numbers}` : '';
   }
 
-  // Limitar a J + 13 números máximo
+  // Limitar a J + 13 números máximo (total 14 caracteres)
   if (cleaned.length > 14) {
     cleaned = cleaned.slice(0, 14);
   }
@@ -95,10 +99,20 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
   };
 
   const handleRUCChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let formatted = formatRUC(e.target.value);
-    // Aplicar sanitización de caracteres repetidos al RUC
-    formatted = sanitizeStringNoRepeats(formatted, 14);
-    handleChange('ruc', formatted);
+    const value = e.target.value;
+    // Si el campo está vacío, establecer null
+    if (!value || value.trim() === '') {
+      handleChange('ruc', null);
+      return;
+    }
+    
+    let formatted = formatRUC(value);
+    // Si después del formateo está vacío o solo tiene 'J' sin números, establecer null
+    if (!formatted || formatted === 'J') {
+      handleChange('ruc', null);
+    } else {
+      handleChange('ruc', formatted);
+    }
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -200,11 +214,11 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-1.5 sm:space-y-2">
               <Label htmlFor="ruc" className="text-sm">
-                RUC <span className="text-destructive">*</span>
+                RUC
               </Label>
               <Input
                 id="ruc"
-                value={values.ruc}
+                value={values.ruc || ''}
                 onChange={handleRUCChange}
                 placeholder="J9999999999999"
                 maxLength={14}

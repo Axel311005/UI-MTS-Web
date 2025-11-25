@@ -193,7 +193,7 @@ export const ClientesPage = () => {
                     <TableCell className="font-medium">
                       {getClienteNombre(cliente)}
                     </TableCell>
-                    <TableCell data-mobile-keep>{cliente.ruc || '—'}</TableCell>
+                    <TableCell data-mobile-keep>{cliente.ruc || 'SIN-RUC'}</TableCell>
                     <TableCell data-mobile-hidden>
                       <div className="flex items-center text-sm">
                         <Phone className="h-3 w-3 mr-1 text-muted-foreground" />

@@ -23,6 +23,7 @@ import {
   createCotizacion,
   createDetalleCotizacion,
 } from '../actions/cotizacion.actions';
+import { sanitizeString } from '@/shared/utils/security';
 import { landingCotizacionApi } from '../api/landing.api';
 import type { ItemCotizable } from '../types/cotizacion.types';
 import { useLandingAuthStore } from '../store/landing-auth.store';
@@ -416,15 +417,20 @@ export function CotizacionForm() {
 
     setSubmitting(true);
     try {
-      // Crear cotización
-      const cotizacion = await createCotizacion({
+      // ✅ PROTECCIÓN UNIVERSAL SQL/XSS para cotización
+      const cotizacionPayload = {
         idCliente: user.clienteId,
         idConsecutivo: consecutivoId,
         estado: 'GENERADA',
-        nombreCliente: user.nombre || 'Cliente',
-      });
+        nombreCliente: user.nombre
+          ? sanitizeString(user.nombre.trim(), 100)
+          : 'Cliente',
+      };
 
-      // Crear detalles - asegurar que todos los valores sean números válidos
+      // cotizacionPayload ya sanitiza nombreCliente con sanitizeString
+      const cotizacion = await createCotizacion(cotizacionPayload);
+
+      // Crear detalles - las líneas solo tienen números (idItem, cantidad, precioUnitario) - no necesitan sanitización
       for (const linea of lineas) {
         // Validar que tenga un item seleccionado (ya validado arriba, pero por seguridad)
         if (!linea.idItem || linea.idItem === null) {

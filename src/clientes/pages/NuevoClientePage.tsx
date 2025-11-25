@@ -12,7 +12,7 @@ import {
   toNumberOrZero,
 } from '../ui/cliente-form.types';
 import { EstadoActivo } from '@/shared/types/status';
-import { sanitizeStringNoRepeats, validateRUC } from '@/shared/utils/security';
+import { validateRUC, sanitizeName } from '@/shared/utils/security';
 import {
   validateText,
   sanitizeText,
@@ -42,23 +42,12 @@ export default function NuevoClientePage() {
       newErrors.primerNombre = 'Debe proporcionar al menos un nombre o RUC';
     }
 
-    if (!formValues.ruc.trim()) {
-      newErrors.ruc = 'El RUC es requerido';
-    } else {
-      // Validar formato y longitud básica
-      const rucValidation = validateText(
-        formValues.ruc.trim(),
-        VALIDATION_RULES.ruc.min,
-        VALIDATION_RULES.ruc.max,
-        false
-      );
-      if (!rucValidation.isValid) {
-        newErrors.ruc = rucValidation.error || 'RUC inválido';
-      } else {
-        // Validar dígito verificador usando algoritmo de RUC
-        if (!validateRUC(formValues.ruc.trim())) {
-          newErrors.ruc = 'El RUC no es válido (dígito verificador incorrecto)';
-        }
+    // RUC es opcional, pero si se ingresa debe tener el formato correcto
+    const rucTrimmed = formValues.ruc?.trim() || '';
+    if (rucTrimmed) {
+      // Validar formato: J seguido de 13 dígitos
+      if (!validateRUC(rucTrimmed)) {
+        newErrors.ruc = 'El RUC debe tener el formato J seguido de 13 dígitos. Ejemplo: J1234567890123';
       }
     }
 
@@ -110,9 +99,13 @@ export default function NuevoClientePage() {
       telefonoLimpio.length === 8 ? `505${telefonoLimpio}` : telefonoLimpio;
 
     return {
-      primerNombre: formValues.primerNombre.trim() || null,
-      primerApellido: formValues.primerApellido.trim() || null,
-      ruc: sanitizeStringNoRepeats(formValues.ruc.trim(), 14),
+      primerNombre: formValues.primerNombre.trim()
+        ? sanitizeName(formValues.primerNombre.trim(), 2, 30) || null
+        : null,
+      primerApellido: formValues.primerApellido.trim()
+        ? sanitizeName(formValues.primerApellido.trim(), 2, 30) || null
+        : null,
+      ruc: formValues.ruc && typeof formValues.ruc === 'string' ? formValues.ruc.trim() || null : null, // RUC opcional, enviar null si está vacío
       esExonerado: formValues.esExonerado,
       porcentajeExonerado: formValues.esExonerado
         ? toNumberOrZero(formValues.porcentajeExonerado)
@@ -151,11 +144,12 @@ export default function NuevoClientePage() {
     const dismiss = toast.loading('Creando cliente...');
     try {
       const payload = buildPayload();
+      // buildPayload ya sanitiza todos los campos con sanitizeName y sanitizeText
       const { clienteId } = await postCliente(payload);
       const nombreCompleto =
-        [payload.primerNombre, payload.primerApellido]
+        [validation.sanitizedPayload.primerNombre, validation.sanitizedPayload.primerApellido]
           .filter(Boolean)
-          .join(' ') || payload.ruc;
+          .join(' ') || validation.sanitizedPayload.ruc;
       toast.success(`Cliente ${nombreCompleto} creado (ID ${clienteId})`);
 
       await queryClient.invalidateQueries({

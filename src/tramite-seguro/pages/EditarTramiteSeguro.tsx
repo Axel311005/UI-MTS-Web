@@ -44,6 +44,7 @@ export default function EditarTramiteSeguroPage() {
     if (!isValidId || isSubmitting) return;
     try {
       setIsSubmitting(true);
+      // TramiteSeguroForm ya sanitiza en tiempo real (handleInputChange)
       await patchTramiteSeguroAction(tramiteId, {
         idVehiculo: values.idVehiculo,
         idCliente: values.idCliente,

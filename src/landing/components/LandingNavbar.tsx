@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router";
-import { motion } from "framer-motion";
-import { Button } from "@/shared/components/ui/button";
-import { Menu, X, LogOut, User } from "lucide-react";
-import { useLandingAuthStore } from "../store/landing-auth.store";
-import { useAuthStore } from "@/auth/store/auth.store";
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router';
+import { motion } from 'framer-motion';
+import { Button } from '@/shared/components/ui/button';
+import { Menu, X, LogOut, User } from 'lucide-react';
+import { useLandingAuthStore } from '../store/landing-auth.store';
+import { useAuthStore } from '@/auth/store/auth.store';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,34 +12,46 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/shared/components/ui/dropdown-menu";
+} from '@/shared/components/ui/dropdown-menu';
 
 export function LandingNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { isAuthenticated: landingIsAuthenticated, user: landingUser, logout } = useLandingAuthStore();
+  const {
+    isAuthenticated: landingIsAuthenticated,
+    user: landingUser,
+    logout,
+  } = useLandingAuthStore();
   const authUser = useAuthStore((s) => s.user);
   const logoutPanel = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
-  
+
   // Obtener usuario desde landingUser o desde authUser como fallback
-  const user = landingUser || (authUser?.cliente ? {
-    id: Number(authUser.id) || 0,
-    email: authUser.email || '',
-    clienteId: authUser.cliente.id || authUser.cliente.idCliente || 0,
-    nombre: authUser.cliente.nombreCompleto ||
-      (authUser.cliente.primerNombre 
-        ? `${authUser.cliente.primerNombre} ${authUser.cliente.primerApellido || ''}`.trim()
-        : null) ||
-      authUser.cliente.ruc || 'Cliente',
-  } : null);
-  
-  const isAuthenticated = landingIsAuthenticated || (!!authUser?.cliente);
+  const user =
+    landingUser ||
+    (authUser?.cliente
+      ? {
+          id: Number(authUser.id) || 0,
+          email: authUser.email || '',
+          clienteId: authUser.cliente.id || authUser.cliente.idCliente || 0,
+          nombre:
+            authUser.cliente.nombreCompleto ||
+            (authUser.cliente.primerNombre
+              ? `${authUser.cliente.primerNombre} ${
+                  authUser.cliente.primerApellido || ''
+                }`.trim()
+              : null) ||
+            authUser.cliente.ruc ||
+            'Cliente',
+        }
+      : null);
+
+  const isAuthenticated = landingIsAuthenticated || !!authUser?.cliente;
 
   const handleLogout = () => {
     logout();
     // También limpiar el auth store del panel si está activo
     logoutPanel();
-    navigate("/");
+    navigate('/');
     setMobileMenuOpen(false);
   };
 
@@ -59,8 +71,8 @@ export function LandingNavbar() {
             <motion.img
               src="/logo-mts-trans.png"
               alt="MTS - Taller de Motos - Logo"
-               className="w-auto"
-               style={{ height: "115px" }} // puedes ajustar el valor aquí
+              className="w-auto"
+              style={{ height: '115px' }} // puedes ajustar el valor aquí
               whileHover={{ scale: 1.05 }}
             />
           </Link>
@@ -119,7 +131,7 @@ export function LandingNavbar() {
                     <DropdownMenuLabel>
                       <div className="flex flex-col">
                         <span className="text-sm font-medium text-gray-200">
-                          {user?.nombre || "Cliente"}
+                          {user?.nombre || 'Cliente'}
                         </span>
                         {user?.email && (
                           /* 3. Cabecera: Texto de email cambiado de negro/60 a gris oscuro */
@@ -149,7 +161,7 @@ export function LandingNavbar() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => navigate("/login")}
+                  onClick={() => navigate('/login')}
                   className="border-2 border-white/60 text-white hover:bg-orange-500/20 hover:border-orange-500 hover:text-orange-400 bg-transparent font-semibold transition-all duration-300 shadow-lg hover:shadow-orange-500/30"
                 >
                   Iniciar Sesión
@@ -157,7 +169,7 @@ export function LandingNavbar() {
                 <Button
                   size="sm"
                   className="bg-orange-500 hover:bg-orange-600 text-white font-semibold shadow-lg hover:shadow-orange-500/50 transition-all duration-200"
-                  onClick={() => navigate("/register")}
+                  onClick={() => navigate('/register')}
                 >
                   Registrarse
                 </Button>
@@ -182,7 +194,7 @@ export function LandingNavbar() {
         {mobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
+            animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden py-4 space-y-4 border-t border-orange-500/20 bg-black"
           >
@@ -241,7 +253,7 @@ export function LandingNavbar() {
                   size="sm"
                   className="w-full border-2 border-white/70 text-white hover:bg-orange-500/20 hover:border-orange-500 hover:text-orange-400 bg-transparent font-semibold transition-all duration-300 shadow-lg hover:shadow-orange-500/30 min-h-[44px] touch-manipulation"
                   onClick={() => {
-                    navigate("/login");
+                    navigate('/login');
                     setMobileMenuOpen(false);
                   }}
                 >
@@ -251,7 +263,7 @@ export function LandingNavbar() {
                   size="sm"
                   className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold shadow-lg hover:shadow-orange-500/50 transition-all duration-200 min-h-[44px] touch-manipulation"
                   onClick={() => {
-                    navigate("/register");
+                    navigate('/register');
                     setMobileMenuOpen(false);
                   }}
                 >

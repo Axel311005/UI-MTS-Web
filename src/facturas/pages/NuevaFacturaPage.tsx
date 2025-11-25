@@ -17,6 +17,7 @@ import { postFactura } from '../actions/post-factura';
 import { postFacturaLinea } from '../actions/post-facturalinea';
 import { useMoneda } from '@/moneda/hook/useMoneda';
 import { useQueryClient } from '@tanstack/react-query';
+import { sanitizeString } from '@/shared/utils/security';
 
 interface InvoiceFormValues {
   consecutivoId: number | '';
@@ -135,7 +136,9 @@ export default function NuevaFacturaPage() {
       ? Number(formValues.descuentoPct)
       : 0,
     tipoCambioUsado: getTipoCambioUsado(),
-    comentario: formValues.comentario ?? '',
+    comentario: formValues.comentario
+      ? sanitizeString(formValues.comentario.trim(), 500)
+      : '',
     recepcionId:
       formValues.recepcionId !== '' ? Number(formValues.recepcionId) : null,
   });
@@ -192,6 +195,7 @@ export default function NuevaFacturaPage() {
     setIsSaving(true);
     try {
       const header = buildHeaderPayload();
+      // buildHeaderPayload ya sanitiza comentario con sanitizeString
       const resp = await postFactura(header);
       const newFacturaId = resp?.facturaId;
       setFacturaId(newFacturaId); // Set facturaId after invoice is created
@@ -227,6 +231,8 @@ export default function NuevaFacturaPage() {
         toast.warning('No hay líneas válidas para guardar');
         return;
       }
+      
+      // Las líneas solo tienen números (itemId, cantidad, precioUnitario, totalLinea) - no necesitan sanitización
       await Promise.all(linesPayload.map((p) => postFacturaLinea(p)));
       toast.success('Líneas de factura guardadas correctamente');
 

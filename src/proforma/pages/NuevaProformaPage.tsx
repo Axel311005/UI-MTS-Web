@@ -13,6 +13,7 @@ import { ProformaForm } from '../ui/ProformaForm';
 import { postProformaAction } from '../actions/post-proforma';
 import { postProformaLineaAction } from '../actions/post-proforma-linea';
 import type { ProformaLine } from '../ui/ProformaLineaTable';
+import { sanitizeString } from '@/shared/utils/security';
 
 export default function NuevaProformaPage() {
   const navigate = useNavigate();
@@ -33,14 +34,17 @@ export default function NuevaProformaPage() {
     setSavingHeader(true);
     const dismiss = toast.loading('Guardando proforma…');
     try {
-      const resp = await postProformaAction({
+      const payload = {
         idTramiteSeguro: data.idTramiteSeguro,
         idConsecutivo: data.idConsecutivo,
         idMoneda: data.idMoneda,
         idImpuesto: data.idImpuesto ?? undefined,
-        // No enviar fecha en POST, solo en PATCH
-        observaciones: data.observaciones,
-      });
+        observaciones: data.observaciones
+          ? sanitizeString(data.observaciones.trim(), 500)
+          : undefined,
+      };
+      // payload ya sanitiza observaciones con sanitizeString
+      const resp = await postProformaAction(payload);
       const newId =
         (resp?.idProforma as number) ??
         (resp?.proforma?.idProforma as number) ??
@@ -76,16 +80,17 @@ export default function NuevaProformaPage() {
     setSavingLines(true);
     const dismiss = toast.loading('Guardando líneas…');
     try {
+      // Las líneas solo tienen números (idProforma, idItem, cantidad, precioUnitario, totalLinea) - no necesitan sanitización
+      const linesPayload = validLines.map((l) => ({
+        idProforma: proformaId,
+        idItem: l.idItem,
+        cantidad: Number(l.cantidad),
+        precioUnitario: Number(l.precioUnitario),
+        totalLinea: Number(l.totalLinea || l.cantidad * l.precioUnitario),
+      }));
+      
       await Promise.all(
-        validLines.map((l) =>
-          postProformaLineaAction({
-            idProforma: proformaId,
-            idItem: l.idItem,
-            cantidad: Number(l.cantidad),
-            precioUnitario: Number(l.precioUnitario),
-            totalLinea: Number(l.totalLinea || l.cantidad * l.precioUnitario),
-          })
-        )
+        linesPayload.map((p) => postProformaLineaAction(p))
       );
       toast.success('Líneas guardadas correctamente');
       await queryClient.invalidateQueries({ queryKey: ['proformas'] });

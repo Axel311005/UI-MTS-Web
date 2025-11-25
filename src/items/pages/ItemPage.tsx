@@ -68,7 +68,7 @@ export const ItemPage = () => {
   const handleClearFilters = () => {
     setClasificacionFilter('all');
     setStatusFilter('ALL');
-    setPage(1); // Resetear a primera página al limpiar filtros
+    setPage(1); 
   };
 
   const totalPages = Math.max(1, totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1);

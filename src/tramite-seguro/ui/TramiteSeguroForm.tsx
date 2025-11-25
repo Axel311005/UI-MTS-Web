@@ -187,6 +187,7 @@ export function TramiteSeguroForm({
     if (isSubmitting) return;
     if (!validate()) return;
 
+    // Valores ya sanitizados en tiempo real (handleInputChange)
     await onSubmit({
       idVehiculo: Number(values.idVehiculo),
       idCliente: Number(values.idCliente),

@@ -26,6 +26,7 @@ export default function NuevaAseguradoraPage() {
     if (isSubmitting) return;
     try {
       setIsSubmitting(true);
+      // AseguradoraForm ya sanitiza en tiempo real con sanitizeText
       await postAseguradoraAction(data);
       await queryClient.invalidateQueries({ queryKey: ['aseguradoras'] });
       toast.success('Aseguradora creada');

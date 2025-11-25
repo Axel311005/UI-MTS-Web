@@ -4,7 +4,7 @@ import { EstadoActivo } from '@/shared/types/status';
 export interface CreateClientePayload {
   primerNombre: string | null;
   primerApellido: string | null;
-  ruc: string;
+  ruc: string | null;
   esExonerado: boolean;
   porcentajeExonerado: number;
   direccion: string;

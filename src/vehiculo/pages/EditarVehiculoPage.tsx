@@ -49,6 +49,7 @@ export default function EditarVehiculoPage() {
 
   const handleSubmit = async (data: any) => {
     try {
+      // VehiculoForm ya sanitiza con sanitizeString antes de enviar
       await patchVehiculoAction(Number(id), {
         placa: data.placa,
         motor: data.motor,

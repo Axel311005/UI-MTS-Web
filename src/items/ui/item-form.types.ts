@@ -6,6 +6,8 @@ export interface ItemFormValues {
   clasificacionId: number | '';
   unidadMedidaId: number | '';
   codigoItem: string;
+  codigoCategoria: string; // Código de categoría con guion (ej: "MTR-")
+  codigoConsecutivo: string; // Número consecutivo (ej: "1", "50")
   descripcion: string;
   tipo: ItemTipo;
   precioBaseLocal: string;
@@ -29,6 +31,8 @@ export const INITIAL_ITEM_FORM_VALUES: ItemFormValues = {
   clasificacionId: '',
   unidadMedidaId: '',
   codigoItem: '',
+  codigoCategoria: '',
+  codigoConsecutivo: '',
   descripcion: '',
   tipo: 'PRODUCTO',
   precioBaseLocal: '',

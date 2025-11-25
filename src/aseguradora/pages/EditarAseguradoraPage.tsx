@@ -39,6 +39,7 @@ export default function EditarAseguradoraPage() {
     if (!isValidId || isSubmitting) return;
     try {
       setIsSubmitting(true);
+      // AseguradoraForm ya sanitiza en tiempo real con sanitizeText
       await patchAseguradoraAction(aseguradoraId, values);
       await queryClient.invalidateQueries({ queryKey: ['aseguradoras'] });
       await queryClient.invalidateQueries({

@@ -17,6 +17,11 @@ import type {
 import { getClienteById } from '../actions/get-cliente-by-id';
 import { patchCliente } from '../actions/patch-cliente';
 import { EstadoActivo } from '@/shared/types/status';
+import { validateRUC, sanitizeName } from '@/shared/utils/security';
+import {
+  sanitizeText,
+  VALIDATION_RULES,
+} from '@/shared/utils/validation';
 
 export default function EditarClientePage() {
   const navigate = useNavigate();
@@ -75,7 +80,7 @@ export default function EditarClientePage() {
         setFormValues({
           primerNombre: cliente.primerNombre ?? '',
           primerApellido: cliente.primerApellido ?? '',
-          ruc: cliente.ruc ?? '',
+          ruc: cliente.ruc ?? null,
           direccion: cliente.direccion ?? '',
           telefono: telefonoFrontend,
           esExonerado: Boolean(cliente.esExonerado),
@@ -114,8 +119,13 @@ export default function EditarClientePage() {
       newErrors.primerNombre = 'Debe proporcionar al menos un nombre o RUC';
     }
 
-    if (!formValues.ruc.trim()) {
-      newErrors.ruc = 'El RUC es requerido';
+    // RUC es opcional, pero si se ingresa debe tener el formato correcto
+    const rucTrimmed = formValues.ruc?.trim() || '';
+    if (rucTrimmed) {
+      // Validar formato: J seguido de 13 dígitos
+      if (!validateRUC(rucTrimmed)) {
+        newErrors.ruc = 'El RUC debe tener el formato J seguido de 13 dígitos. Ejemplo: J1234567890123';
+      }
     }
 
     if (formValues.esExonerado) {
@@ -141,17 +151,35 @@ export default function EditarClientePage() {
       : telefonoLimpio;
 
     return {
-      primerNombre: formValues.primerNombre.trim() || null,
-      primerApellido: formValues.primerApellido.trim() || null,
-      ruc: formValues.ruc.trim(),
+      primerNombre: formValues.primerNombre.trim()
+        ? sanitizeName(formValues.primerNombre.trim(), 2, 30) || null
+        : null,
+      primerApellido: formValues.primerApellido.trim()
+        ? sanitizeName(formValues.primerApellido.trim(), 2, 30) || null
+        : null,
+      ruc: formValues.ruc && typeof formValues.ruc === 'string' ? formValues.ruc.trim() || null : null, // RUC opcional, enviar null si está vacío
       esExonerado: formValues.esExonerado,
       porcentajeExonerado: formValues.esExonerado
         ? toNumberOrZero(formValues.porcentajeExonerado)
         : 0,
-      direccion: formValues.direccion.trim(),
+      direccion: formValues.direccion.trim()
+        ? sanitizeText(
+            formValues.direccion.trim(),
+            VALIDATION_RULES.direccion.min,
+            VALIDATION_RULES.direccion.max,
+            false
+          )
+        : '',
       telefono: telefonoBackend,
       activo: formValues.activo,
-      notas: formValues.notas.trim(),
+      notas: formValues.notas.trim()
+        ? sanitizeText(
+            formValues.notas.trim(),
+            VALIDATION_RULES.notas.min,
+            VALIDATION_RULES.notas.max,
+            false
+          )
+        : '',
     };
   };
 
@@ -167,11 +195,12 @@ export default function EditarClientePage() {
     const dismiss = toast.loading('Actualizando cliente...');
     try {
       const payload = buildPayload();
+      // buildPayload ya sanitiza todos los campos con sanitizeName y sanitizeText
       await patchCliente(clienteId, payload);
       const nombreCompleto =
-        [payload.primerNombre, payload.primerApellido]
+        [validation.sanitizedPayload.primerNombre, validation.sanitizedPayload.primerApellido]
           .filter(Boolean)
-          .join(' ') || payload.ruc;
+          .join(' ') || validation.sanitizedPayload.ruc;
       toast.success(`Cliente ${nombreCompleto} actualizado`);
 
       await queryClient.invalidateQueries({

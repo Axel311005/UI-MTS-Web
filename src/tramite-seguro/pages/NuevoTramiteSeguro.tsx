@@ -31,6 +31,7 @@ export default function NuevoTramiteSeguroPage() {
     if (isSubmitting) return;
     try {
       setIsSubmitting(true);
+      // TramiteSeguroForm ya sanitiza en tiempo real (handleInputChange)
       await postTramiteSeguroAction({
         idVehiculo: values.idVehiculo,
         idCliente: values.idCliente,
