@@ -6,22 +6,22 @@ import {
   CheckCircle,
   XCircle,
   X,
-} from "lucide-react";
-import { Button } from "@/shared/components/ui/button";
-import { Badge } from "@/shared/components/ui/badge";
-import { ScrollArea } from "@/shared/components/ui/scroll-area";
+} from 'lucide-react';
+import { Button } from '@/shared/components/ui/button';
+import { Badge } from '@/shared/components/ui/badge';
+import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/shared/components/ui/popover";
-import { Separator } from "@/shared/components/ui/separator";
-import { cn } from "@/shared/lib/utils";
-import { formatDistanceToNow } from "date-fns";
-import { es } from "date-fns/locale/es";
-import { useNavigate } from "react-router";
+} from '@/shared/components/ui/popover';
+import { Separator } from '@/shared/components/ui/separator';
+import { cn } from '@/shared/lib/utils';
+import { formatDistanceToNow } from 'date-fns';
+import { es } from 'date-fns/locale/es';
+import { useNavigate } from 'react-router';
 
-export type NotificationType = "info" | "success" | "warning" | "error";
+export type NotificationType = 'info' | 'success' | 'warning' | 'error';
 
 export interface Notification {
   id: string;
@@ -49,10 +49,10 @@ const notificationIcons: Record<NotificationType, React.ReactNode> = {
 };
 
 const notificationColors: Record<NotificationType, string> = {
-  info: "bg-secondary/10 border-secondary/20",
-  success: "bg-primary/10 border-primary/20",
-  warning: "bg-accent/30 border-accent/40",
-  error: "bg-destructive/10 border-destructive/20",
+  info: 'bg-secondary/10 border-secondary/20',
+  success: 'bg-primary/10 border-primary/20',
+  warning: 'bg-accent/30 border-accent/40',
+  error: 'bg-destructive/10 border-destructive/20',
 };
 
 export const NotificationCenter: React.FC<NotificationCenterProps> = ({
@@ -86,7 +86,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
             <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-[10px] bg-destructive animate-pulse">
-              {unreadCount > 9 ? "9+" : unreadCount}
+              {unreadCount > 9 ? '9+' : unreadCount}
             </Badge>
           )}
         </Button>
@@ -134,15 +134,15 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                 <div
                   key={notification.id}
                   className={cn(
-                    "p-2 transition-colors hover:bg-accent/20 group relative sm:p-2.5",
-                    !notification.read && "bg-accent/10",
-                    notification.link && "hover:bg-accent/30"
+                    'p-2 transition-colors hover:bg-accent/20 group relative sm:p-2.5',
+                    !notification.read && 'bg-accent/10',
+                    notification.link && 'hover:bg-accent/30'
                   )}
                 >
                   <div className="flex gap-2.5">
                     <div
                       className={cn(
-                        "flex-shrink-0 h-7 w-7 rounded-full flex items-center justify-center border",
+                        'flex-shrink-0 h-7 w-7 rounded-full flex items-center justify-center border',
                         notificationColors[notification.type]
                       )}
                     >
@@ -155,9 +155,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                       <div className="flex items-start justify-between gap-1 mb-0.5 sm:gap-1.5">
                         <p
                           className={cn(
-                            "text-[11px] font-medium line-clamp-1 sm:text-xs",
+                            'text-[11px] font-medium line-clamp-1 sm:text-xs',
                             !notification.read &&
-                              "text-foreground font-semibold"
+                              'text-foreground font-semibold'
                           )}
                         >
                           {notification.title}

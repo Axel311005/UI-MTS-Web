@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useNotificationStore } from '../store/notification.store';
 import { useAuthStore } from '@/auth/store/auth.store';
 
@@ -22,40 +22,22 @@ export const useNotifications = () => {
   } = useNotificationStore();
 
   const { authStatus, token } = useAuthStore();
-  const prevAuthStatusRef = useRef(authStatus);
-  const prevTokenRef = useRef(token);
 
   // Conectar cuando el usuario esté autenticado
   useEffect(() => {
-    const authChanged = prevAuthStatusRef.current !== authStatus;
-    const tokenChanged = prevTokenRef.current !== token;
-
-    if (authChanged || tokenChanged) {
-      prevAuthStatusRef.current = authStatus;
-      prevTokenRef.current = token;
-
-      if (authStatus === 'authenticated' && token) {
-        console.log('[Notifications] Conectando WebSocket...', {
-          authStatus,
-          hasToken: !!token,
-        });
-        connect();
-      } else {
-        console.log('[Notifications] Desconectando WebSocket...', {
-          authStatus,
-          hasToken: !!token,
-        });
-        disconnect();
-      }
+    if (authStatus === 'authenticated' && token) {
+      connect();
+    } else {
+      disconnect();
     }
 
-    // Cleanup al desmontar
+    // Cleanup al desmontar o cambiar estado de autenticación
     return () => {
       if (authStatus !== 'authenticated') {
         disconnect();
       }
     };
-  }, [authStatus, token]);
+  }, [authStatus, token, connect, disconnect]);
 
   return {
     notifications,
