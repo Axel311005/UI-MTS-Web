@@ -97,15 +97,19 @@ export function validateText(
   }
 
   // Aplicar validaciones inteligentes adicionales
+  // PERO hacer más permisivo para campos de texto libre (comentarios, observaciones, notas, direcciones)
+  // Estos campos tienen min: 0, así que los identificamos así
+  const isFreeTextField = min === 0;
+
   const smartResult = smartValidate(text.trim(), {
     minLength: min,
     maxLength: max,
     allowNumbers: true,
     allowSpecialChars: true,
     maxRepetitions: allowRepeats ? 10 : 3,
-    maxConsonantsInRow: 6, // Aumentado de 5 a 6 para permitir textos técnicos
-    maxRepetitivePercentage: 50,
-    maxSymbolPercentage: 20,
+    maxConsonantsInRow: isFreeTextField ? 10 : 6, // Más permisivo para texto libre (permite hasta 10 consonantes seguidas)
+    maxRepetitivePercentage: isFreeTextField ? 70 : 50, // Más permisivo para texto libre
+    maxSymbolPercentage: isFreeTextField ? 40 : 20, // Más permisivo para texto libre (permite más símbolos)
   });
 
   if (!smartResult.isValid) {

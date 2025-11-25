@@ -62,6 +62,11 @@ export function validateNoExcessiveConsonants(
     return true;
   }
 
+  // Si maxConsonants es >= 8, no validar (muy permisivo para texto libre)
+  if (maxConsonants >= 8) {
+    return true;
+  }
+
   // Buscar secuencias de más de maxConsonants caracteres que no sean vocales
   const pattern = new RegExp(`[^aeiouáéíóúAEIOUÁÉÍÓÚ\\s\\d]{${maxConsonants + 1},}`, 'i');
   
@@ -227,7 +232,8 @@ export function smartValidate(
   }
 
   // 5. Validar consonantes excesivas (solo para textos más largos)
-  if (trimmed.length > 5 && !validateNoExcessiveConsonants(trimmed, maxConsonantsInRow)) {
+  // Hacer más permisivo: solo validar si hay más de 8 consonantes seguidas (muy raro en texto real)
+  if (trimmed.length > 5 && maxConsonantsInRow < 8 && !validateNoExcessiveConsonants(trimmed, maxConsonantsInRow)) {
     return {
       isValid: false,
       error: 'El texto contiene demasiadas consonantes seguidas sin vocales',
