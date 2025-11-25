@@ -27,10 +27,11 @@ import type { MotivoCita, Vehiculo } from '../types/cita.types';
 import { useLandingAuthStore } from '../store/landing-auth.store';
 import { useAuthStore } from '@/auth/store/auth.store';
 import { useNavigate } from 'react-router';
-import { validateCode, smartValidate, validateFecha, getFechaMinima, getFechaMaxima } from '@/shared/utils/validation';
+import { validateCode, smartValidate, validateFecha, getFechaMinima, getFechaMaxima, validateText } from '@/shared/utils/validation';
 import { sanitizeString } from '@/shared/utils/security';
-import { PlacaInput, validatePlacaFormat } from '@/shared/components/PlacaInput';
+import { PlacaInput } from '@/shared/components/PlacaInput';
 import { MarcaSelect } from '@/shared/components/selects/MarcaSelect';
+import { COLORES_VEHICULOS } from '@/vehiculo/data/colores';
 
 interface FormData {
   idMotivoCita: string;
@@ -290,18 +291,35 @@ export function CitaForm() {
     // Sanitizar y validar campos del vehículo
     // Usar sanitizeString() para todos los campos (previene SQL/JS, permite espacios, letras y números)
     const placaLimpia = vehiculoForm.placa.trim().toUpperCase();
-    const motorLimpio = sanitizeString(vehiculoForm.motor.trim(), 50);
+    const motorLimpio = vehiculoForm.motor.trim();
     const marcaLimpia = vehiculoForm.marca.trim(); // La marca viene del selector, no necesita sanitización adicional
     const modeloLimpio = sanitizeString(vehiculoForm.modelo.trim(), 50);
     const colorLimpio = sanitizeString(vehiculoForm.color.trim(), 30);
-    const numChasisLimpio = sanitizeString(vehiculoForm.numChasis.trim(), 50);
+    const numChasisLimpio = vehiculoForm.numChasis.trim();
     const anio = Number(vehiculoForm.anio);
 
-    // Validar placa con formato departamento + números
-    const placaValidation = validatePlacaFormat(placaLimpia);
-    if (!placaValidation.isValid) {
-      toast.error(placaValidation.error || 'La placa no es válida');
+    // Validar placa (solo que no esté vacía)
+    if (!placaLimpia) {
+      toast.error('La placa es requerida');
       return;
+    }
+
+    // Validar motor con validación de basura
+    if (motorLimpio) {
+      const motorValidation = validateText(motorLimpio, 1, 50, false);
+      if (!motorValidation.isValid) {
+        toast.error(motorValidation.error || 'El motor no es válido');
+        return;
+      }
+    }
+
+    // Validar chasis con validación de basura
+    if (numChasisLimpio) {
+      const chasisValidation = validateText(numChasisLimpio, 1, 50, false);
+      if (!chasisValidation.isValid) {
+        toast.error(chasisValidation.error || 'El número de chasis no es válido');
+        return;
+      }
     }
 
     // Validar que se haya seleccionado una marca
@@ -319,9 +337,9 @@ export function CitaForm() {
       return;
     }
 
-    const colorValidation = validateField(colorLimpio, 'text');
-    if (!colorValidation.isValid) {
-      toast.error(colorValidation.error || 'El color no es válido');
+    // Validar que se haya seleccionado un color
+    if (!colorLimpio) {
+      toast.error('Debe seleccionar un color');
       return;
     }
 
@@ -336,12 +354,12 @@ export function CitaForm() {
       const nuevoVehiculo = await createVehiculo({
         idCliente: user.clienteId,
         placa: placaLimpia,
-        motor: motorLimpio,
+        motor: motorLimpio ? sanitizeString(motorLimpio, 50) : undefined,
         marca: marcaLimpia,
         modelo: modeloLimpio,
         color: colorLimpio,
         anio: anio,
-        numChasis: numChasisLimpio,
+        numChasis: numChasisLimpio ? sanitizeString(numChasisLimpio, 50) : undefined,
       });
 
       setVehiculos([...vehiculos, nuevoVehiculo]);
@@ -606,17 +624,26 @@ export function CitaForm() {
                       <Label className="font-montserrat font-semibold text-black">
                         Color <span className="text-destructive">*</span>
                       </Label>
-                      <Input
+                      <Select
                         value={vehiculoForm.color}
-                        onChange={(e) =>
+                        onValueChange={(value) =>
                           setVehiculoForm({
                             ...vehiculoForm,
-                            color: e.target.value,
+                            color: value,
                           })
                         }
-                        placeholder="Color del vehículo"
-                        className="h-12 sm:h-14 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all touch-manipulation"
-                      />
+                      >
+                        <SelectTrigger className="h-12 sm:h-14 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat text-sm sm:text-base transition-all touch-manipulation">
+                          <SelectValue placeholder="Seleccione un color" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {COLORES_VEHICULOS.map((color) => (
+                            <SelectItem key={color.value} value={color.value}>
+                              {color.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="space-y-2">
                       <Label className="font-montserrat font-semibold text-black">

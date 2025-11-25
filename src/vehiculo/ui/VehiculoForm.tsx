@@ -20,7 +20,7 @@ import { validateText } from '@/shared/utils/validation';
 import { COLORES_VEHICULOS } from '../data/colores';
 import { PlacaInput } from '@/shared/components/PlacaInput';
 import { MarcaSelect } from '@/shared/components/selects/MarcaSelect';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 type FormValues = {
   idCliente: number | '';
@@ -69,6 +69,22 @@ export const VehiculoForm = ({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Actualizar valores cuando cambian los defaultValues (para edición)
+  useEffect(() => {
+    if (defaultValues) {
+      setValues({
+        idCliente: defaultValues.idCliente ?? '',
+        placa: defaultValues.placa ?? '',
+        motor: defaultValues.motor ?? '',
+        marca: defaultValues.marca ?? '',
+        anio: (defaultValues.anio as number) ?? '',
+        modelo: defaultValues.modelo ?? '',
+        color: defaultValues.color ?? '',
+        numChasis: defaultValues.numChasis ?? '',
+      });
+    }
+  }, [defaultValues]);
 
   const validate = () => {
     const e: Record<string, string> = {};
