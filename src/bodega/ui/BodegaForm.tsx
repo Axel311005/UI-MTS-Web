@@ -27,7 +27,8 @@ export function BodegaForm({ values, onChange, errors }: BodegaFormProps) {
       value,
       VALIDATION_RULES.descripcion.min,
       VALIDATION_RULES.descripcion.max,
-      false // No permitir 3 caracteres repetidos
+      true, // allowRepeats: true para ser más permisivo con descripciones
+      true // preserveSpaces: true para permitir espacios
     );
     onChange({ ...values, [field]: sanitized });
   };
