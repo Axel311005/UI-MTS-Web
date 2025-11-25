@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 import { registerAction } from '../actions/auth.actions';
 import { useLandingAuthStore } from '../store/landing-auth.store';
 import { UserPlus, Eye, EyeOff } from 'lucide-react';
-import { validateAddress } from '@/shared/utils/validation';
+import { validateText, VALIDATION_RULES } from '@/shared/utils/validation';
 import { sanitizeName, validateName } from '@/shared/utils/security';
 
 export default function RegisterPage() {
@@ -157,13 +157,20 @@ export default function RegisterPage() {
       return;
     }
 
-    // Validación inteligente de dirección
-    const direccionValidation = validateAddress(direccionLimpio);
-    if (!direccionValidation.isValid) {
-      toast.error(direccionValidation.error || 'La dirección no es válida', {
-        position: 'top-right',
-      });
-      return;
+    // Validación de dirección (más flexible, permite repeticiones)
+    if (direccionLimpio.trim()) {
+      const direccionValidation = validateText(
+        direccionLimpio.trim(),
+        VALIDATION_RULES.direccion.min,
+        VALIDATION_RULES.direccion.max,
+        true // allowRepeats: true para ser más permisivo con direcciones
+      );
+      if (!direccionValidation.isValid) {
+        toast.error(direccionValidation.error || 'La dirección no es válida', {
+          position: 'top-right',
+        });
+        return;
+      }
     }
 
     // Validación de contraseñas

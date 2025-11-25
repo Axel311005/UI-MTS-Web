@@ -51,13 +51,13 @@ export default function NuevoClientePage() {
       }
     }
 
-    // Validar dirección
+    // Validar dirección (más flexible, permite repeticiones)
     if (formValues.direccion.trim()) {
       const direccionValidation = validateText(
         formValues.direccion.trim(),
         VALIDATION_RULES.direccion.min,
         VALIDATION_RULES.direccion.max,
-        false
+        true // allowRepeats: true para ser más permisivo con direcciones
       );
       if (!direccionValidation.isValid) {
         newErrors.direccion = direccionValidation.error;

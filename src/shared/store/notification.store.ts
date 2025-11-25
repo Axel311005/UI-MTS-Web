@@ -207,11 +207,13 @@ export const useNotificationStore = create<NotificationState>((set, get) => {
     connect: () => {
       // Si ya hay una conexión, no crear otra
       if (socketInstance?.connected) {
+        console.log('[Notifications] Ya hay una conexión activa, omitiendo...');
         return;
       }
 
       // Si hay una instancia desconectada, limpiarla
       if (socketInstance) {
+        console.log('[Notifications] Limpiando instancia anterior...');
         socketInstance.disconnect();
         socketInstance.removeAllListeners();
       }
@@ -219,6 +221,13 @@ export const useNotificationStore = create<NotificationState>((set, get) => {
       // Obtener token del auth store
       const token = useAuthStore.getState().token;
       const authToken = token || localStorage.getItem('token');
+
+      if (!authToken) {
+        console.warn('[Notifications] No hay token disponible, no se puede conectar');
+        return;
+      }
+
+      console.log('[Notifications] Iniciando conexión WebSocket...', { url: SOCKET_URL, hasToken: !!authToken });
 
       // Crear nueva conexión
       const socket = io(SOCKET_URL, {
@@ -234,6 +243,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => {
 
       // Event listeners
       socket.on('connect', () => {
+        console.log('[Notifications] WebSocket conectado', { socketId: socket.id, url: SOCKET_URL });
         set({
           connected: true,
           socketId: socket.id ?? null,
@@ -242,7 +252,8 @@ export const useNotificationStore = create<NotificationState>((set, get) => {
         });
       });
 
-      socket.on('disconnect', () => {
+      socket.on('disconnect', (reason) => {
+        console.log('[Notifications] WebSocket desconectado', { reason });
         set({
           connected: false,
           socketId: null,
@@ -251,11 +262,13 @@ export const useNotificationStore = create<NotificationState>((set, get) => {
 
       socket.on('connect_error', (error) => {
         const errorMessage = error?.message ?? String(error);
+        console.error('[Notifications] Error de conexión WebSocket', { error: errorMessage, url: SOCKET_URL });
         set({ connectionError: errorMessage, connected: false });
       });
 
       // Escuchar notificaciones del admin (namespace /admin)
       socket.on('adminNotification', (payload: AdminNotification) => {
+        console.log('[Notifications] Notificación recibida', payload);
         const { title, message, link } = mapNotificationContent(
           payload.tipo,
           payload.id_registro,

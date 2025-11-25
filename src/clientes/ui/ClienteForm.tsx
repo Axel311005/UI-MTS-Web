@@ -271,7 +271,7 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
                     e.target.value,
                     VALIDATION_RULES.direccion.min,
                     VALIDATION_RULES.direccion.max,
-                    false
+                    true // allowRepeats: true para ser más permisivo con direcciones
                   );
                   if (
                     !validation.isValid &&
