@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Button } from '@/shared/components/ui/button';
@@ -17,9 +16,11 @@ import {
   sanitizeId,
   getRangoAnios,
 } from '@/shared/utils/security';
+import { validateText } from '@/shared/utils/validation';
 import { COLORES_VEHICULOS } from '../data/colores';
-import { PlacaInput, validatePlacaFormat } from '@/shared/components/PlacaInput';
+import { PlacaInput } from '@/shared/components/PlacaInput';
 import { MarcaSelect } from '@/shared/components/selects/MarcaSelect';
+import { useState } from 'react';
 
 type FormValues = {
   idCliente: number | '';
@@ -78,14 +79,9 @@ export const VehiculoForm = ({
       e.idCliente = 'Seleccione un cliente';
     }
 
-    // Validar placa con formato departamento + números
+    // Validar placa (solo que no esté vacía)
     if (!values.placa || !values.placa.trim()) {
       e.placa = 'La placa es requerida';
-    } else {
-      const placaValidation = validatePlacaFormat(values.placa.trim());
-      if (!placaValidation.isValid) {
-        e.placa = placaValidation.error || 'La placa tiene un formato inválido';
-      }
     }
 
     // Validar año
@@ -94,10 +90,11 @@ export const VehiculoForm = ({
       e.anio = `Año inválido (debe estar entre ${rango.min} y ${rango.max})`;
     }
 
-    // Validar longitud de campos opcionales (sin validar caracteres repetidos en nombres)
+    // Validar motor con validación de basura
     if (values.motor && values.motor.trim()) {
-      if (values.motor.trim().length > 50) {
-        e.motor = 'El motor no puede tener más de 50 caracteres';
+      const motorValidation = validateText(values.motor.trim(), 1, 50, false);
+      if (!motorValidation.isValid) {
+        e.motor = motorValidation.error || 'El motor no es válido';
       }
     }
     if (values.marca && values.marca.trim()) {
@@ -115,9 +112,17 @@ export const VehiculoForm = ({
         e.color = 'El color no puede tener más de 30 caracteres';
       }
     }
+    // Validar chasis con validación de basura
     if (values.numChasis && values.numChasis.trim()) {
-      if (values.numChasis.trim().length > 50) {
-        e.numChasis = 'El número de chasis no puede tener más de 50 caracteres';
+      const chasisValidation = validateText(
+        values.numChasis.trim(),
+        1,
+        50,
+        false
+      );
+      if (!chasisValidation.isValid) {
+        e.numChasis =
+          chasisValidation.error || 'El número de chasis no es válido';
       }
     }
 
