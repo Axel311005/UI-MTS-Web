@@ -238,7 +238,7 @@ export default function EditarItemPage() {
   };
 
   const buildPayload = () => {
-    // Si es SERVICIO, enviar 1 a todos los precios
+    // Si es SERVICIO, enviar 1 a todos los precios mamala
     const isServicio = formValues.tipo === 'SERVICIO';
     return {
       clasificacionId: Number(formValues.clasificacionId),
