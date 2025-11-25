@@ -229,11 +229,19 @@ export function FacturaParametros({
               e.target.value,
               VALIDATION_RULES.comentario.min,
               VALIDATION_RULES.comentario.max,
-              false // No permitir 3 caracteres repetidos
+              false, // No permitir 3 caracteres repetidos
+              true // Preservar espacios (permitir espacios en comentarios)
             );
             onComentarioChange(sanitized);
           }}
           onBlur={(e) => {
+            // Limpiar si solo contiene espacios
+            const trimmed = e.target.value.trim();
+            if (e.target.value.length > 0 && trimmed.length === 0) {
+              onComentarioChange('');
+              return;
+            }
+            
             const validation = validateText(
               e.target.value,
               VALIDATION_RULES.comentario.min,

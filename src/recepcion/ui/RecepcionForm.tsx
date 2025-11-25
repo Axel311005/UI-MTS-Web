@@ -251,9 +251,18 @@ export function RecepcionForm({
               e.target.value,
               VALIDATION_RULES.observaciones.min,
               VALIDATION_RULES.observaciones.max,
-              false
+              false, // No permitir 3 caracteres repetidos
+              true // Preservar espacios (permitir espacios en observaciones)
             );
             update({ observaciones: sanitized });
+          }}
+          onBlur={(e) => {
+            // Limpiar si solo contiene espacios
+            const trimmed = e.target.value.trim();
+            if (e.target.value.length > 0 && trimmed.length === 0) {
+              update({ observaciones: '' });
+              return;
+            }
           }}
           maxLength={VALIDATION_RULES.observaciones.max}
         />

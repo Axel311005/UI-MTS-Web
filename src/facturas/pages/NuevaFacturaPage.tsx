@@ -136,7 +136,7 @@ export default function NuevaFacturaPage() {
       ? Number(formValues.descuentoPct)
       : 0,
     tipoCambioUsado: getTipoCambioUsado(),
-    comentario: formValues.comentario
+    comentario: formValues.comentario && formValues.comentario.trim()
       ? sanitizeString(formValues.comentario.trim(), 500)
       : '',
     recepcionId:

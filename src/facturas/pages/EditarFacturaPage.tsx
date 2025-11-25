@@ -21,6 +21,7 @@ import { postFacturaLinea } from '../actions/post-facturalinea';
 import { deleteFacturaLinea } from '../actions/delete-factura-linea';
 import { getFacturaById } from '../actions/get-factura-by-id';
 import { useQueryClient } from '@tanstack/react-query';
+import { sanitizeString } from '@/shared/utils/security';
 import type { Factura } from '../types/Factura.interface';
 
 type InvoiceStatus = 'PENDIENTE' | 'PAGADO' | 'ANULADA';
@@ -222,7 +223,9 @@ export default function EditarFacturaPage() {
       porcentajeDescuento:
         formValues.descuentoPct === '' ? 0 : Number(formValues.descuentoPct),
       tipoCambioUsado: Number(formValues.tipoCambioUsado),
-      comentario: formValues.comentario ?? '',
+      comentario: formValues.comentario && formValues.comentario.trim()
+        ? sanitizeString(formValues.comentario.trim(), 500)
+        : '',
       recepcionId: formValues.recepcionId !== '' ? Number(formValues.recepcionId) : null,
     }),
     [formValues, estadoFactura]

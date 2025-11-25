@@ -271,13 +271,42 @@ function protectAgainstMaliciousCode(): void {
   }
 
   try {
+    // Guardar referencias originales ANTES de bloquear (necesario para Socket.IO)
+    const originalEval = window.eval;
+    const originalFunction = window.Function;
+
     // Bloquear eval() - método más común para ejecutar código malicioso
-    window.eval = function (): never {
+    // PERO permitir Socket.IO que lo necesita para funcionar
+    window.eval = function (code: string): any {
+      // Verificar si la llamada viene de Socket.IO o engine.io
+      try {
+        const stack = new Error().stack || '';
+        const isSocketIO = 
+          stack.includes('socket.io') || 
+          stack.includes('socket.io-client') ||
+          stack.includes('engine.io') ||
+          stack.includes('engine.io-client') ||
+          stack.includes('socket.io-parser');
+        
+        // También permitir código corto que parece ser parsing JSON (común en Socket.IO)
+        const isShortCode = typeof code === 'string' && code.length < 500;
+        const looksLikeJSONParsing = typeof code === 'string' && 
+          (code.includes('JSON') || code.includes('parse') || code.trim().startsWith('return'));
+        
+        if (isSocketIO || (isShortCode && looksLikeJSONParsing)) {
+          // Permitir ejecución para Socket.IO
+          return originalEval.call(window, code);
+        }
+      } catch (e) {
+        // Si falla la verificación, bloquear por seguridad
+      }
+      
+      // Bloquear código malicioso
       showSecurityWarning();
       throw new Error('eval() está deshabilitado por seguridad');
     };
 
-    // Intentar hacer eval no configurable
+    // Intentar hacer eval no configurable (pero no bloquear completamente)
     try {
       Object.defineProperty(window, 'eval', {
         value: window.eval,
@@ -289,12 +318,39 @@ function protectAgainstMaliciousCode(): void {
     }
 
     // Bloquear Function() constructor - otra forma común de ejecutar código
-    window.Function = function (..._args: string[]): never {
+    // PERO permitir Socket.IO que lo necesita para funcionar
+    window.Function = function (...args: string[]): Function {
+      // Verificar si la llamada viene de Socket.IO
+      try {
+        const stack = new Error().stack || '';
+        const isSocketIO = 
+          stack.includes('socket.io') || 
+          stack.includes('socket.io-client') ||
+          stack.includes('engine.io') ||
+          stack.includes('engine.io-client') ||
+          stack.includes('socket.io-parser');
+        
+        // También permitir código corto que parece ser parsing (común en Socket.IO)
+        const code = args.length > 0 ? args[args.length - 1] : '';
+        const isShortCode = typeof code === 'string' && code.length < 500;
+        const looksLikeParsing = typeof code === 'string' && 
+          (code.includes('JSON') || code.includes('parse') || 
+           code.includes('return') || code.trim().length === 0);
+        
+        if (isSocketIO || (isShortCode && looksLikeParsing && !code.includes('<script'))) {
+          // Permitir ejecución para Socket.IO
+          return originalFunction.apply(window, args);
+        }
+      } catch (e) {
+        // Si falla la verificación, bloquear por seguridad
+      }
+      
+      // Bloquear código malicioso
       showSecurityWarning();
       throw new Error('Function() constructor está deshabilitado por seguridad');
     } as unknown as FunctionConstructor;
 
-    // Intentar hacer Function no configurable
+    // Intentar hacer Function no configurable (pero no bloquear completamente)
     try {
       Object.defineProperty(window, 'Function', {
         value: window.Function,
@@ -591,9 +647,33 @@ function protectAgainstMaliciousCode(): void {
     }
 
     // Proteger postMessage malicioso
+    // PERO permitir Socket.IO que puede usar postMessage para comunicación
     const originalPostMessage = window.postMessage.bind(window);
     // Usar función con sobrecarga para manejar ambos casos
     (window as any).postMessage = function (message: any, targetOriginOrOptions?: string | WindowPostMessageOptions, transfer?: Transferable[]) {
+      // Verificar si la llamada viene de Socket.IO
+      try {
+        const stack = new Error().stack || '';
+        const isSocketIO = 
+          stack.includes('socket.io') || 
+          stack.includes('socket.io-client') ||
+          stack.includes('engine.io') ||
+          stack.includes('engine.io-client');
+        
+        // Si es Socket.IO, permitir sin restricciones adicionales
+        if (isSocketIO) {
+          if (typeof targetOriginOrOptions === 'string') {
+            return originalPostMessage(message, targetOriginOrOptions, transfer);
+          } else if (targetOriginOrOptions) {
+            return originalPostMessage(message, targetOriginOrOptions);
+          } else {
+            return originalPostMessage(message, '*');
+          }
+        }
+      } catch (e) {
+        // Si falla la verificación, continuar con validación normal
+      }
+      
       // Manejar ambas sobrecargas de postMessage
       let targetOrigin: string;
       if (typeof targetOriginOrOptions === 'string') {

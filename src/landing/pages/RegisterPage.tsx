@@ -544,6 +544,15 @@ export default function RegisterPage() {
                   placeholder="Av. Principal 123"
                   value={formData.direccion}
                   onChange={handleChange}
+                  onBlur={(e) => {
+                    // Limpiar si solo contiene espacios
+                    const trimmed = e.target.value.trim();
+                    if (e.target.value.length > 0 && trimmed.length === 0) {
+                      handleChange({
+                        target: { id: 'direccion', value: '' },
+                      } as React.ChangeEvent<HTMLInputElement>);
+                    }
+                  }}
                   required
                   className="h-10 sm:h-11"
                 />

@@ -95,8 +95,14 @@ export function TramiteSeguroForm({
         value,
         VALIDATION_RULES.observaciones.min,
         VALIDATION_RULES.observaciones.max,
-        false // No permitir 3 caracteres repetidos
+        false, // No permitir 3 caracteres repetidos
+        true // Preservar espacios (permitir espacios en observaciones)
       );
+      // Limpiar si solo contiene espacios
+      const trimmed = sanitizedValue.trim();
+      if (sanitizedValue.length > 0 && trimmed.length === 0) {
+        sanitizedValue = '';
+      }
     } else if (field === 'numeroTramite') {
       // Sanitizar número de trámite
       sanitizedValue = sanitizeString(value, VALIDATION_RULES.numeroTramite.max);
