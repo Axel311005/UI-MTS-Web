@@ -220,6 +220,10 @@ export const useNotificationStore = create<NotificationState>((set, get) => {
       const token = useAuthStore.getState().token;
       const authToken = token || localStorage.getItem('token');
 
+      // Log para debugging
+      console.log('[Socket] Conectando a:', SOCKET_URL);
+      console.log('[Socket] Token disponible:', !!authToken);
+
       // Crear nueva conexión
       const socket = io(SOCKET_URL, {
         auth: authToken ? { token: authToken } : undefined,
@@ -234,6 +238,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => {
 
       // Event listeners
       socket.on('connect', () => {
+        console.log('[Socket] Conectado con ID:', socket.id);
         set({
           connected: true,
           socketId: socket.id ?? null,
@@ -242,7 +247,8 @@ export const useNotificationStore = create<NotificationState>((set, get) => {
         });
       });
 
-      socket.on('disconnect', () => {
+      socket.on('disconnect', (reason) => {
+        console.warn('[Socket] Desconectado:', reason);
         set({
           connected: false,
           socketId: null,
@@ -251,11 +257,13 @@ export const useNotificationStore = create<NotificationState>((set, get) => {
 
       socket.on('connect_error', (error) => {
         const errorMessage = error?.message ?? String(error);
+        console.error('[Socket] Error de conexión:', errorMessage, error);
         set({ connectionError: errorMessage, connected: false });
       });
 
       // Escuchar notificaciones del admin (namespace /admin)
       socket.on('adminNotification', (payload: AdminNotification) => {
+        console.log('[Socket] Notificación recibida:', payload);
         const { title, message, link } = mapNotificationContent(
           payload.tipo,
           payload.id_registro,

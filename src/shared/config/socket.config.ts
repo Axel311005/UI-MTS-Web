@@ -1,9 +1,8 @@
 // Configuración para conectar al namespace admin en NestJS
 // Gateway: @WebSocketGateway({ namespace: '/admin' })
 
-// URL base del servidor (usar VITE_API_URL directamente)
-export const SOCKET_BASE_URL =
-  import.meta.env.VITE_API_URL;
+// URL base del servidor (SIEMPRE usar VITE_API_URL)
+export const SOCKET_BASE_URL = import.meta.env.VITE_API_URL;
 
 // Namespace para admin
 export const SOCKET_NAMESPACE = '/admin';
