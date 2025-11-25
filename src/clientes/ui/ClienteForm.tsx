@@ -65,9 +65,15 @@ const formatPhone = (value: string) => {
 export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
   const handleChange = (
     field: keyof ClienteFormValues,
-    value: string | boolean
+    value: string | boolean | null
   ) => {
-    let sanitizedValue: string | boolean = value;
+    // Si el valor es null, convertirlo a string vacío para campos de texto
+    if (value === null && field === 'ruc') {
+      onChange({ ...values, [field]: null });
+      return;
+    }
+    
+    let sanitizedValue: string | boolean = value as string | boolean;
 
     // Aplicar sanitización en tiempo real para TODOS los campos de texto
     // Esto incluye protección contra SQL Injection y XSS

@@ -115,7 +115,7 @@ export default function EditarClientePage() {
     // Al menos uno de los nombres o el RUC debe estar presente
     const hasNombre =
       formValues.primerNombre.trim() || formValues.primerApellido.trim();
-    if (!hasNombre && !formValues.ruc.trim()) {
+    if (!hasNombre && !formValues.ruc?.trim()) {
       newErrors.primerNombre = 'Debe proporcionar al menos un nombre o RUC';
     }
 
@@ -198,9 +198,9 @@ export default function EditarClientePage() {
       // buildPayload ya sanitiza todos los campos con sanitizeName y sanitizeText
       await patchCliente(clienteId, payload);
       const nombreCompleto =
-        [validation.sanitizedPayload.primerNombre, validation.sanitizedPayload.primerApellido]
+        [payload.primerNombre, payload.primerApellido]
           .filter(Boolean)
-          .join(' ') || validation.sanitizedPayload.ruc;
+          .join(' ') || payload.ruc || 'Cliente';
       toast.success(`Cliente ${nombreCompleto} actualizado`);
 
       await queryClient.invalidateQueries({

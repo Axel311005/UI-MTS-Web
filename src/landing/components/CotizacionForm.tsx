@@ -421,7 +421,7 @@ export function CotizacionForm() {
       const cotizacionPayload = {
         idCliente: user.clienteId,
         idConsecutivo: consecutivoId,
-        estado: 'GENERADA',
+        estado: 'GENERADA' as const,
         nombreCliente: user.nombre
           ? sanitizeString(user.nombre.trim(), 100)
           : 'Cliente',
