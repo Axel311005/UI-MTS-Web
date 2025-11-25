@@ -6,7 +6,7 @@ export const getCompraPdfAction = async (id: number): Promise<Blob> => {
   }
 
   try {
-    const { data } = await compraApi.get(`/${id}/compra-pdf`, {
+    const { data } = await compraApi.get(`/report/compras/${id}`, {
       responseType: 'blob',
     });
 

@@ -31,10 +31,11 @@ export default function CompraRowActions({ compra }: Props) {
     state.hasAnyRole(['gerente', 'vendedor', 'superuser'])
   );
 
-  const resolveCompraId = () =>
-    (compra as any)?.id_compra ??
-    (compra as any)?.id ??
-    (compra as any)?.idCompra;
+  const resolveCompraId = () => {
+    // Priorizar idCompra que es el campo correcto según la interfaz
+    if (compra?.idCompra) return compra.idCompra;
+    return (compra as any)?.id_compra ?? (compra as any)?.id ?? null;
+  };
 
   const requireNumber = (label: string, value: unknown) => {
     const parsed = Number(value);
@@ -63,7 +64,7 @@ export default function CompraRowActions({ compra }: Props) {
     const dismiss = toast.loading('Generando PDF de la compra...');
     try {
       const blob = await getCompraPdfAction(Number(id));
-      const filename = `compra-${compra.codigoCompra || `COMP-${id}`}.pdf`;
+      const filename = `compra-${compra.codigoCompra}.pdf`;
       downloadPdf(blob, filename);
       toast.success('PDF de la compra descargado exitosamente');
     } catch (error: any) {

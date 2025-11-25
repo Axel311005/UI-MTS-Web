@@ -44,15 +44,15 @@ export function CompraTotalCard({
   };
 
   return (
-    <Card className="border-l-4 border-l-primary">
-      <CardHeader>
-        <CardTitle>Resumen de totales</CardTitle>
+    <Card className="border-l-4 border-l-primary shadow-lg">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-xl font-bold">Resumen de totales</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Subtotal */}
-        <div className="flex justify-between items-center">
-          <span className="text-sm font-medium">Subtotal:</span>
-          <span className="text-lg font-semibold">
+        <div className="flex justify-between items-center py-2">
+          <span className="text-base font-semibold text-muted-foreground">Subtotal:</span>
+          <span className="text-xl font-bold text-foreground">
             {formatCurrency(totals.subtotal)}
           </span>
         </div>
@@ -60,8 +60,8 @@ export function CompraTotalCard({
         <Separator />
 
         {/* Descuento */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Descuento (%):</label>
+        <div className="space-y-2 py-2">
+          <label className="text-sm font-semibold">Descuento (%):</label>
           <Input
             type="number"
             min="0"
@@ -72,12 +72,13 @@ export function CompraTotalCard({
               onDescuentoPctChange(e.target.value ? Number(e.target.value) : '')
             }
             placeholder="0.00"
+            className="text-base"
           />
         </div>
 
-        <div className="flex justify-between items-center text-sm">
-          <span className="text-muted-foreground">Total descuento:</span>
-          <span className="font-medium">
+        <div className="flex justify-between items-center text-sm py-1">
+          <span className="text-muted-foreground font-medium">Total descuento:</span>
+          <span className="font-semibold text-destructive">
             -{formatCurrency(totals.totalDescuento)}
           </span>
         </div>
@@ -85,19 +86,19 @@ export function CompraTotalCard({
         <Separator />
 
         {/* Impuesto */}
-        <div className="flex justify-between items-center text-sm">
-          <span className="text-muted-foreground">Total impuesto:</span>
-          <span className="font-medium">
+        <div className="flex justify-between items-center text-sm py-1">
+          <span className="text-muted-foreground font-medium">Total impuesto:</span>
+          <span className="font-semibold text-foreground">
             {formatCurrency(totals.totalImpuesto)}
           </span>
         </div>
 
-        <Separator />
+        <Separator className="my-3" />
 
         {/* Total */}
-        <div className="flex justify-between items-center pt-2">
-          <span className="text-lg font-bold">Total:</span>
-          <span className="text-2xl font-bold text-primary">
+        <div className="flex justify-between items-center pt-3 pb-2 bg-primary/5 rounded-lg px-3 -mx-3">
+          <span className="text-xl font-bold text-foreground">Total:</span>
+          <span className="text-3xl font-bold text-primary">
             {formatCurrency(totals.total)}
           </span>
         </div>

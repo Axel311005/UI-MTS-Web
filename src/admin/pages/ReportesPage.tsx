@@ -1,6 +1,22 @@
 import { useState } from 'react';
-import { Download, TrendingUp, DollarSign, Package, Users, Receipt, FileSpreadsheet, ClipboardList, BarChart3, Shield } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import {
+  Download,
+  TrendingUp,
+  DollarSign,
+  Package,
+  Users,
+  Receipt,
+  FileSpreadsheet,
+  ClipboardList,
+  BarChart3,
+  Shield,
+} from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
@@ -113,7 +129,7 @@ const reportTypes = [
 export function ReportesPage() {
   const { user } = useAuthStore();
   const { monedas } = useMoneda();
-  
+
   // Estados para el reporte de flujo financiero
   const [flujoFecha, setFlujoFecha] = useState(() => {
     const today = new Date();
@@ -142,21 +158,23 @@ export function ReportesPage() {
     return today.toISOString().split('T')[0];
   });
 
-  const handleGenerateReport = async (report: typeof reportTypes[0]) => {
+  const handleGenerateReport = async (report: (typeof reportTypes)[0]) => {
     try {
       const dismiss = toast.loading('Generando reporte...');
-      
+
       // Si es el reporte especial de flujo financiero
       if (report.special && report.id === 'flujo-financiero') {
         // Usar nombre completo del empleado si está disponible, sino usar email
         let generadoPor = 'Usuario';
         if (user?.empleado) {
-          const nombreCompleto = `${user.empleado.primerNombre || ''} ${user.empleado.primerApellido || ''}`.trim();
+          const nombreCompleto = `${user.empleado.primerNombre || ''} ${
+            user.empleado.primerApellido || ''
+          }`.trim();
           generadoPor = nombreCompleto || user.email || 'Usuario';
         } else if (user?.email) {
           generadoPor = user.email;
         }
-        
+
         const params: Record<string, string | number> = {
           titulo: flujoTitulo,
           generadoPor: generadoPor,
@@ -164,8 +182,10 @@ export function ReportesPage() {
         };
 
         if (flujoUsarRango) {
-          params.fechaInicio = flujoFechaInicio || new Date().toISOString().split('T')[0];
-          params.fechaFin = flujoFechaFin || new Date().toISOString().split('T')[0];
+          params.fechaInicio =
+            flujoFechaInicio || new Date().toISOString().split('T')[0];
+          params.fechaFin =
+            flujoFechaFin || new Date().toISOString().split('T')[0];
         } else {
           params.fecha = flujoFecha || new Date().toISOString().split('T')[0];
         }
@@ -184,7 +204,9 @@ export function ReportesPage() {
         const urlBlob = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = urlBlob;
-        link.download = `${report.id}-${new Date().toISOString().split('T')[0]}.${extension}`;
+        link.download = `${report.id}-${
+          new Date().toISOString().split('T')[0]
+        }.${extension}`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -226,7 +248,9 @@ export function ReportesPage() {
         const urlBlob = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = urlBlob;
-        link.download = `cobro-aseguradora-${cobroAseguradoraId}-${new Date().toISOString().split('T')[0]}.pdf`;
+        link.download = `cobro-aseguradora-${cobroAseguradoraId}-${
+          new Date().toISOString().split('T')[0]
+        }.pdf`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -247,7 +271,9 @@ export function ReportesPage() {
       const urlBlob = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = urlBlob;
-      link.download = `${report.id}-${new Date().toISOString().split('T')[0]}.pdf`;
+      link.download = `${report.id}-${
+        new Date().toISOString().split('T')[0]
+      }.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -256,7 +282,8 @@ export function ReportesPage() {
       toast.dismiss(dismiss);
       toast.success('Reporte generado correctamente');
     } catch (error: any) {
-      const message = error?.response?.data?.message || 'Error al generar el reporte';
+      const message =
+        error?.response?.data?.message || 'Error al generar el reporte';
       toast.error(message);
     }
   };
@@ -295,12 +322,17 @@ export function ReportesPage() {
                     {/* Selector de tipo de fecha */}
                     <div className="space-y-2">
                       <Label>Tipo de fecha</Label>
-                      <Select value={flujoUsarRango ? 'rango' : 'fecha'} onValueChange={(v) => setFlujoUsarRango(v === 'rango')}>
+                      <Select
+                        value={flujoUsarRango ? 'rango' : 'fecha'}
+                        onValueChange={(v) => setFlujoUsarRango(v === 'rango')}
+                      >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="fecha">Fecha específica</SelectItem>
+                          <SelectItem value="fecha">
+                            Fecha específica
+                          </SelectItem>
                           <SelectItem value="rango">Rango de fechas</SelectItem>
                         </SelectContent>
                       </Select>
@@ -311,26 +343,40 @@ export function ReportesPage() {
                       <div className="space-y-2">
                         <div className="space-y-2">
                           <Label>Fecha inicio</Label>
-                          <Input type="date" value={flujoFechaInicio} onChange={(e) => setFlujoFechaInicio(e.target.value)} />
+                          <Input
+                            type="date"
+                            value={flujoFechaInicio}
+                            onChange={(e) =>
+                              setFlujoFechaInicio(e.target.value)
+                            }
+                          />
                         </div>
                         <div className="space-y-2">
                           <Label>Fecha fin</Label>
-                          <Input type="date" value={flujoFechaFin} onChange={(e) => setFlujoFechaFin(e.target.value)} />
+                          <Input
+                            type="date"
+                            value={flujoFechaFin}
+                            onChange={(e) => setFlujoFechaFin(e.target.value)}
+                          />
                         </div>
                       </div>
                     ) : (
                       <div className="space-y-2">
                         <Label>Fecha</Label>
-                        <Input type="date" value={flujoFecha} onChange={(e) => setFlujoFecha(e.target.value)} />
+                        <Input
+                          type="date"
+                          value={flujoFecha}
+                          onChange={(e) => setFlujoFecha(e.target.value)}
+                        />
                       </div>
                     )}
 
                     {/* Título */}
                     <div className="space-y-2">
                       <Label>Título del reporte</Label>
-                      <Input 
-                        type="text" 
-                        value={flujoTitulo} 
+                      <Input
+                        type="text"
+                        value={flujoTitulo}
                         onChange={(e) => setFlujoTitulo(e.target.value)}
                         placeholder="Flujo financiero mensual"
                       />
@@ -339,8 +385,8 @@ export function ReportesPage() {
                     {/* Moneda */}
                     <div className="space-y-2">
                       <Label>Moneda</Label>
-                      <Select 
-                        value={flujoIdMoneda?.toString() || '1'} 
+                      <Select
+                        value={flujoIdMoneda?.toString() || '1'}
                         onValueChange={(v) => setFlujoIdMoneda(Number(v))}
                       >
                         <SelectTrigger>
@@ -348,7 +394,10 @@ export function ReportesPage() {
                         </SelectTrigger>
                         <SelectContent>
                           {(monedas ?? []).map((moneda) => (
-                            <SelectItem key={moneda.idMoneda} value={moneda.idMoneda.toString()}>
+                            <SelectItem
+                              key={moneda.idMoneda}
+                              value={moneda.idMoneda.toString()}
+                            >
                               {moneda.descripcion}
                             </SelectItem>
                           ))}
@@ -360,9 +409,15 @@ export function ReportesPage() {
                   <>
                     {/* Selector de aseguradora */}
                     <div className="space-y-2">
-                      <Label>Aseguradora <span className="text-destructive">*</span></Label>
+                      <Label>
+                        Aseguradora <span className="text-destructive">*</span>
+                      </Label>
                       <AseguradoraSelect
-                        selectedId={cobroAseguradoraId === '' ? '' : Number(cobroAseguradoraId)}
+                        selectedId={
+                          cobroAseguradoraId === ''
+                            ? ''
+                            : Number(cobroAseguradoraId)
+                        }
                         onSelectId={(id) => setCobroAseguradoraId(id)}
                         onClear={() => setCobroAseguradoraId('')}
                       />
@@ -370,21 +425,25 @@ export function ReportesPage() {
 
                     {/* Fecha inicio */}
                     <div className="space-y-2">
-                      <Label>Fecha inicio <span className="text-destructive">*</span></Label>
-                      <Input 
-                        type="date" 
-                        value={cobroFechaInicio} 
-                        onChange={(e) => setCobroFechaInicio(e.target.value)} 
+                      <Label>
+                        Fecha inicio <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        type="date"
+                        value={cobroFechaInicio}
+                        onChange={(e) => setCobroFechaInicio(e.target.value)}
                       />
                     </div>
 
                     {/* Fecha fin */}
                     <div className="space-y-2">
-                      <Label>Fecha fin <span className="text-destructive">*</span></Label>
-                      <Input 
-                        type="date" 
-                        value={cobroFechaFin} 
-                        onChange={(e) => setCobroFechaFin(e.target.value)} 
+                      <Label>
+                        Fecha fin <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        type="date"
+                        value={cobroFechaFin}
+                        onChange={(e) => setCobroFechaFin(e.target.value)}
                       />
                     </div>
                   </>
@@ -404,4 +463,3 @@ export function ReportesPage() {
     </div>
   );
 }
-

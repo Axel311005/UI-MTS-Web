@@ -9,12 +9,16 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuSeparator,
 } from '@/shared/components/ui/dropdown-menu';
-import { Edit, Eye, FileText, Trash2, Receipt } from '@/shared/icons';
+import {
+  Edit,
+  Eye,
+  FileText,
+  Trash2,
+  Receipt,
+  FileSpreadsheet,
+} from '@/shared/icons';
 import { useAuthStore } from '@/auth/store/auth.store';
 
 import { patchFactura } from '../actions/patch-factura';
@@ -35,7 +39,7 @@ export default function FacturaRowActions({ factura }: Props) {
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const empleadoId = useAuthStore((state) => state.user?.empleado?.id ?? 1);
   const hasPdfAccess = useAuthStore((state) =>
-    state.hasAnyRole(['gerente', 'vendedor'])
+    state.hasAnyRole(['gerente', 'vendedor', 'superuser'])
   );
 
   const resolveFacturaId = () =>
@@ -190,56 +194,41 @@ export default function FacturaRowActions({ factura }: Props) {
           <Eye className="mr-2 h-4 w-4" />
           Ver detalles
         </DropdownMenuItem>
-        {hasPdfAccess && (
-          <>
-            {/* On larger screens keep the submenu, on small screens render items directly so
-                they are always visible / accessible (fixes mobile where subcontent could be off-screen) */}
-            <div className="hidden sm:block">
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger disabled={isDownloadingPdf}>
-                  <FileText className="mr-2 h-4 w-4" />
-                  Generar PDF
-                </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent>
-                  <DropdownMenuItem
-                    onClick={handleDownloadReciboPdf}
-                    disabled={isDownloadingPdf}
-                  >
-                    <Receipt className="mr-2 h-4 w-4" />
-                    Descargar Recibo
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={handleDownloadFacturaPdf}
-                    disabled={isDownloadingPdf}
-                  >
-                    <FileText className="mr-2 h-4 w-4" />
-                    Descargar Factura
-                  </DropdownMenuItem>
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
-            </div>
-            <div className="sm:hidden">
-              <DropdownMenuItem
-                onClick={handleDownloadReciboPdf}
-                disabled={isDownloadingPdf}
-              >
-                <Receipt className="mr-2 h-4 w-4" />
-                Descargar Recibo
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={handleDownloadFacturaPdf}
-                disabled={isDownloadingPdf}
-              >
-                <FileText className="mr-2 h-4 w-4" />
-                Descargar Factura
-              </DropdownMenuItem>
-            </div>
-          </>
-        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={handleDownloadReciboPdf}
+          disabled={isDownloadingPdf || !hasPdfAccess}
+        >
+          <Receipt className="mr-2 h-4 w-4" />
+          Descargar Recibo PDF
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={handleDownloadFacturaPdf}
+          disabled={isDownloadingPdf || !hasPdfAccess}
+        >
+          <FileText className="mr-2 h-4 w-4" />
+          Descargar Factura PDF
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={onEdit}>
           <Edit className="mr-2 h-4 w-4" />
           Editar
         </DropdownMenuItem>
+        {hasPdfAccess && (
+          <DropdownMenuItem
+            onClick={() => {
+              const id = resolveFacturaId();
+              if (id) {
+                navigate('/admin/reportes', {
+                  state: { facturaId: id, reportType: 'facturas-cliente' },
+                });
+              }
+            }}
+          >
+            <FileSpreadsheet className="mr-2 h-4 w-4" />
+            Ver reporte
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="text-destructive"

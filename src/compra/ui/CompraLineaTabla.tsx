@@ -10,7 +10,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/shared/components/ui/table';
-import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { useMemo } from 'react';
 import { useMoneda } from '@/moneda/hook/useMoneda';
 import { ItemSelect } from '@/shared/components/selects/ItemSelect';
@@ -96,16 +95,16 @@ export function CompraLineaTabla({
         </Button>
       </div>
 
-      <div className="border rounded-lg">
-        <ScrollArea className="w-full">
+      <div className="border rounded-lg overflow-x-auto">
+        <div className="min-w-full">
           <Table>
-            <TableHeader className="sticky top-0 bg-background">
+            <TableHeader>
               <TableRow>
-                <TableHead className="w-[30%] max-w-[220px]">Item</TableHead>
-                <TableHead className="w-[10%] min-w-[80px]">Cantidad</TableHead>
-                <TableHead className="w-[25%] min-w-[140px]">Precio unitario</TableHead>
-                <TableHead className="w-[20%] min-w-[120px]">Total línea</TableHead>
-                <TableHead className="w-[5%] min-w-[50px]"></TableHead>
+                <TableHead className="min-w-[250px]">Item</TableHead>
+                <TableHead className="min-w-[100px]">Cantidad</TableHead>
+                <TableHead className="min-w-[140px]">Precio unitario</TableHead>
+                <TableHead className="min-w-[130px]">Total línea</TableHead>
+                <TableHead className="min-w-[100px] text-center">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -122,8 +121,8 @@ export function CompraLineaTabla({
               ) : (
                 lines.map((line, index) => (
                   <TableRow key={index} className="hover:bg-muted/50">
-                    <TableCell className="max-w-[220px]">
-                      <div className="w-full max-w-[220px]">
+                    <TableCell className="min-w-[250px]">
+                      <div className="w-full">
                         <ItemSelect
                         value={line.itemId || ''}
                         onChange={(value) => {
@@ -234,7 +233,7 @@ export function CompraLineaTabla({
                         </p>
                       )}
                     </TableCell>
-                    <TableCell className="min-w-[120px]">
+                    <TableCell className="min-w-[130px]">
                       {(() => {
                         const qty = Number(line.cantidad) || 0;
                         const price = Number(line.precioUnitario) || 0;
@@ -243,19 +242,25 @@ export function CompraLineaTabla({
                           <Input
                             value={total.toFixed(2)}
                             readOnly
-                            className="bg-muted w-full"
+                            className="bg-muted w-full font-semibold"
                           />
                         );
                       })()}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="min-w-[100px] text-center align-middle">
                       <Button
                         variant="ghost"
-                        size="icon"
-                        onClick={() => removeLine(index)}
+                        size="sm"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          removeLine(index);
+                        }}
+                        className="h-9 w-9 p-0 hover:bg-destructive hover:text-destructive-foreground"
                         aria-label="Eliminar línea"
+                        type="button"
                       >
-                        <Trash2 className="h-4 w-4 text-destructive" />
+                        <Trash2 className="h-5 w-5" />
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -263,7 +268,7 @@ export function CompraLineaTabla({
               )}
             </TableBody>
           </Table>
-        </ScrollArea>
+        </div>
       </div>
     </div>
   );

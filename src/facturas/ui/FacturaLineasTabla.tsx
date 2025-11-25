@@ -14,7 +14,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/shared/components/ui/table';
-import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { useMemo } from 'react';
 import { toast } from 'sonner';
 import { useMoneda } from '@/moneda/hook/useMoneda';
@@ -99,16 +98,18 @@ export function FacturaLineaTabla({
         </Button>
       </div>
 
-      <div className="border rounded-lg">
-        <ScrollArea className="w-full">
+      <div className="border rounded-lg overflow-x-auto">
+        <div className="min-w-full">
           <Table>
-            <TableHeader className="sticky top-0 bg-background">
+            <TableHeader>
               <TableRow>
-                <TableHead className="w-[30%] max-w-[220px]">Item</TableHead>
-                <TableHead className="w-[10%] min-w-[80px]">Cantidad</TableHead>
-                <TableHead className="w-[25%] min-w-[140px]">Precio unitario</TableHead>
-                <TableHead className="w-[20%] min-w-[120px]">Total línea</TableHead>
-                <TableHead className="w-[5%] min-w-[50px]"></TableHead>
+                <TableHead className="min-w-[250px]">Item</TableHead>
+                <TableHead className="min-w-[100px]">Cantidad</TableHead>
+                <TableHead className="min-w-[140px]">Precio unitario</TableHead>
+                <TableHead className="min-w-[130px]">Total línea</TableHead>
+                <TableHead className="min-w-[100px] text-center">
+                  Acciones
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -125,78 +126,83 @@ export function FacturaLineaTabla({
               ) : (
                 lines.map((line, index) => (
                   <TableRow key={index} className="hover:bg-muted/50">
-                    <TableCell className="max-w-[220px]">
-                      <div className="w-full max-w-[220px]">
+                    <TableCell className="min-w-[200px]">
+                      <div className="w-full">
                         <ItemSelect
-                        value={line.itemId || ''}
-                        onChange={(value) => {
-                          const numValue = value === '' ? '' : Number(value);
-                          updateLine(index, 'itemId', numValue);
-                        }}
-                        onItemPick={(item) => {
-                          // Si el item ya existe en otra línea, en vez de crear/duplicar,
-                          // incrementamos la cantidad de esa línea y eliminamos la actual.
-                          const existingIdx = lines.findIndex(
-                            (l, i) =>
-                              i !== index && Number(l.itemId) === item.idItem
-                          );
-                          if (existingIdx >= 0) {
+                          value={line.itemId || ''}
+                          onChange={(value) => {
+                            const numValue = value === '' ? '' : Number(value);
+                            updateLine(index, 'itemId', numValue);
+                          }}
+                          onItemPick={(item) => {
+                            // Si el item ya existe en otra línea, en vez de crear/duplicar,
+                            // incrementamos la cantidad de esa línea y eliminamos la actual.
+                            const existingIdx = lines.findIndex(
+                              (l, i) =>
+                                i !== index && Number(l.itemId) === item.idItem
+                            );
+                            if (existingIdx >= 0) {
+                              const newLines = [...lines];
+                              const current = newLines[index];
+                              const existing = newLines[existingIdx];
+                              const addQty = Number(current.cantidad) || 1;
+                              const exQty = Number(existing.cantidad) || 0;
+                              newLines[existingIdx] = {
+                                ...existing,
+                                cantidad: exQty + (addQty > 0 ? addQty : 1),
+                              };
+                              // Eliminar la fila actual (que intentaba duplicar el item)
+                              newLines.splice(index, 1);
+                              onLinesChange(newLines);
+                              toast.info(
+                                'Item ya estaba en la factura, se aumentó la cantidad'
+                              );
+                              return;
+                            }
+                            // Precio sugerido según nombre de moneda
+                            const mName = normalize(monedaNombre);
+                            const isCordobas = mName.includes('CORDOBA');
+                            const isDolares = mName.includes('DOLAR');
+                            const priceStr = isCordobas
+                              ? item.precioBaseLocal
+                              : isDolares
+                              ? item.precioBaseDolar
+                              : item.precioBaseLocal; // fallback seguro
+                            const autoPrice = Number(priceStr) || 0;
                             const newLines = [...lines];
                             const current = newLines[index];
-                            const existing = newLines[existingIdx];
-                            const addQty = Number(current.cantidad) || 1;
-                            const exQty = Number(existing.cantidad) || 0;
-                            newLines[existingIdx] = {
-                              ...existing,
-                              cantidad: exQty + (addQty > 0 ? addQty : 1),
-                            };
-                            // Eliminar la fila actual (que intentaba duplicar el item)
-                            newLines.splice(index, 1);
+                            const qtyNum = Number(current.cantidad) || 0;
+                            newLines[index] = {
+                              ...current,
+                              // set selected item too to avoid losing selection due to stale updates
+                              itemId: item.idItem,
+                              precioUnitario: autoPrice,
+                              // if missing or zero, default to 1 to make the line valid
+                              cantidad: qtyNum > 0 ? qtyNum : 1,
+                            } as InvoiceLine;
                             onLinesChange(newLines);
-                            toast.info(
-                              'Item ya estaba en la factura, se aumentó la cantidad'
-                            );
-                            return;
-                          }
-                          // Precio sugerido según nombre de moneda
-                          const mName = normalize(monedaNombre);
-                          const isCordobas = mName.includes('CORDOBA');
-                          const isDolares = mName.includes('DOLAR');
-                          const priceStr = isCordobas
-                            ? item.precioBaseLocal
-                            : isDolares
-                            ? item.precioBaseDolar
-                            : item.precioBaseLocal; // fallback seguro
-                          const autoPrice = Number(priceStr) || 0;
-                          const newLines = [...lines];
-                          const current = newLines[index];
-                          const qtyNum = Number(current.cantidad) || 0;
-                          newLines[index] = {
-                            ...current,
-                            // set selected item too to avoid losing selection due to stale updates
-                            itemId: item.idItem,
-                            precioUnitario: autoPrice,
-                            // if missing or zero, default to 1 to make the line valid
-                            cantidad: qtyNum > 0 ? qtyNum : 1,
-                          } as InvoiceLine;
-                          onLinesChange(newLines);
-                        }}
-                        error={errors[index]?.item}
-                        bodegaId={bodegaId}
-                        showStock={true}
-                      />
+                          }}
+                          error={errors[index]?.item}
+                          bodegaId={bodegaId}
+                          showStock={true}
+                        />
                       </div>
                     </TableCell>
-                    <TableCell className="min-w-[80px]">
+                    <TableCell className="min-w-[100px]">
                       <Input
                         type="number"
                         min="1"
                         step="1"
                         value={line.cantidad}
                         onChange={(e) => {
-                          const value = e.target.value ? Number(e.target.value) : '';
+                          const value = e.target.value
+                            ? Number(e.target.value)
+                            : '';
                           if (value !== '') {
-                            const validation = validateCantidad(value, VALIDATION_RULES.cantidad.max);
+                            const validation = validateCantidad(
+                              value,
+                              VALIDATION_RULES.cantidad.max
+                            );
                             if (!validation.isValid) {
                               // El error se manejará en la validación del formulario
                             }
@@ -222,9 +228,14 @@ export function FacturaLineaTabla({
                         step="0.01"
                         value={line.precioUnitario}
                         onChange={(e) => {
-                          const value = e.target.value ? Number(e.target.value) : '';
+                          const value = e.target.value
+                            ? Number(e.target.value)
+                            : '';
                           if (value !== '') {
-                            const validation = validatePrecio(value, VALIDATION_RULES.precio.max);
+                            const validation = validatePrecio(
+                              value,
+                              VALIDATION_RULES.precio.max
+                            );
                             if (!validation.isValid) {
                               // El error se manejará en la validación del formulario
                             }
@@ -232,7 +243,7 @@ export function FacturaLineaTabla({
                           updateLine(index, 'precioUnitario', value);
                         }}
                         className={cn(
-                          'w-full min-w-[120px]',
+                          'w-full',
                           errors[index]?.precioUnitario && 'border-destructive'
                         )}
                         placeholder="0.00"
@@ -243,7 +254,7 @@ export function FacturaLineaTabla({
                         </p>
                       )}
                     </TableCell>
-                    <TableCell className="min-w-[120px]">
+                    <TableCell className="min-w-[130px]">
                       {(() => {
                         const qty = Number(line.cantidad) || 0;
                         const price = Number(line.precioUnitario) || 0;
@@ -252,19 +263,25 @@ export function FacturaLineaTabla({
                           <Input
                             value={total.toFixed(2)}
                             readOnly
-                            className="bg-muted w-full"
+                            className="bg-muted w-full font-semibold"
                           />
                         );
                       })()}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="min-w-[100px] text-center align-middle">
                       <Button
                         variant="ghost"
-                        size="icon"
-                        onClick={() => removeLine(index)}
+                        size="sm"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          removeLine(index);
+                        }}
+                        className="h-9 w-9 p-0 hover:bg-destructive hover:text-destructive-foreground"
                         aria-label="Eliminar línea"
+                        type="button"
                       >
-                        <Trash2 className="h-4 w-4 text-destructive" />
+                        <Trash2 className="h-5 w-5" />
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -272,9 +289,8 @@ export function FacturaLineaTabla({
               )}
             </TableBody>
           </Table>
-        </ScrollArea>
+        </div>
       </div>
     </div>
   );
 }
-
