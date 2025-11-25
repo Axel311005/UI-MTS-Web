@@ -2,7 +2,7 @@
  * Utilidades para generar y validar códigos SKU de items
  * Formato: XXX-00000 (código + guion + 5 dígitos)
  *
- * Las categorías están en: src/items/data/codigo-item-categorias.ts
+ * Las categorías estáaan en: src/items/data/codigo-item-categorias.ts
  */
 
 import {
