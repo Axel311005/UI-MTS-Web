@@ -418,19 +418,11 @@ export function validateName(
   minLength: number = 2,
   maxLength: number = 30
 ): { isValid: boolean; error?: string } {
-  console.log('🔵 validateName INICIO - Input:', name);
-
   if (!name || typeof name !== 'string') {
     return { isValid: false, error: 'El nombre es requerido' };
   }
 
   const sanitized = sanitizeName(name, minLength, maxLength);
-  console.log(
-    '🔵 validateName - Sanitizado:',
-    sanitized,
-    'Longitud:',
-    sanitized.length
-  );
 
   // Validar longitud mínima
   if (sanitized.length < minLength) {
@@ -505,35 +497,14 @@ export function validateName(
       maxPercentage = 40;
     }
 
-    console.log('🔵 validateName - Validación de repeticiones:');
-    console.log('  - Conteo de letras:', counts);
-    console.log('  - MaxCount:', maxCount);
-    console.log(
-      '  - Porcentaje repetitivo:',
-      repetitivePercentage.toFixed(2) + '%'
-    );
-    console.log('  - Umbral máximo:', maxPercentage + '%');
-    console.log(
-      '  - Comparación:',
-      repetitivePercentage,
-      '>',
-      maxPercentage,
-      '=',
-      repetitivePercentage > maxPercentage
-    );
-
     if (repetitivePercentage > maxPercentage) {
-      console.error('❌ validateName - RECHAZADO por repeticiones');
       return {
         isValid: false,
         error: 'El nombre contiene demasiadas letras repetidas',
       };
-    } else {
-      console.log('✅ validateName - PASÓ validación de repeticiones');
     }
   }
 
-  console.log('✅ validateName - VÁLIDO');
   return { isValid: true };
 }
 

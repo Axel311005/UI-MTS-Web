@@ -133,7 +133,6 @@ export function useProtectedInput({
       });
     } catch (e) {
       // Si falla, usar polling como fallback
-      console.warn('No se pudo interceptar el setter de value, usando polling');
     }
 
     // Monitorear cambios cada 500ms como fallback

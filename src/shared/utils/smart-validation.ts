@@ -9,7 +9,14 @@
 export interface SmartValidationResult {
   isValid: boolean;
   error?: string;
-  reason?: 'repetitions' | 'no-vowels' | 'dangerous-chars' | 'too-short' | 'too-long' | 'repetitive' | 'noisy';
+  reason?:
+    | 'repetitions'
+    | 'no-vowels'
+    | 'dangerous-chars'
+    | 'too-short'
+    | 'too-long'
+    | 'repetitive'
+    | 'noisy';
 }
 
 /**
@@ -68,8 +75,11 @@ export function validateNoExcessiveConsonants(
   }
 
   // Buscar secuencias de más de maxConsonants caracteres que no sean vocales
-  const pattern = new RegExp(`[^aeiouáéíóúAEIOUÁÉÍÓÚ\\s\\d]{${maxConsonants + 1},}`, 'i');
-  
+  const pattern = new RegExp(
+    `[^aeiouáéíóúAEIOUÁÉÍÓÚ\\s\\d]{${maxConsonants + 1},}`,
+    'i'
+  );
+
   return !pattern.test(text);
 }
 
@@ -233,7 +243,11 @@ export function smartValidate(
 
   // 5. Validar consonantes excesivas (solo para textos más largos)
   // Hacer más permisivo: solo validar si hay más de 8 consonantes seguidas (muy raro en texto real)
-  if (trimmed.length > 5 && maxConsonantsInRow < 8 && !validateNoExcessiveConsonants(trimmed, maxConsonantsInRow)) {
+  if (
+    trimmed.length > 5 &&
+    maxConsonantsInRow < 8 &&
+    !validateNoExcessiveConsonants(trimmed, maxConsonantsInRow)
+  ) {
     return {
       isValid: false,
       error: 'El texto contiene demasiadas consonantes seguidas sin vocales',
@@ -319,7 +333,9 @@ export function validateAddress(address: string): SmartValidationResult {
 /**
  * Valida una descripción o comentario
  */
-export function validateDescription(description: string): SmartValidationResult {
+export function validateDescription(
+  description: string
+): SmartValidationResult {
   return smartValidate(description, {
     minLength: 2,
     maxLength: 500,
@@ -334,17 +350,19 @@ export function validateDescription(description: string): SmartValidationResult 
 
 /**
  * Valida un código o identificador
+ * Para códigos de recepción (REC-000000), solo valida XSS y SQL injection
  */
 export function validateCode(code: string): SmartValidationResult {
+  // Solo validar XSS y SQL injection, sin validaciones de repeticiones
   return smartValidate(code, {
     minLength: 2,
     maxLength: 50,
     allowNumbers: true,
     allowSpecialChars: true,
-    maxRepetitions: 3,
-    maxConsonantsInRow: 6, // Los códigos pueden tener más consonantes
-    maxRepetitivePercentage: 50,
-    maxSymbolPercentage: 30,
+    maxRepetitions: 999, // Desactivar validación de repeticiones
+    maxConsonantsInRow: 999, // Desactivar validación de consonantes
+    maxRepetitivePercentage: 100, // Desactivar validación de porcentaje repetitivo
+    maxSymbolPercentage: 100, // Desactivar validación de símbolos
     allowedChars: /^[a-zA-Z0-9\-_]+$/,
   });
 }
@@ -364,4 +382,3 @@ export function validateSearch(search: string): SmartValidationResult {
     maxSymbolPercentage: 30,
   });
 }
-

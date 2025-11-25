@@ -323,9 +323,17 @@ export default function MotivosCitaPage() {
                     e.target.value,
                     VALIDATION_RULES.descripcion.min,
                     VALIDATION_RULES.descripcion.max,
-                    false
+                    false, // No permitir 3 caracteres repetidos
+                    true // Preservar espacios (permitir espacios en descripción)
                   );
                   setFormData({ ...formData, descripcion: sanitized });
+                }}
+                onBlur={(e) => {
+                  // Validar que no sea solo espacios
+                  const trimmed = e.target.value.trim();
+                  if (e.target.value.length > 0 && trimmed.length === 0) {
+                    setFormData({ ...formData, descripcion: '' });
+                  }
                 }}
                 rows={3}
                 maxLength={VALIDATION_RULES.descripcion.max}
@@ -370,9 +378,17 @@ export default function MotivosCitaPage() {
                     e.target.value,
                     VALIDATION_RULES.descripcion.min,
                     VALIDATION_RULES.descripcion.max,
-                    false
+                    false, // No permitir 3 caracteres repetidos
+                    true // Preservar espacios (permitir espacios en descripción)
                   );
                   setFormData({ ...formData, descripcion: sanitized });
+                }}
+                onBlur={(e) => {
+                  // Validar que no sea solo espacios
+                  const trimmed = e.target.value.trim();
+                  if (e.target.value.length > 0 && trimmed.length === 0) {
+                    setFormData({ ...formData, descripcion: '' });
+                  }
                 }}
                 rows={3}
                 maxLength={VALIDATION_RULES.descripcion.max}

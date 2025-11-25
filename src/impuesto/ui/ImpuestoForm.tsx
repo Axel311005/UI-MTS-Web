@@ -8,6 +8,7 @@ import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import {
   sanitizeText,
+  validateText,
   VALIDATION_RULES,
 } from '@/shared/utils/validation';
 
@@ -33,7 +34,8 @@ export function ImpuestoForm({
         value,
         VALIDATION_RULES.descripcion.min,
         VALIDATION_RULES.descripcion.max,
-        false // No permitir 3 caracteres repetidos
+        false, // No permitir 3 caracteres repetidos
+        true // Preservar espacios (permitir espacios en descripción)
       );
       onChange({ ...values, [field]: sanitized });
     } else {
@@ -56,6 +58,24 @@ export function ImpuestoForm({
             placeholder="Ej: IVA 10%, ISV 15%, etc."
             value={values.descripcion}
             onChange={(e) => handleChange('descripcion', e.target.value)}
+            onBlur={(e) => {
+              // Validar que no sea solo espacios
+              const trimmed = e.target.value.trim();
+              if (e.target.value.length > 0 && trimmed.length === 0) {
+                onChange({ ...values, descripcion: '' });
+              } else if (trimmed.length > 0) {
+                // Validar con validateText
+                const validation = validateText(
+                  trimmed,
+                  VALIDATION_RULES.descripcion.min,
+                  VALIDATION_RULES.descripcion.max,
+                  false
+                );
+                if (!validation.isValid && errors?.descripcion !== validation.error) {
+                  // El error se manejará en la validación del formulario
+                }
+              }
+            }}
             maxLength={VALIDATION_RULES.descripcion.max}
           />
           {errors?.descripcion && (

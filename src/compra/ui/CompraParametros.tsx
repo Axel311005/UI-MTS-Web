@@ -12,6 +12,7 @@ import { useMoneda } from '@/moneda/hook/useMoneda';
 import { useTipoPago } from '@/tiposPago/hook/useTipoPago';
 import { useImpuesto } from '@/impuesto/hook/useImpuesto';
 import { BodegaSelect } from '@/shared/components/selects/BodegaSelect';
+import { sanitizeText } from '@/shared/utils/validation';
 
 interface CompraParametrosProps {
   monedaId: number | '';
@@ -184,7 +185,23 @@ export function CompraParametros({
         <label className="text-sm font-medium">Comentario</label>
         <Textarea
           value={comentario}
-          onChange={(e) => onComentarioChange(e.target.value)}
+          onChange={(e) => {
+            const sanitized = sanitizeText(
+              e.target.value,
+              0, // min (opcional)
+              500, // max
+              false, // No permitir 3 caracteres repetidos
+              true // Preservar espacios (permitir espacios en comentario)
+            );
+            onComentarioChange(sanitized);
+          }}
+          onBlur={(e) => {
+            // Limpiar si solo contiene espacios
+            const trimmed = e.target.value.trim();
+            if (e.target.value.length > 0 && trimmed.length === 0) {
+              onComentarioChange('');
+            }
+          }}
           placeholder="Agregar comentarios adicionales..."
           className="min-h-[80px]"
           maxLength={500}

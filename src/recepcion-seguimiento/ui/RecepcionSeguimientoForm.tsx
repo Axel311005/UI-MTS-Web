@@ -194,9 +194,41 @@ export function RecepcionSeguimientoForm({
               e.target.value,
               VALIDATION_RULES.descripcionSeguimiento.min,
               VALIDATION_RULES.descripcionSeguimiento.max,
-              false
+              false, // No permitir 3 caracteres repetidos
+              true // Preservar espacios (permitir espacios en descripción)
             );
             update({ descripcion: sanitized });
+          }}
+          onBlur={(e) => {
+            // Validar que no sea solo espacios
+            const trimmed = e.target.value.trim();
+            if (e.target.value.length > 0 && trimmed.length === 0) {
+              update({ descripcion: '' });
+              setErrors((prev) => ({
+                ...prev,
+                descripcion: 'La descripción no puede contener solo espacios',
+              }));
+            } else {
+              // Validar con validateText
+              const validation = validateText(
+                trimmed,
+                VALIDATION_RULES.descripcionSeguimiento.min,
+                VALIDATION_RULES.descripcionSeguimiento.max,
+                false
+              );
+              if (!validation.isValid) {
+                setErrors((prev) => ({
+                  ...prev,
+                  descripcion: validation.error || 'Descripción inválida',
+                }));
+              } else if (errors.descripcion) {
+                setErrors((prev) => {
+                  const newErrors = { ...prev };
+                  delete newErrors.descripcion;
+                  return newErrors;
+                });
+              }
+            }
           }}
           rows={4}
           maxLength={VALIDATION_RULES.descripcionSeguimiento.max}

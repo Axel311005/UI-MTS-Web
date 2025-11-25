@@ -30,29 +30,11 @@ interface ClienteFormProps {
   showEstadoToggle?: boolean;
 }
 
-// Formatear RUC automáticamente (J + 13 números)
+// Formatear RUC: solo 13 números (la J se agrega automáticamente como prefijo visual)
 const formatRUC = (value: string) => {
-  // Convertir a mayúsculas
-  let cleaned = value.toUpperCase();
-  
-  // Si ya tiene una J al inicio, solo permitir números después (no más Js ni letras)
-  if (cleaned.startsWith('J')) {
-    // Remover todas las letras (incluyendo Js adicionales) y solo dejar números después de la primera J
-    const afterJ = cleaned.slice(1).replace(/[^0-9]/g, '');
-    cleaned = `J${afterJ}`;
-  } else {
-    // Si no empieza con J, remover todas las letras y solo dejar números
-    const numbers = cleaned.replace(/[^0-9]/g, '');
-    // Si hay números, agregar J al inicio
-    cleaned = numbers ? `J${numbers}` : '';
-  }
-
-  // Limitar a J + 13 números máximo (total 14 caracteres)
-  if (cleaned.length > 14) {
-    cleaned = cleaned.slice(0, 14);
-  }
-
-  return cleaned;
+  // Solo permitir números, máximo 13 dígitos
+  const numbers = value.replace(/\D/g, '').slice(0, 13);
+  return numbers;
 };
 
 // Formatear teléfono: solo 8 números (el +505 se agrega automáticamente)
@@ -106,6 +88,17 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
     onChange({ ...values, [field]: sanitizedValue });
   };
 
+  // Extraer solo los 13 dígitos del RUC si viene con J
+  const extractRUCDigits = (ruc: string | null | undefined): string => {
+    if (!ruc) return '';
+    // Si tiene J, extraer solo los 13 dígitos después
+    if (ruc.startsWith('J')) {
+      return ruc.replace('J', '').replace(/\D/g, '').slice(0, 13);
+    }
+    // Si no, solo números
+    return ruc.replace(/\D/g, '').slice(0, 13);
+  };
+
   const handleRUCChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     // Si el campo está vacío, establecer null
@@ -114,11 +107,12 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
       return;
     }
     
-    let formatted = formatRUC(value);
-    // Si después del formateo está vacío o solo tiene 'J' sin números, establecer null
-    if (!formatted || formatted === 'J') {
+    const formatted = formatRUC(value);
+    // Si después del formateo está vacío, establecer null
+    if (!formatted || formatted.length === 0) {
       handleChange('ruc', null);
     } else {
+      // Guardar solo los números (sin la J)
       handleChange('ruc', formatted);
     }
   };
@@ -224,16 +218,21 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
               <Label htmlFor="ruc" className="text-sm">
                 RUC
               </Label>
-              <Input
-                id="ruc"
-                value={values.ruc || ''}
-                onChange={handleRUCChange}
-                placeholder="J9999999999999"
-                maxLength={14}
-                className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
-                aria-invalid={!!errors.ruc}
-                aria-describedby={errors.ruc ? 'ruc-error' : undefined}
-              />
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs sm:text-sm font-medium pointer-events-none">
+                  J
+                </div>
+                <Input
+                  id="ruc"
+                  value={extractRUCDigits(values.ruc)}
+                  onChange={handleRUCChange}
+                  placeholder="9999999999999"
+                  maxLength={13}
+                  className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation pl-8"
+                  aria-invalid={!!errors.ruc}
+                  aria-describedby={errors.ruc ? 'ruc-error' : undefined}
+                />
+              </div>
               {errors.ruc && (
                 <ErrorMessage message={errors.ruc} fieldId="ruc" />
               )}

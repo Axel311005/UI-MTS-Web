@@ -31,7 +31,7 @@ import { io, Socket } from 'socket.io-client';
 import { SOCKET_URL_CLIENTE } from '@/shared/config/socket.config';
 import { useLandingAuthStore } from '../store/landing-auth.store';
 import { useAuthStore } from '@/auth/store/auth.store';
-import { validateCode } from '@/shared/utils/validation';
+import { validateCode } from '@/shared/utils/smart-validation';
 
 const estadoConfig: Record<
   string,
@@ -67,8 +67,25 @@ interface ClienteNotification {
   data?: Record<string, unknown>;
 }
 
+// Función para formatear código de recepción: REC-000000
+// Mantiene los números tal como los escribe el usuario (sin completar automáticamente)
+const formatCodigoRecepcion = (value: string): string => {
+  // Remover todo excepto números
+  const numeros = value.replace(/\D/g, '');
+
+  // Si está vacío, retornar solo el prefijo
+  if (numeros.length === 0) {
+    return 'REC-';
+  }
+
+  // Limitar a 6 dígitos y mantenerlos tal cual (sin completar con ceros)
+  const numerosLimitados = numeros.slice(0, 6);
+
+  return `REC-${numerosLimitados}`;
+};
+
 export function SeguimientoForm() {
-  const [codigo, setCodigo] = useState('');
+  const [codigo, setCodigo] = useState('REC-');
   const [loading, setLoading] = useState(false);
   const [seguimiento, setSeguimiento] = useState<SeguimientoRecepcion | null>(
     null
@@ -215,18 +232,26 @@ export function SeguimientoForm() {
       return;
     }
 
-    // Sanitizar y validar código con validaciones inteligentes
+    // Sanitizar código (solo XSS y SQL injection)
     const codigoLimpio = codigo.trim().toUpperCase();
 
-    if (!codigoLimpio) {
-      toast.error('Ingresa un código de recepción');
+    if (!codigoLimpio || codigoLimpio === 'REC-') {
+      toast.error('Ingresa un código de recepción válido');
       return;
     }
 
-    // Validar con validaciones inteligentes
+    // Validar formato: debe ser REC- seguido de 6 dígitos
+    if (!/^REC-\d{6}$/.test(codigoLimpio)) {
+      toast.error('El código debe tener el formato REC-000000');
+      return;
+    }
+
+    // Solo validar XSS y SQL injection (sin validaciones de repeticiones)
     const codigoValidation = validateCode(codigoLimpio);
     if (!codigoValidation.isValid) {
-      toast.error(codigoValidation.error || 'El código no es válido');
+      toast.error(
+        codigoValidation.error || 'El código contiene caracteres no permitidos'
+      );
       return;
     }
 
@@ -271,11 +296,39 @@ export function SeguimientoForm() {
                 </Label>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Input
-                    placeholder="Ej: REC-20250115-AB12CD"
+                    placeholder="REC-000000"
                     value={codigo}
-                    onChange={(e) => setCodigo(e.target.value.toUpperCase())}
+                    onChange={(e) => {
+                      const inputValue = e.target.value;
+
+                      // Si el usuario borra el prefijo, restaurarlo
+                      if (!inputValue.startsWith('REC-')) {
+                        // Si empieza con números, agregar prefijo
+                        if (/^\d/.test(inputValue)) {
+                          const formatted = formatCodigoRecepcion(inputValue);
+                          setCodigo(formatted);
+                        } else if (inputValue === '') {
+                          setCodigo('REC-');
+                        } else {
+                          // Si tiene texto inválido, mantener el valor anterior
+                          return;
+                        }
+                      } else {
+                        // Extraer solo la parte después de REC-
+                        const parteNumerica = inputValue.replace('REC-', '');
+                        const formatted = formatCodigoRecepcion(parteNumerica);
+                        setCodigo(formatted);
+                      }
+                    }}
+                    onFocus={(e) => {
+                      // Si está vacío o solo tiene REC-, seleccionar la parte numérica
+                      if (codigo === 'REC-' || codigo === '') {
+                        e.target.setSelectionRange(4, e.target.value.length);
+                      }
+                    }}
                     className="text-base sm:text-lg py-4 sm:py-6 border-2 border-orange-500/20 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl font-montserrat transition-all touch-manipulation"
                     disabled={loading}
+                    maxLength={10} // REC- + 6 dígitos = 10 caracteres
                   />
                   <Button
                     type="submit"
