@@ -27,7 +27,7 @@ import type { MotivoCita, Vehiculo } from '../types/cita.types';
 import { useLandingAuthStore } from '../store/landing-auth.store';
 import { useAuthStore } from '@/auth/store/auth.store';
 import { useNavigate } from 'react-router';
-import { validateCode, smartValidate, validateFecha, getFechaMinima, getFechaMaxima, validateText } from '@/shared/utils/validation';
+import { validateFecha, getFechaMinima, getFechaMaxima, validateText } from '@/shared/utils/validation';
 import { sanitizeString } from '@/shared/utils/security';
 import { PlacaInput } from '@/shared/components/PlacaInput';
 import { MarcaSelect } from '@/shared/components/selects/MarcaSelect';
@@ -165,30 +165,6 @@ export function CitaForm() {
     loadData();
   }, [user, isAuthenticated, token]);
 
-  // Validar campo con validaciones inteligentes (solo para color)
-  const validateField = (value: string, fieldType: 'code' | 'text'): { isValid: boolean; error?: string } => {
-    if (!value || value.trim().length === 0) {
-      return { isValid: false, error: 'Este campo es requerido' };
-    }
-
-    switch (fieldType) {
-      case 'code':
-        return validateCode(value);
-      case 'text':
-        return smartValidate(value, {
-          minLength: 2,
-          maxLength: 50,
-          allowNumbers: true,
-          allowSpecialChars: false,
-          maxRepetitions: 3,
-          maxConsonantsInRow: 4,
-          maxRepetitivePercentage: 50,
-          maxSymbolPercentage: 25, // Aumentado de 10 a 25 para permitir códigos y números
-        });
-      default:
-        return { isValid: true };
-    }
-  };
 
   // Validar fecha y hora
   const validateFechaHora = (fecha: string, hora: string): boolean => {
@@ -354,12 +330,12 @@ export function CitaForm() {
       const nuevoVehiculo = await createVehiculo({
         idCliente: user.clienteId,
         placa: placaLimpia,
-        motor: motorLimpio ? sanitizeString(motorLimpio, 50) : undefined,
+        motor: motorLimpio ? sanitizeString(motorLimpio, 50) : '',
         marca: marcaLimpia,
         modelo: modeloLimpio,
         color: colorLimpio,
         anio: anio,
-        numChasis: numChasisLimpio ? sanitizeString(numChasisLimpio, 50) : undefined,
+        numChasis: numChasisLimpio ? sanitizeString(numChasisLimpio, 50) : '',
       });
 
       setVehiculos([...vehiculos, nuevoVehiculo]);
