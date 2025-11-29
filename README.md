@@ -356,20 +356,6 @@ Componente → Hook → Action → API → Backend
 El archivo `netlify.toml` ya incluye configuración para despliegue como **SPA** (manejo de rutas y redirecciones).
 
 ---
-
-## 📚 Documentación Adicional
-
-En la raíz del proyecto se incluyen archivos complementarios:
-
-- `COLORES_PROYECTO.md` – Paleta y lineamientos de diseño.
-- `PROTECCION-SQL-INPUTS.md` – Notas de protección frente a inyección SQL.
-- `RESUMEN_VALIDACIONES_Y_SEGURIDAD.md` – Resumen de validaciones y aspectos de seguridad.
-- `TESTING-CONSOLA-MALICIOSA.md` – Pruebas relacionadas con consola maliciosa y hardening.
-
-Revisar estos documentos para entender mejor las decisiones de diseño visual y de seguridad del sistema.
-
----
-
 ## 🤝 Contribución (opcional)
 
 - Mantener la estructura modular existente por dominio.
