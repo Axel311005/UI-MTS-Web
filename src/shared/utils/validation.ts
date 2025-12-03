@@ -27,6 +27,10 @@ export function validateLength(
   max: number
 ): { isValid: boolean; error?: string } {
   if (!text || typeof text !== 'string') {
+    // Si min es 0, permitir string vacío
+    if (min === 0) {
+      return { isValid: true };
+    }
     return {
       isValid: false,
       error: `Debe tener entre ${min} y ${max} caracteres`,
@@ -34,6 +38,15 @@ export function validateLength(
   }
 
   const trimmed = text.trim();
+
+  // Rechazar si solo contiene espacios (incluso si min es 0)
+  if (trimmed.length === 0 && text.length > 0) {
+    return {
+      isValid: false,
+      error: 'No puede contener solo espacios en blanco',
+    };
+  }
+
   if (trimmed.length < min) {
     return {
       isValid: false,
@@ -67,12 +80,33 @@ export function validateText(
     return lengthValidation;
   }
 
-  // Validar SQL Injection
-  if (detectSQLInjection(text)) {
-    return {
-      isValid: false,
-      error: 'El texto contiene patrones no permitidos (SQL Injection)',
-    };
+  // Validar SQL Injection (pero ser más permisivo para direcciones cuando allowRepeats es true)
+  // Las direcciones pueden contener comas, puntos, números, etc. que no son SQL injection
+  if (allowRepeats) {
+    // Para direcciones, solo detectar patrones SQL muy obvios
+    const strictSQLPatterns = [
+      /\bUNION\s+SELECT\b/gi,
+      /\bDROP\s+(TABLE|DATABASE)\b/gi,
+      /\bDELETE\s+FROM\b/gi,
+      /;\s*(DROP|DELETE|UPDATE|INSERT)/gi,
+    ];
+    const hasStrictSQL = strictSQLPatterns.some((pattern) =>
+      pattern.test(text)
+    );
+    if (hasStrictSQL) {
+      return {
+        isValid: false,
+        error: 'El texto contiene patrones no permitidos (SQL Injection)',
+      };
+    }
+  } else {
+    // Para otros campos, usar detección completa de SQL injection
+    if (detectSQLInjection(text)) {
+      return {
+        isValid: false,
+        error: 'El texto contiene patrones no permitidos (SQL Injection)',
+      };
+    }
   }
 
   // Validar caracteres repetidos si no se permite
@@ -84,15 +118,21 @@ export function validateText(
   }
 
   // Aplicar validaciones inteligentes adicionales
+  // PERO hacer más permisivo para campos de texto libre (comentarios, observaciones, notas, direcciones)
+  // Estos campos tienen min: 0, así que los identificamos así
+  // También ser más permisivo cuando allowRepeats es true (para direcciones)
+  const isFreeTextField = min === 0;
+  const isPermissiveField = isFreeTextField || allowRepeats; // Direcciones también son permisivas
+
   const smartResult = smartValidate(text.trim(), {
     minLength: min,
     maxLength: max,
     allowNumbers: true,
     allowSpecialChars: true,
     maxRepetitions: allowRepeats ? 10 : 3,
-    maxConsonantsInRow: 6, // Aumentado de 5 a 6 para permitir textos técnicos
-    maxRepetitivePercentage: 50,
-    maxSymbolPercentage: 20,
+    maxConsonantsInRow: isPermissiveField ? 10 : 6, // Más permisivo para texto libre y direcciones (permite hasta 10 consonantes seguidas)
+    maxRepetitivePercentage: isPermissiveField ? 70 : 50, // Más permisivo para texto libre y direcciones
+    maxSymbolPercentage: isPermissiveField ? 50 : 20, // Más permisivo para texto libre y direcciones (permite más símbolos como comas, puntos, etc.)
   });
 
   if (!smartResult.isValid) {
@@ -107,24 +147,27 @@ export function validateText(
 
 /**
  * Sanitiza texto con validación de longitud y repeticiones
+ * @param preserveSpaces - Si es true, preserva espacios al inicio/final (útil para comentarios, notas, direcciones)
  */
 export function sanitizeText(
   text: string,
   _min: number, // Parámetro para compatibilidad, se valida en validateText
   max: number,
-  allowRepeats: boolean = false
+  allowRepeats: boolean = false,
+  preserveSpaces: boolean = false
 ): string {
   if (!text || typeof text !== 'string') {
     return '';
   }
 
-  let sanitized = text.trim();
+  // Preservar espacios si se solicita (para campos de texto libre)
+  let sanitized = preserveSpaces ? text : text.trim();
 
   // Eliminar repeticiones si no se permite
   if (!allowRepeats) {
-    sanitized = sanitizeStringNoRepeats(sanitized, max);
+    sanitized = sanitizeStringNoRepeats(sanitized, max, preserveSpaces);
   } else {
-    sanitized = sanitizeString(sanitized, max);
+    sanitized = sanitizeString(sanitized, max, preserveSpaces);
   }
 
   // Limitar a máximo

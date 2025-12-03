@@ -83,14 +83,16 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
           value,
           VALIDATION_RULES.direccion.min,
           VALIDATION_RULES.direccion.max,
-          false // No permitir 3 caracteres repetidos
+          false, // No permitir 3 caracteres repetidos
+          true // Preservar espacios (permitir espacios en direcciones)
         );
       } else if (field === 'notas') {
         sanitizedValue = sanitizeText(
           value,
           VALIDATION_RULES.notas.min,
           VALIDATION_RULES.notas.max,
-          false // No permitir 3 caracteres repetidos
+          false, // No permitir 3 caracteres repetidos
+          true // Preservar espacios (permitir espacios en notas)
         );
       } else if (field === 'primerNombre' || field === 'primerApellido') {
         // Sanitizar nombres: solo letras, sin espacios, números ni caracteres especiales
@@ -267,11 +269,18 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
                 value={values.direccion}
                 onChange={(e) => handleChange('direccion', e.target.value)}
                 onBlur={(e) => {
+                  // Limpiar si solo contiene espacios
+                  const trimmed = e.target.value.trim();
+                  if (e.target.value.length > 0 && trimmed.length === 0) {
+                    handleChange('direccion', '');
+                    return;
+                  }
+                  
                   const validation = validateText(
                     e.target.value,
                     VALIDATION_RULES.direccion.min,
                     VALIDATION_RULES.direccion.max,
-                    false
+                    true // allowRepeats: true para ser más permisivo con direcciones
                   );
                   if (
                     !validation.isValid &&
@@ -299,6 +308,13 @@ export function ClienteForm({ values, onChange, errors }: ClienteFormProps) {
               value={values.notas}
               onChange={(e) => handleChange('notas', e.target.value)}
               onBlur={(e) => {
+                // Limpiar si solo contiene espacios
+                const trimmed = e.target.value.trim();
+                if (e.target.value.length > 0 && trimmed.length === 0) {
+                  handleChange('notas', '');
+                  return;
+                }
+                
                 const validation = validateText(
                   e.target.value,
                   VALIDATION_RULES.notas.min,

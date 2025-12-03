@@ -11,18 +11,22 @@ import DOMPurify from 'dompurify';
  * @param maxLength - Longitud máxima permitida (default: 500)
  * @returns Texto sanitizado
  */
-export function sanitizeString(input: string, maxLength: number = 500): string {
+export function sanitizeString(input: string, maxLength: number = 500, preserveSpaces: boolean = false): string {
   if (typeof input !== 'string') {
     return '';
   }
 
-  // Eliminar caracteres de control y espacios al inicio/final
-  let sanitized = input.trim();
+  // Eliminar caracteres de control y espacios al inicio/final (solo si no se preservan)
+  let sanitized = preserveSpaces ? input : input.trim();
 
   // Detectar SQL Injection - si se detecta, eliminar el texto malicioso
   if (detectSQLInjection(sanitized)) {
+    // Guardar espacios al inicio/final si se deben preservar
+    const leadingSpaces = preserveSpaces ? sanitized.match(/^\s*/)?.[0] || '' : '';
+    const trailingSpaces = preserveSpaces ? sanitized.match(/\s*$/)?.[0] || '' : '';
+    
     // Eliminar patrones SQL maliciosos
-    sanitized = sanitized
+    let cleaned = sanitized
       .replace(/(\bOR\b|\bAND\b)\s+['"]?\d+['"]?\s*=\s*['"]?\d+['"]?/gi, '')
       .replace(/\bUNION\s+SELECT\b/gi, '')
       .replace(/\bSELECT\s+.*\s+FROM\b/gi, '')
@@ -36,7 +40,10 @@ export function sanitizeString(input: string, maxLength: number = 500): string {
       .replace(/--\s*$/gm, '') // Eliminar comentarios SQL
       .replace(/\/\*.*?\*\//gs, '') // Eliminar comentarios SQL multilínea
       .replace(/'/g, '') // Eliminar comillas simples (común en SQL Injection)
-      .trim();
+      .trim(); // Limpiar espacios intermedios después de eliminar SQL malicioso
+    
+    // Restaurar espacios al inicio/final si se deben preservar
+    sanitized = preserveSpaces ? leadingSpaces + cleaned + trailingSpaces : cleaned;
   }
 
   // Usar DOMPurify para sanitización robusta contra XSS
@@ -557,22 +564,32 @@ export function validateNoRepeatedChars(input: string): boolean {
  */
 export function sanitizeStringNoRepeats(
   input: string,
-  maxLength: number = 500
+  maxLength: number = 500,
+  preserveSpaces: boolean = false
 ): string {
   if (!input || typeof input !== 'string') {
     return '';
   }
 
-  let sanitized = input.trim();
+  // Preservar espacios si se solicita
+  let sanitized = preserveSpaces ? input : input.trim();
 
   // Eliminar secuencias de más de 2 caracteres consecutivos iguales
   // Reemplazar 3 o más caracteres iguales con solo 2
-  sanitized = sanitized.replace(/(.)\1{2,}/gi, (match) => {
-    return match[0].repeat(2); // Mantener solo 2 caracteres
-  });
+  // PERO no aplicar a espacios múltiples si preserveSpaces es true
+  if (preserveSpaces) {
+    // Solo eliminar repeticiones de caracteres NO espacios
+    sanitized = sanitized.replace(/([^\s])\1{2,}/gi, (match) => {
+      return match[0].repeat(2); // Mantener solo 2 caracteres
+    });
+  } else {
+    sanitized = sanitized.replace(/(.)\1{2,}/gi, (match) => {
+      return match[0].repeat(2); // Mantener solo 2 caracteres
+    });
+  }
 
-  // Aplicar sanitización normal
-  sanitized = sanitizeString(sanitized, maxLength);
+  // Aplicar sanitización normal (preservando espacios si se solicita)
+  sanitized = sanitizeString(sanitized, maxLength, preserveSpaces);
 
   return sanitized;
 }

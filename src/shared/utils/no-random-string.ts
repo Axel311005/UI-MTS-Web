@@ -1,7 +1,7 @@
 /**
  * Valida que una cadena no sea una cadena aleatoria sin sentido
  * Similar a @NoRandomString() del backend
- * 
+ *
  * Detecta:
  * - Patrones repetitivos (subcadenas que se repiten)
  * - Baja diversidad de caracteres
@@ -44,38 +44,68 @@ export function validateNoRandomString(value: string): NoRandomStringResult {
   // Calcular ratio de vocales
   const vowelRatio = vowels / totalLetters;
 
-  // Si tiene menos del 15% de vocales, probablemente es aleatorio
-  if (vowelRatio < 0.15) {
+  // Si tiene menos del 10% de vocales (más permisivo), probablemente es aleatorio
+  // Pero ser más permisivo con nombres y direcciones
+  if (vowelRatio < 0.1) {
     return {
       isValid: false,
-      error: 'El valor parece ser una cadena aleatoria sin sentido. Por favor, ingrese un valor válido',
+      error:
+        'El valor parece ser una cadena aleatoria sin sentido. Por favor, ingrese un valor válido',
     };
   }
 
-  // Detectar secuencias muy largas de consonantes (más de 5)
-  const consonantSequence = /[bcdfghjklmnpqrstvwxyz]{6,}/gi;
-  if (consonantSequence.test(str)) {
-    return {
-      isValid: false,
-      error: 'El valor parece ser una cadena aleatoria sin sentido. Por favor, ingrese un valor válido',
-    };
+  // Detectar secuencias muy largas de consonantes (más de 7)
+  // PERO ser más permisivo: solo bloquear si NO hay vocales cerca (texto real tiene vocales distribuidas)
+  const consonantSequence = /[bcdfghjklmnpqrstvwxyz]{8,}/gi; // Aumentar de 6 a 8
+  const matches = str.match(consonantSequence);
+  if (matches) {
+    // Verificar si hay vocales cerca de la secuencia de consonantes
+    // Si hay vocales en un rango de 3 caracteres antes o después, probablemente es texto real
+    for (const match of matches) {
+      const matchIndex = str.indexOf(match);
+      const before = str.substring(Math.max(0, matchIndex - 3), matchIndex);
+      const after = str.substring(
+        matchIndex + match.length,
+        matchIndex + match.length + 3
+      );
+      const hasVowelsNearby = /[aeiouáéíóú]/.test(before + after);
+
+      // Si NO hay vocales cerca Y la secuencia es muy larga (10+), es probablemente basura
+      if (!hasVowelsNearby && match.length >= 10) {
+        return {
+          isValid: false,
+          error:
+            'El valor parece ser una cadena aleatoria sin sentido. Por favor, ingrese un valor válido',
+        };
+      }
+      // Si tiene vocales cerca o es menos de 10 caracteres, es texto real (permitir)
+    }
   }
 
   // Detectar patrones repetitivos
   // Si una subcadena de 4+ caracteres se repite 2+ veces, probablemente es aleatorio
-  for (let patternLength = 4; patternLength <= Math.floor(str.length / 2); patternLength++) {
+  for (
+    let patternLength = 4;
+    patternLength <= Math.floor(str.length / 2);
+    patternLength++
+  ) {
     for (let i = 0; i <= str.length - patternLength * 2; i++) {
       const pattern = str.substring(i, i + patternLength);
       const remaining = str.substring(i + patternLength);
       if (remaining.includes(pattern)) {
         // Si el patrón se repite, verificar si es muy repetitivo
         const escapedPattern = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const occurrences = (str.match(new RegExp(escapedPattern, 'g')) || []).length;
+        const occurrences = (str.match(new RegExp(escapedPattern, 'g')) || [])
+          .length;
         // Si el patrón aparece 3+ veces o representa más del 40% de la cadena, es sospechoso
-        if (occurrences >= 3 || (patternLength * occurrences) / str.length > 0.4) {
+        if (
+          occurrences >= 3 ||
+          (patternLength * occurrences) / str.length > 0.4
+        ) {
           return {
             isValid: false,
-            error: 'El valor parece ser una cadena aleatoria sin sentido. Por favor, ingrese un valor válido',
+            error:
+              'El valor parece ser una cadena aleatoria sin sentido. Por favor, ingrese un valor válido',
           };
         }
       }
@@ -90,7 +120,8 @@ export function validateNoRandomString(value: string): NoRandomStringResult {
   if (str.length >= 15 && uniqueRatio < 0.3) {
     return {
       isValid: false,
-      error: 'El valor parece ser una cadena aleatoria sin sentido. Por favor, ingrese un valor válido',
+      error:
+        'El valor parece ser una cadena aleatoria sin sentido. Por favor, ingrese un valor válido',
     };
   }
 
@@ -106,7 +137,8 @@ export function validateNoRandomString(value: string): NoRandomStringResult {
       if (count / totalLetters > 0.3) {
         return {
           isValid: false,
-          error: 'El valor parece ser una cadena aleatoria sin sentido. Por favor, ingrese un valor válido',
+          error:
+            'El valor parece ser una cadena aleatoria sin sentido. Por favor, ingrese un valor válido',
         };
       }
     }
@@ -114,4 +146,3 @@ export function validateNoRandomString(value: string): NoRandomStringResult {
 
   return { isValid: true };
 }
-
