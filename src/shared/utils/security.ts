@@ -9,6 +9,7 @@ import DOMPurify from 'dompurify';
  * También detecta y bloquea patrones de SQL Injection
  * @param input - Texto a sanitizar
  * @param maxLength - Longitud máxima permitida (default: 500)
+ * @param preserveSpaces - Si es true, preserva espacios al inicio/final (default: false)
  * @returns Texto sanitizado
  */
 export function sanitizeString(input: string, maxLength: number = 500, preserveSpaces: boolean = false): string {
