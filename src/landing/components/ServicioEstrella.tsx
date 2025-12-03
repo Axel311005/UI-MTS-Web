@@ -1,355 +1,419 @@
-import { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Card, CardContent } from '@/shared/components/ui/card';
-import { ChevronLeft, ChevronRight, Minus, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const servicios = [
   {
     id: 1,
     title: 'Alineación de Chasis',
-    description:
-      'Tecnología hidráulica de precisión para recuperar la geometría original',
+    description: 'Tecnología hidráulica de precisión',
+    fullDescription:
+      'Servicio profesional de alineación de chasis utilizando tecnología hidráulica de última generación para recuperar la geometría original de tu moto.',
     image: '/Tecnologia-hidraulica-de-presicion.jpg',
     features: [
       'Alinear ejes delantero y trasero',
       'Corregir desviaciones del chasis',
       'Recuperar la geometría original de fábrica',
       'Mejorar estabilidad y seguridad',
+      'Equipos de precisión milimétrica',
     ],
   },
   {
     id: 2,
     title: 'Electromecánica',
-    description:
-      'Diagnóstico y reparación del sistema eléctrico y mecánico interconectados',
+    description: 'Diagnóstico y reparación profesional',
+    fullDescription:
+      'Diagnóstico completo y reparación del sistema eléctrico y mecánico interconectados de tu motocicleta.',
     image: '/Electro.jpg',
     features: [
-      'Diagnóstico de reparación del sistema eléctrico y mecánico interconectados',
-      'Inspección y desmontaje de la moto',
-      'Limpieza',
-      'Medición y evaluación',
-      'Reparación o remplazo',
-      'Ajuste y montaje',
+      'Diagnóstico completo del sistema',
+      'Inspección y desmontaje profesional',
+      'Limpieza y evaluación',
+      'Medición y análisis detallado',
+      'Reparación o reemplazo de componentes',
+      'Ajuste y montaje final',
     ],
   },
   {
     id: 3,
-    title: 'Escaneado y Reparación Eléctrica',
-    description: 'Diagnóstico completo del sistema eléctrico de tu moto',
+    title: 'Escaneado Eléctrico',
+    description: 'Diagnóstico completo del sistema',
+    fullDescription:
+      'Diagnóstico completo del sistema eléctrico de tu moto utilizando equipos de escaneo profesional.',
     image: '/Imagen-de-herramientas-de-taller.jpg',
     features: [
-      'Diagnóstico',
-      'Revisión de la moto por dentro',
-      'Localización de daños y reparación',
-      'Pruebas y ajustes de la moto',
-      'Entrega',
+      'Diagnóstico con equipos profesionales',
+      'Revisión completa del sistema',
+      'Localización precisa de daños',
+      'Reparación especializada',
+      'Pruebas y ajustes finales',
+      'Entrega con garantía',
     ],
   },
   {
     id: 4,
     title: 'Overhaul',
-    description: 'Desmontaje completo y reconstrucción profesional',
+    description: 'Desmontaje completo y reconstrucción',
+    fullDescription:
+      'Desmontaje completo y reconstrucción profesional de tu motocicleta con los más altos estándares de calidad.',
     image: '/Imagen-del-taller.jpg',
     features: [
-      'Desmontaje completo',
-      'Limpieza y análisis',
+      'Desmontaje completo del motor',
+      'Limpieza profunda y análisis',
       'Rectificación y reparación',
-      'Remplazo de piezas (costo del cliente)',
-      'Reensamblaje',
-      'Pruebas finales',
-      'Entrega de la moto',
+      'Reemplazo de piezas necesarias',
+      'Reensamblaje profesional',
+      'Pruebas finales exhaustivas',
+      'Entrega con garantía extendida',
     ],
   },
   {
     id: 5,
     title: 'Tecnología Hidráulica',
-    description: 'Equipos profesionales para alineación perfecta',
+    description: 'Equipos profesionales de precisión',
+    fullDescription:
+      'Equipos profesionales de última generación para alineación perfecta con tecnología hidráulica.',
     image: '/Otra-imagen.jpg',
     features: [
       'Equipos de última generación',
-      'Precisión milimétrica',
+      'Precisión milimétrica garantizada',
       'Tecnología hidráulica profesional',
+      'Certificación internacional',
     ],
   },
 ];
 
-// Cache global de imágenes para evitar múltiples requests
-const imageCache = new Map<string, HTMLImageElement>();
-const preloadedImages = new Set<string>();
-
 export function ServicioEstrella() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [expandedServiceId, setExpandedServiceId] = useState<number | null>(
-    null
-  );
-  const imgRefs = useRef<Map<string, HTMLImageElement>>(new Map());
-
-  // Pre-cargar todas las imágenes una sola vez y cachearlas
-  useEffect(() => {
-    const preloadImage = (src: string) => {
-      if (preloadedImages.has(src)) return;
-
-      const img = new Image();
-      img.src = src;
-      img.onload = () => {
-        imageCache.set(src, img);
-        preloadedImages.add(src);
-      };
-      img.onerror = () => {
-        // Si falla, pre-cargar fallback
-        if (
-          src !== '/Moto Hero.png' &&
-          !preloadedImages.has('/Moto Hero.png')
-        ) {
-          const fallbackImg = new Image();
-          fallbackImg.src = '/Moto Hero.png';
-          imageCache.set('/Moto Hero.png', fallbackImg);
-          preloadedImages.add('/Moto Hero.png');
-        }
-      };
-    };
-
-    // Pre-cargar todas las imágenes de servicios
-    servicios.forEach((servicio) => {
-      preloadImage(servicio.image);
-    });
-
-    // Pre-cargar fallback
-    if (!preloadedImages.has('/Moto Hero.png')) {
-      preloadImage('/Moto Hero.png');
-    }
-  }, []);
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
   const nextSlide = () => {
     setCurrentIndex((prev) => (prev + 1) % servicios.length);
-    setExpandedServiceId(null);
+    setExpandedIndex(null);
   };
 
   const prevSlide = () => {
     setCurrentIndex((prev) => (prev - 1 + servicios.length) % servicios.length);
-    setExpandedServiceId(null);
+    setExpandedIndex(null);
   };
 
   const goToSlide = (index: number) => {
     setCurrentIndex(index);
-    setExpandedServiceId(null);
+    setExpandedIndex(null);
   };
 
-  const currentServicio = servicios[currentIndex];
-  const isExpanded = expandedServiceId === currentServicio.id;
+  const toggleExpand = () => {
+    if (expandedIndex === currentIndex) {
+      setExpandedIndex(null);
+    } else {
+      setExpandedIndex(currentIndex);
+    }
+  };
+
+  const currentService = servicios[currentIndex];
+  const isExpanded = expandedIndex === currentIndex;
 
   return (
-    <section className="py-6 sm:py-8 md:py-10 lg:py-12 bg-gradient-to-b from-black via-neutral-950 to-black relative overflow-hidden">
-      {/* Background pattern sutil */}
-      <div className="absolute inset-0 opacity-[0.02]">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `repeating-linear-gradient(
-            45deg,
-            transparent,
-            transparent 20px,
-            rgba(255, 165, 0, 0.1) 20px,
-            rgba(255, 165, 0, 0.1) 40px
-          )`,
-          }}
-        ></div>
-      </div>
-
-      <div className="mx-auto w-full px-4 sm:px-6 lg:px-12 xl:px-20 max-w-[min(100vw,1760px)] relative z-10">
-        {/* Header compacto */}
+    <section className="py-12 sm:py-16 md:py-20 lg:py-24 bg-white relative overflow-hidden">
+      <div className="mx-auto w-full px-4 sm:px-6 lg:px-8 max-w-7xl">
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-4 sm:mb-6 md:mb-8"
+          className="text-center mb-12"
         >
-          <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-extrabold text-white mb-1 sm:mb-2 font-montserrat tracking-tight">
+          <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.25em] text-orange-600 mb-3 font-montserrat">
+            SERVICIOS
+          </p>
+          <h2 className="font-sans text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-neutral-900 mb-4 sm:mb-5 leading-[1.08] font-title">
             SERVICIOS DESTACADOS
           </h2>
-          <p className="text-xs sm:text-sm md:text-base text-white/70 max-w-2xl mx-auto font-montserrat leading-relaxed px-2">
-            Servicios profesionales para tu moto
+          <p className="text-sm sm:text-base md:text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed font-montserrat">
+            Servicios profesionales para tu moto con tecnología de última
+            generación
           </p>
         </motion.div>
 
-        {/* Carousel Container */}
-        <div className="relative max-w-xl sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto">
-          {/* Navigation Arrows más compactas */}
-          <button
-            onClick={prevSlide}
-            className="absolute left-1 sm:left-2 md:-left-6 lg:-left-8 top-1/2 -translate-y-1/2 z-20 p-1.5 sm:p-2 md:p-3 bg-white/95 backdrop-blur-sm border-2 border-orange-500/30 hover:border-orange-500 hover:bg-orange-500/10 rounded-full shadow-lg transition-all duration-300 group"
-            aria-label="Previous slide"
-          >
-            <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 text-black group-hover:text-orange-500 transition-colors" />
-          </button>
-
-          <button
-            onClick={nextSlide}
-            className="absolute right-1 sm:right-2 md:-right-6 lg:-right-8 top-1/2 -translate-y-1/2 z-20 p-1.5 sm:p-2 md:p-3 bg-white/95 backdrop-blur-sm border-2 border-orange-500/30 hover:border-orange-500 hover:bg-orange-500/10 rounded-full shadow-lg transition-all duration-300 group"
-            aria-label="Next slide"
-          >
-            <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 text-black group-hover:text-orange-500 transition-colors" />
-          </button>
-
-          {/* Card Container - Una sola card centrada */}
-          <div className="overflow-hidden px-1 sm:px-2 md:px-4">
-            <motion.div
-              key={currentIndex}
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              transition={{ duration: 0.5 }}
-              className="flex justify-center"
-            >
+        {/* Carrusel */}
+        <div className="relative max-w-sm sm:max-w-md mx-auto">
+          <div className="relative overflow-hidden rounded-2xl">
+            <AnimatePresence mode="wait">
               <motion.div
-                className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg"
-                whileHover={{
-                  y: -4,
-                  scale: 1.01,
-                  transition: { duration: 0.3 },
+                key={currentIndex}
+                initial={{ opacity: 0, x: 100 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -100 }}
+                transition={{ duration: 0.5 }}
+                className="service-card"
+                style={{
+                  height: isExpanded ? 'auto' : '380px',
+                  minHeight: '380px',
                 }}
               >
-                <Card className="relative h-full bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 border-2 border-white/30 hover:border-orange-500/60 transition-all duration-500 group flex flex-col overflow-hidden rounded-lg sm:rounded-xl shadow-[0_0_30px_rgba(255,115,0,0.08)] hover:shadow-[0_0_50px_rgba(255,115,0,0.25)]">
-                  {/* Image Section más compacta */}
-                  <div className="relative w-full aspect-[16/9] sm:aspect-[16/8] overflow-hidden bg-neutral-800">
-                    <img
-                      ref={(el) => {
-                        if (el) {
-                          imgRefs.current.set(currentServicio.image, el);
-                          // Si la imagen ya está en cache, forzar uso del cache
-                          if (imageCache.has(currentServicio.image)) {
-                            el.src = currentServicio.image;
-                          }
-                        }
-                      }}
-                      src={currentServicio.image}
-                      alt={`${currentServicio.title} - ${currentServicio.description}`}
-                      className="w-full h-full object-cover object-center scale-105 group-hover:scale-110 transition-transform duration-700 ease-out"
-                      loading="eager"
-                      fetchPriority="high"
-                      decoding="async"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        if (target.src !== '/Moto Hero.png') {
-                          target.src = '/Moto Hero.png';
-                        }
-                      }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-                    <div className="absolute inset-0 bg-gradient-to-br from-transparent via-orange-500/10 to-orange-500/5 mix-blend-overlay"></div>
+                <div className="service-card-imgBox">
+                  <img
+                    src={currentService.image}
+                    alt={currentService.title}
+                    className="service-card-image"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      if (target.src !== '/Moto Hero.png') {
+                        target.src = '/Moto Hero.png';
+                      }
+                    }}
+                  />
+                </div>
 
-                    {/* Badge compacto */}
-                    <div className="absolute top-2 sm:top-3 left-2 sm:left-3 z-10">
-                      <div className="px-2 py-0.5 sm:py-1 bg-orange-500/90 backdrop-blur-sm rounded-full border border-orange-400/50 shadow-md">
-                        <span className="text-[9px] sm:text-[10px] font-bold text-white font-montserrat uppercase tracking-wide">
-                          Premium
-                        </span>
-                      </div>
-                    </div>
+                <div className="service-card-contentBox">
+                  <h3 className="service-card-title">{currentService.title}</h3>
+                  <p className="service-card-description">
+                    {currentService.description}
+                  </p>
+                  <button onClick={toggleExpand} className="service-card-buy">
+                    {isExpanded ? 'Ver menos' : 'Ver más'}
+                  </button>
+                </div>
 
-                    {/* Add Button compacto */}
-                    <div className="absolute bottom-2 sm:bottom-3 right-2 sm:right-3 z-10">
-                      <motion.button
-                        className="w-8 h-8 sm:w-10 sm:h-10 backdrop-blur-md bg-white/20 hover:bg-orange-500/40 border-2 border-white/30 hover:border-orange-400 rounded-full flex items-center justify-center transition-all duration-300 shadow-md"
-                        whileHover={{ scale: 1.1, rotate: 90 }}
-                        whileTap={{ scale: 0.9 }}
-                        aria-label="Ver detalles"
-                        aria-expanded={isExpanded}
-                        onClick={() =>
-                          setExpandedServiceId((prev) =>
-                            prev === currentServicio.id
-                              ? null
-                              : currentServicio.id
-                          )
-                        }
-                      >
-                        {isExpanded ? (
-                          <Minus className="h-4 w-4 sm:h-5 sm:w-5 text-white drop-shadow-lg" />
-                        ) : (
-                          <Plus className="h-4 w-4 sm:h-5 sm:w-5 text-white drop-shadow-lg" />
-                        )}
-                      </motion.button>
-                    </div>
-                  </div>
+                {/* Información expandida */}
+                <AnimatePresence>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="service-card-expanded"
+                    >
+                      <div className="p-6 pt-0">
+                        <p className="text-neutral-300 mb-6 font-montserrat text-sm leading-relaxed">
+                          {currentService.fullDescription}
+                        </p>
 
-                  {/* Content Section compacta */}
-                  <CardContent className="p-3 sm:p-4 md:p-5 flex flex-col flex-1 text-white bg-transparent">
-                    <h3 className="text-base sm:text-lg md:text-xl font-extrabold text-white tracking-tight mb-1.5 sm:mb-2 font-montserrat group-hover:text-orange-400 transition-colors duration-300">
-                      {currentServicio.title}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-white/70 mb-3 sm:mb-4 leading-snug font-montserrat line-clamp-2">
-                      {currentServicio.description}
-                    </p>
-
-                    {/* Features List compacta */}
-                    <ul className="space-y-1.5 sm:space-y-2 flex-1">
-                      {(isExpanded
-                        ? currentServicio.features
-                        : currentServicio.features.slice(0, 2)
-                      ).map((feature, idx) => (
-                        <li
-                          key={`${currentServicio.id}-feature-${idx}`}
-                          className="flex items-start gap-2 text-xs sm:text-sm text-white/80 font-montserrat group-hover:text-white/90 transition-colors"
-                        >
-                          <div className="mt-1 flex-shrink-0">
-                            <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-orange-500 group-hover:bg-orange-400 transition-colors"></div>
-                          </div>
-                          <span className="break-words leading-snug">
-                            {feature}
-                          </span>
-                        </li>
-                      ))}
-                      {!isExpanded && currentServicio.features.length > 2 && (
-                        <li className="text-[10px] sm:text-xs text-white/60 italic font-montserrat pl-3 sm:pl-4 group-hover:text-white/70 transition-colors">
-                          +{currentServicio.features.length - 2} más...
-                        </li>
-                      )}
-                    </ul>
-
-                    {/* Footer compacto */}
-                    <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-white/10 group-hover:border-orange-500/30 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[9px] sm:text-[10px] text-white/50 font-montserrat uppercase tracking-wider">
-                          Profesional
-                        </span>
-                        <div className="flex gap-0.5">
-                          {[...Array(4)].map((_, i) => (
-                            <div
-                              key={i}
-                              className="w-1 h-1 rounded-full bg-orange-500/60 group-hover:bg-orange-400 transition-colors"
-                            />
-                          ))}
+                        <div className="space-y-3">
+                          <h4 className="text-base font-bold text-white font-title">
+                            Características:
+                          </h4>
+                          <ul className="space-y-2">
+                            {currentService.features.map((feature, idx) => (
+                              <li
+                                key={idx}
+                                className="flex items-start gap-3 text-neutral-200 text-sm font-montserrat"
+                              >
+                                <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-orange-500 flex-shrink-0" />
+                                <span>{feature}</span>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
-            </motion.div>
+            </AnimatePresence>
+
+            {/* Botones de navegación */}
+            <button
+              onClick={prevSlide}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all"
+              aria-label="Anterior"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </button>
+            <button
+              onClick={nextSlide}
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all"
+              aria-label="Siguiente"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
           </div>
 
-          {/* Pagination Dots compactos */}
-          <div className="flex justify-center gap-1.5 sm:gap-2 mt-4 sm:mt-6">
-            {servicios.map((_, index) => {
-              const isActive = currentIndex === index;
-
-              return (
-                <button
-                  key={index}
-                  onClick={() => goToSlide(index)}
-                  className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 ${
-                    isActive
-                      ? 'w-6 sm:w-8 bg-orange-500 shadow-[0_0_8px_rgba(255,165,0,0.4)]'
-                      : 'w-1.5 sm:w-2 bg-white/40 hover:bg-white/60 hover:w-2.5 sm:hover:w-3'
-                  }`}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              );
-            })}
+          {/* Indicadores */}
+          <div className="flex justify-center gap-2 mt-6">
+            {servicios.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goToSlide(index)}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  index === currentIndex
+                    ? 'w-8 bg-orange-500'
+                    : 'w-2 bg-neutral-300 hover:bg-neutral-400'
+                }`}
+                aria-label={`Ir al slide ${index + 1}`}
+              />
+            ))}
           </div>
         </div>
       </div>
+
+      <style>{`
+        .service-card {
+          position: relative;
+          width: 100%;
+          background: #191919;
+          border-radius: 20px;
+          overflow: hidden;
+          transition: height 0.3s ease;
+        }
+
+        .service-card::before {
+          content: "";
+          position: absolute;
+          top: -50%;
+          width: 100%;
+          height: 100%;
+          background: #ff8c00;
+          transform: skewY(345deg);
+          transition: 0.5s;
+        }
+
+        .service-card:hover::before {
+          top: -70%;
+          transform: skewY(390deg);
+        }
+
+        .service-card::after {
+          content: "MTS";
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          font-weight: 600;
+          font-size: 6em;
+          color: rgba(0, 0, 0, 0.1);
+          z-index: 1;
+        }
+
+        .service-card-imgBox {
+          position: relative;
+          width: 100%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding-top: 20px;
+          z-index: 2;
+        }
+
+        .service-card-image {
+          height: 220px;
+          width: auto;
+          object-fit: contain;
+          transition: 0.5s;
+        }
+
+        .service-card:hover .service-card-image {
+          transform: scale(1.05);
+        }
+
+        .service-card-contentBox {
+          position: relative;
+          padding: 15px 20px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          flex-direction: column;
+          z-index: 2;
+        }
+
+        .service-card-title {
+          font-size: 18px;
+          color: white;
+          font-weight: 500;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          margin-bottom: 8px;
+          text-align: center;
+        }
+
+        .service-card-description {
+          font-size: 14px;
+          color: rgba(255, 255, 255, 0.8);
+          text-align: center;
+          margin-bottom: 15px;
+        }
+
+        .service-card-buy {
+          position: relative;
+          top: 0;
+          opacity: 1;
+          padding: 10px 30px;
+          margin-top: 15px;
+          color: #000000;
+          text-decoration: none;
+          background: #ff8c00;
+          border-radius: 30px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          transition: 0.5s;
+          font-weight: 600;
+          border: none;
+          cursor: pointer;
+        }
+
+        .service-card-buy:hover {
+          background: #ff9500;
+          transform: scale(1.05);
+        }
+
+        .service-card-expanded {
+          position: relative;
+          z-index: 2;
+          overflow: hidden;
+        }
+
+        @media (max-width: 640px) {
+          .service-card {
+            min-height: 320px;
+            height: 320px !important;
+          }
+          
+          .service-card-image {
+            height: 160px;
+          }
+
+          .service-card-contentBox {
+            padding: 12px 15px;
+          }
+
+          .service-card-title {
+            font-size: 16px;
+          }
+
+          .service-card-description {
+            font-size: 12px;
+          }
+
+          .service-card-buy {
+            padding: 8px 20px;
+            font-size: 12px;
+          }
+        }
+      `}</style>
     </section>
   );
 }

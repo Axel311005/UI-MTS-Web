@@ -156,18 +156,18 @@ export const SearchComprasAction = async (
   const response = await compraApi.get('/search', { params });
   const raw = response.data as unknown;
   
-  // Ordenar por fecha ASC (más antiguas primero) en el frontend
+  // Ordenar por fecha DESC (más recientes primero) en el frontend
   if (raw && typeof raw === 'object' && 'data' in raw && Array.isArray((raw as any).data)) {
     (raw as any).data.sort((a: Compra, b: Compra) => {
       const dateA = new Date(a.fecha).getTime();
       const dateB = new Date(b.fecha).getTime();
-      return dateA - dateB; // ASC
+      return dateB - dateA; // DESC
     });
   } else if (Array.isArray(raw)) {
     raw.sort((a: Compra, b: Compra) => {
       const dateA = new Date(a.fecha).getTime();
       const dateB = new Date(b.fecha).getTime();
-      return dateA - dateB; // ASC
+      return dateB - dateA; // DESC
     });
   }
   

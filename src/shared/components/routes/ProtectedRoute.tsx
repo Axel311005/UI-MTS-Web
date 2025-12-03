@@ -1,31 +1,88 @@
+import { useEffect } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router';
 import { useAuthStore } from '@/auth/store/auth.store';
 import { useLandingAuthStore } from '@/landing/store/landing-auth.store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { AlertCircle, ShieldX } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
+import { useTokenExpirationCheck } from '@/shared/hooks/useTokenExpirationCheck';
+import { isTokenExpired } from '@/shared/utils/tokenUtils';
 
 export function ProtectedRoute() {
   const authStatus = useAuthStore((s) => s.authStatus);
   const hasPanelAccess = useAuthStore((s) => s.hasPanelAccess);
   const user = useAuthStore((s) => s.user);
+  const token = useAuthStore((s) => s.token);
+  const checkAuthStatus = useAuthStore((s) => s.checkAuthStatus);
   const logout = useAuthStore((s) => s.logout);
   const { isAuthenticated: isLandingAuthenticated } = useLandingAuthStore();
   const location = useLocation();
 
-  // Si está verificando, mostrar loading mínimo (solo si realmente está checking)
+  // Verificar expiración del token periódicamente usando hook optimizado
+  useTokenExpirationCheck({
+    checkInterval: 60000, // 1 minuto
+    checkImmediately: true,
+    onExpired: () => {
+      if (
+        window.location.pathname !== '/login' &&
+        window.location.pathname !== '/auth/login'
+      ) {
+        window.location.href = '/auth/login';
+      }
+    },
+  });
+
+  useEffect(() => {
+    // Solo verificar si realmente es necesario (estado checking o no autenticado con token)
+    const localToken = localStorage.getItem('token');
+    
+    // Si ya está autenticado y tiene datos, no hacer nada
+    if (authStatus === 'authenticated' && user && token) {
+      return;
+    }
+
+    // Si no hay token, no verificar
+    if (!localToken) {
+      return;
+    }
+
+    // Verificar si el token está vencido
+    if (isTokenExpired(localToken)) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      logout();
+      return;
+    }
+
+    // Solo verificar con el servidor si está en estado 'checking' o no autenticado pero hay token
+    if (authStatus === 'checking' || (authStatus === 'not-authenticated' && localToken)) {
+      checkAuthStatus().catch(() => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        logout();
+      });
+    }
+  }, [authStatus, user, token, checkAuthStatus, logout]);
+
+  // Si está verificando, manejar según disponibilidad de datos
+  // El store se inicializa desde localStorage, así que normalmente ya tenemos datos
   if (authStatus === 'checking') {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Verificando autenticación...</p>
-        </div>
-      </div>
-    );
+    const localToken = localStorage.getItem('token');
+    // Si ya hay datos en el store, permitir acceso (verificación en segundo plano)
+    if (user && token) {
+      // Continuar con el flujo normal, la verificación se hace en segundo plano
+      // No mostrar loading, ya tenemos datos del localStorage
+    } else if (!localToken) {
+      // No hay token, redirigir inmediatamente
+      return <Navigate to="/auth/login" replace state={{ from: location }} />;
+    } else {
+      // Hay token pero aún no hay datos en el store (caso raro)
+      // Redirigir al login
+      return <Navigate to="/auth/login" replace state={{ from: location }} />;
+    }
   }
 
-  const isAuthenticated = authStatus === 'authenticated';
+  const isAuthenticated = authStatus === 'authenticated' && !!user;
 
   // Verificar acceso al panel
   const canAccessPanel = typeof hasPanelAccess === 'function' ? hasPanelAccess() : false;

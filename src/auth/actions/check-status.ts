@@ -1,5 +1,6 @@
 import { tallerApi } from '@/shared/api/tallerApi';
 import type { CheckStatusResponse, AuthResponse } from '../types/auth.response';
+import { clearTokenCache } from '@/shared/utils/tokenUtils';
 
 export const checkAuthAction = async (): Promise<CheckStatusResponse> => {
   const token = localStorage.getItem('token');
@@ -50,6 +51,8 @@ export const checkAuthAction = async (): Promise<CheckStatusResponse> => {
     // Actualizar el token si el servidor devuelve uno nuevo
     if (data.token && data.token !== token) {
       localStorage.setItem('token', data.token);
+      // Limpiar caché del token anterior
+      clearTokenCache();
     }
 
     return data;

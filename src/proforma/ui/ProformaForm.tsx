@@ -163,7 +163,7 @@ export function ProformaForm({
                 idTramiteSeguro: '',
               }))
             }
-            onlyAprobados={true}
+            onlyAprobados={false}
           />
         </div>
 

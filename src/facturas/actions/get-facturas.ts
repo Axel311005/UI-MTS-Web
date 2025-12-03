@@ -33,11 +33,11 @@ export const getFacturasAction = async (params?: PaginationParams) => {
       return !isAnulada && !isEstadoAnulado;
     });
     
-    // Ordenar por fecha ASC (más antiguas primero)
+    // Ordenar por fecha DESC (más recientes primero)
     filteredPage.sort((a, b) => {
       const dateA = new Date(a.fecha).getTime();
       const dateB = new Date(b.fecha).getTime();
-      return dateA - dateB; // ASC
+      return dateB - dateA; // DESC
     });
     
     const limitValue = params?.limit ?? paged.limit ?? filteredPage.length;
@@ -117,11 +117,11 @@ export const getFacturasAction = async (params?: PaginationParams) => {
     return !isAnulada && !isEstadoAnulado;
   });
   
-  // Ordenar por fecha ASC (más antiguas primero)
+  // Ordenar por fecha DESC (más recientes primero)
   filtered.sort((a, b) => {
     const dateA = new Date(a.fecha).getTime();
     const dateB = new Date(b.fecha).getTime();
-    return dateA - dateB; // ASC
+    return dateB - dateA; // DESC
   });
 
   const limitValue = params?.limit;

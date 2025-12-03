@@ -8,85 +8,160 @@ import { EstadoActivo } from '@/shared/types/status';
 
 export const getClasificacionItemsAction = async (
   params?: PaginationParams
-) => {
-  const queryParams: Record<string, number> = {};
-  if (params?.limit !== undefined) queryParams.limit = params.limit;
-  if (params?.offset !== undefined) queryParams.offset = params.offset;
+): Promise<ClasificacionItem[] | PaginatedResponse<ClasificacionItem>> => {
+  try {
+    const queryParams = params
+      ? {
+          limit: params.limit,
+          offset: params.offset,
+        }
+      : undefined;
 
-  const { data } = await clasificacionItemApi.get<
-    ClasificacionItem[] | PaginatedResponse<ClasificacionItem>
-  >('/', {
-    params: Object.keys(queryParams).length > 0 ? queryParams : undefined,
-  });
+    const response = await clasificacionItemApi.get<any>('/', {
+      params: queryParams,
+    });
 
-  if (
-    data &&
-    typeof data === 'object' &&
-    'data' in data &&
-    Array.isArray((data as any).data)
-  ) {
-    const paged = data as PaginatedResponse<ClasificacionItem>;
-    const filteredPage = (paged.data || []).filter(
-      (item) => item?.activo === EstadoActivo.ACTIVO
-    );
+    // Si hay parámetros de paginación, el backend DEBE devolver un objeto con data y total
+    if (params?.limit !== undefined || params?.offset !== undefined) {
+      const limit = params.limit || 10;
+      const offset = params.offset || 0;
 
-    const limitValue = params?.limit ?? paged.limit ?? filteredPage.length;
-    const offsetValue = params?.offset ?? paged.offset ?? 0;
-
-    let totalValue = paged.total ?? 0;
-    const coverage = offsetValue + filteredPage.length;
-
-    if (!totalValue || totalValue <= coverage) {
-      if (limitValue > 0 && filteredPage.length === limitValue) {
-        totalValue = coverage + limitValue;
-      } else {
-        totalValue = coverage;
+      // Si el backend devuelve un array cuando se espera paginación, necesitamos obtener el total
+      if (Array.isArray(response.data)) {
+        // SIEMPRE obtener el total real del backend cuando devuelve un array
+        try {
+          const totalResponse = await clasificacionItemApi.get<any>('/', {
+            params: {
+              limit: 10000, // Límite muy alto para obtener todos
+              offset: 0,
+            },
+          });
+          
+          let allClasificaciones: ClasificacionItem[] = [];
+          if (Array.isArray(totalResponse.data)) {
+            allClasificaciones = totalResponse.data;
+          } else if (
+            totalResponse.data &&
+            typeof totalResponse.data === 'object' &&
+            'data' in totalResponse.data
+          ) {
+            allClasificaciones = (totalResponse.data as any).data || [];
+          }
+          
+          // Filtrar solo activos
+          const allActivos = allClasificaciones.filter(
+            (item) => item?.activo === EstadoActivo.ACTIVO
+          );
+          
+          const total = allActivos.length;
+          
+          // Filtrar la página actual
+          const currentActivos = (response.data as ClasificacionItem[]).filter(
+            (item) => item?.activo === EstadoActivo.ACTIVO
+          );
+          
+          return {
+            data: currentActivos,
+            total: total,
+          };
+        } catch (totalError) {
+          // Si falla obtener el total, usar lógica de fallback
+          const currentActivos = (response.data as ClasificacionItem[]).filter(
+            (item) => item?.activo === EstadoActivo.ACTIVO
+          );
+          
+          if (currentActivos.length < limit) {
+            const calculatedTotal = offset + currentActivos.length;
+            return {
+              data: currentActivos,
+              total: calculatedTotal,
+            };
+          }
+          const estimatedTotal = offset + currentActivos.length + 1;
+          return {
+            data: currentActivos,
+            total: estimatedTotal,
+          };
+        }
+      }
+      
+      // Si el backend devuelve un objeto con data y total, usarlo directamente
+      if (
+        response.data &&
+        typeof response.data === 'object' &&
+        'data' in response.data
+      ) {
+        const allData = (response.data.data || []) as ClasificacionItem[];
+        const total = response.data.total ?? 0;
+        
+        // Filtrar solo activos
+        const activos = allData.filter(
+          (item) => item?.activo === EstadoActivo.ACTIVO
+        );
+        
+        // Obtener el total real de activos si el backend no lo proporciona correctamente
+        let totalActivos = total;
+        if (total === 0 || total === allData.length) {
+          try {
+            const totalResponse = await clasificacionItemApi.get<any>('/', {
+              params: {
+                limit: 10000,
+                offset: 0,
+              },
+            });
+            
+            let allClasificaciones: ClasificacionItem[] = [];
+            if (Array.isArray(totalResponse.data)) {
+              allClasificaciones = totalResponse.data;
+            } else if (
+              totalResponse.data &&
+              typeof totalResponse.data === 'object' &&
+              'data' in totalResponse.data
+            ) {
+              allClasificaciones = (totalResponse.data as any).data || [];
+            }
+            
+            totalActivos = allClasificaciones.filter(
+              (item) => item?.activo === EstadoActivo.ACTIVO
+            ).length;
+          } catch (error) {
+            totalActivos = total;
+          }
+        }
+        
+        return {
+          data: activos,
+          total: totalActivos,
+        };
       }
     }
 
-    return {
-      ...paged,
-      data: filteredPage,
-      total: totalValue,
-      limit: limitValue,
-      offset: offsetValue,
-    } as PaginatedResponse<ClasificacionItem>;
-  }
-
-  // Si viene como array simple, filtrar activos y aplicar paginación
-  const allItems = Array.isArray(data) ? data || [] : [];
-  const filtered = allItems.filter((ci) => ci.activo === EstadoActivo.ACTIVO);
-
-  const limitValue = params?.limit;
-  const offsetValue = params?.offset ?? 0;
-
-  let paginatedData = filtered;
-  let totalValue = filtered.length;
-
-  if (limitValue !== undefined || offsetValue > 0) {
-    const serverAppliedPagination =
-      limitValue !== undefined && allItems.length <= limitValue;
-
-    if (serverAppliedPagination) {
-      const coverage = offsetValue + paginatedData.length;
-      if (limitValue > 0 && allItems.length === limitValue) {
-        totalValue = coverage + limitValue;
-      } else {
-        totalValue = coverage;
-      }
-    } else {
-      const start = offsetValue;
-      const end = limitValue !== undefined ? start + limitValue : undefined;
-      paginatedData = filtered.slice(start, end);
-      const coverage = offsetValue + paginatedData.length;
-      totalValue = Math.max(filtered.length, coverage);
+    // Sin paginación, devolver array directamente
+    if (Array.isArray(response.data)) {
+      const allData = response.data as ClasificacionItem[];
+      const activos = allData.filter(
+        (item) => item?.activo === EstadoActivo.ACTIVO
+      );
+      return activos;
     }
-  }
 
-  return {
-    data: paginatedData,
-    total: totalValue,
-    limit: limitValue,
-    offset: offsetValue,
-  } as PaginatedResponse<ClasificacionItem>;
+    if (
+      response.data &&
+      typeof response.data === 'object' &&
+      'data' in response.data
+    ) {
+      const allData = (response.data.data || []) as ClasificacionItem[];
+      const activos = allData.filter(
+        (item) => item?.activo === EstadoActivo.ACTIVO
+      );
+      return {
+        data: activos,
+        total: response.data.total ?? activos.length,
+      };
+    }
+
+    return [];
+  } catch (error) {
+    throw error;
+  }
 };

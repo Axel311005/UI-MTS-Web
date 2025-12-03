@@ -1,191 +1,190 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Card, CardContent } from "@/shared/components/ui/card";
-import { Star, Quote, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const testimonios = [
   {
-    nombre: "Felipe González",
+    nombre: 'Felipe González',
     texto:
-      "Muy buen servicio de asesoramiento, el técnico fue muy acertado en el diagnóstico y el encargado amable en su trato. Obtuve un descuento en mano de obra por la compra de repuesto.",
-    rating: 5,
+      'Muy buen servicio de asesoramiento, el técnico fue muy acertado en el diagnóstico y el encargado amable en su trato. Obtuve un descuento en mano de obra por la compra de repuesto.',
+    cargo: 'Cliente',
   },
   {
-    nombre: "Moises Ocampo",
-    texto: "Excelente taller, personal capacitado, muy profesional.",
-    rating: 5,
+    nombre: 'Moises Ocampo',
+    texto: 'Excelente taller, personal capacitado, muy profesional.',
+    cargo: 'Cliente',
   },
   {
-    nombre: "Octavio Alberto Morales Mendoza",
+    nombre: 'Octavio Alberto Morales Mendoza',
     texto:
-      "Excelente atención. El servicio mecánico y mantenimiento es muy superior incluso al que me ofrecieron en el taller de la empresa donde obtuve mi motocicleta.",
-    rating: 5,
+      'Excelente atención. El servicio mecánico y mantenimiento es muy superior incluso al que me ofrecieron en el taller de la empresa donde obtuve mi motocicleta.',
+    cargo: 'Cliente',
   },
   {
-    nombre: "Benjamin",
-    texto: "Excelente servicio, rápido, confiables y buen trato.",
-    rating: 5,
+    nombre: 'Benjamin',
+    texto: 'Excelente servicio, rápido, confiables y buen trato.',
+    cargo: 'Cliente',
   },
   {
-    nombre: "Juan Pérez",
+    nombre: 'Juan Pérez',
     texto:
-      "Para revisión de motos, un buen lugar. Siempre que vengan pregunten por el propietario, les atenderá con gusto.",
-    rating: 5,
+      'Para revisión de motos, un buen lugar. Siempre que vengan pregunten por el propietario, les atenderá con gusto.',
+    cargo: 'Cliente',
   },
 ];
 
+// Función para obtener las iniciales del nombre
+const getInitials = (name: string): string => {
+  const parts = name.trim().split(' ');
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return name.substring(0, 2).toUpperCase();
+};
+
 export function Testimonios() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
-  const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % testimonios.length);
-  };
-
-  const prevSlide = () => {
-    setCurrentIndex(
-      (prev) => (prev - 1 + testimonios.length) % testimonios.length
-    );
-  };
-
-  const goToSlide = (index: number) => {
+  const scrollToIndex = (index: number) => {
     setCurrentIndex(index);
   };
 
-  const currentTestimonio = testimonios[currentIndex];
+  const scrollNext = () => {
+    setIsAutoPlaying(false);
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % testimonios.length);
+    setTimeout(() => setIsAutoPlaying(true), 5000); // Reanuda después de 5 segundos
+  };
+
+  const scrollPrev = () => {
+    setIsAutoPlaying(false);
+    setCurrentIndex(
+      (prevIndex) => (prevIndex - 1 + testimonios.length) % testimonios.length
+    );
+    setTimeout(() => setIsAutoPlaying(true), 5000); // Reanuda después de 5 segundos
+  };
+
+  // Auto-play carousel
+  useEffect(() => {
+    if (!isAutoPlaying) return;
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % testimonios.length);
+    }, 4000); // Cambia cada 4 segundos
+
+    return () => clearInterval(interval);
+  }, [isAutoPlaying]);
+
+  // Pausar auto-play al hacer hover
+  const handleMouseEnter = () => setIsAutoPlaying(false);
+  const handleMouseLeave = () => setIsAutoPlaying(true);
 
   return (
-    <section className="py-6 sm:py-8 md:py-10 lg:py-12 bg-white relative overflow-hidden">
-      <div className="mx-auto w-full px-4 sm:px-6 lg:px-12 xl:px-20 max-w-[min(100vw,1760px)] relative z-10">
+    <section className="py-16 sm:py-20 md:py-24 bg-white relative overflow-hidden">
+      <div className="mx-auto w-full px-4 sm:px-6 lg:px-8 max-w-7xl">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-4 sm:mb-6 md:mb-8"
+          className="text-center mb-12"
         >
-          <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-extrabold text-black mb-1 sm:mb-2 font-montserrat tracking-tight">
-            LO QUE DICEN NUESTROS CLIENTES
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-neutral-900 mb-3 font-title">
+            Lo que dicen nuestros clientes
           </h2>
-          <p className="text-xs sm:text-sm md:text-base text-black/70 max-w-2xl mx-auto font-montserrat leading-relaxed px-2">
+          <p className="text-sm sm:text-base text-neutral-600 max-w-2xl mx-auto font-montserrat">
             Testimonios reales de clientes satisfechos
           </p>
-
-          {/* Google Reviews badge + link */}
-          <div className="mt-2 flex items-center justify-center gap-3">
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full border border-orange-500/30 bg-orange-500/10 text-[11px] sm:text-xs text-black/80 font-montserrat">
-              Opiniones de Google Maps
-            </span>
-            <a
-              href="https://www.google.com/maps/place/Moto+Servicio+Terry+MST/@12.1340162,-86.255832,17z/data=!3m1!4b1!4m6!3m5!1s0x8f73fe0112794ff3:0xe35932f6a89fdac9!8m2!3d12.1340162!4d-86.2532517!16s%2Fg%2F12hqhfkqv?entry=ttu&g_ep=EgoyMDI1MTEwNS4wIKXMDSoASAFQAw%3D%3D"
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-              className="inline-flex items-center gap-1 text-[11px] sm:text-xs text-orange-600 hover:text-orange-700 underline decoration-dotted underline-offset-2"
-            >
-              Ver en Google
-              <ExternalLink className="h-3.5 w-3.5" />
-            </a>
-          </div>
         </motion.div>
 
         {/* Carousel Container */}
-        <div className="relative max-w-xl sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto">
-          {/* Navigation Arrows */}
+        <div
+          className="relative max-w-4xl mx-auto"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          {/* Navigation Buttons */}
           <button
-            onClick={prevSlide}
-            className="absolute left-1 sm:left-2 md:-left-6 lg:-left-8 top-1/2 -translate-y-1/2 z-20 p-1.5 sm:p-2 md:p-3 bg-white/95 backdrop-blur-sm border-2 border-orange-500/30 hover:border-orange-500 hover:bg-orange-500/10 rounded-full shadow-lg transition-all duration-300 group"
-            aria-label="Previous slide"
+            onClick={scrollPrev}
+            className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 z-20 w-10 h-10 rounded-full bg-white/80 hover:bg-orange-500/80 border border-neutral-200 hover:border-orange-500 text-neutral-700 hover:text-white items-center justify-center transition-all duration-200 shadow-md"
+            aria-label="Previous testimonial"
           >
-            <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 text-black group-hover:text-orange-500 transition-colors" />
+            <span className="text-xl">❮</span>
           </button>
 
           <button
-            onClick={nextSlide}
-            className="absolute right-1 sm:right-2 md:-right-6 lg:-right-8 top-1/2 -translate-y-1/2 z-20 p-1.5 sm:p-2 md:p-3 bg-white/95 backdrop-blur-sm border-2 border-orange-500/30 hover:border-orange-500 hover:bg-orange-500/10 rounded-full shadow-lg transition-all duration-300 group"
-            aria-label="Next slide"
+            onClick={scrollNext}
+            className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 z-20 w-10 h-10 rounded-full bg-white/80 hover:bg-orange-500/80 border border-neutral-200 hover:border-orange-500 text-neutral-700 hover:text-white items-center justify-center transition-all duration-200 shadow-md"
+            aria-label="Next testimonial"
           >
-            <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 text-black group-hover:text-orange-500 transition-colors" />
+            <span className="text-xl">❯</span>
           </button>
 
-          {/* Card Container - Una sola card centrada */}
-          <div className="overflow-hidden px-1 sm:px-2 md:px-4">
-            <motion.div
-              key={currentIndex}
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              transition={{ duration: 0.5 }}
-              className="flex justify-center"
-            >
-              <motion.div
-                className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg"
-                whileHover={{
-                  y: -4,
-                  scale: 1.01,
-                  transition: { duration: 0.3 },
-                }}
-              >
-                <Card className="relative h-full bg-white border-2 border-orange-500/20 hover:border-orange-500/60 transition-all duration-500 group flex flex-col overflow-hidden rounded-lg sm:rounded-xl shadow-lg hover:shadow-xl">
-                  <CardContent className="p-4 sm:p-5 md:p-6 flex flex-col flex-1 text-black">
-                    {/* Quote Icon */}
-                    <div className="flex justify-center mb-3 sm:mb-4">
-                      <div className="p-2 sm:p-3 bg-orange-500/10 rounded-full border-2 border-orange-500/20 group-hover:bg-orange-500/20 transition-colors">
-                        <Quote className="h-5 w-5 sm:h-6 sm:w-6 text-orange-500" />
+          {/* Carousel - Solo muestra una card centrada */}
+          <div className="overflow-hidden px-4 sm:px-0">
+            <div className="flex justify-center min-h-[280px] sm:min-h-[300px]">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentIndex}
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: -20 }}
+                  transition={{ duration: 0.5, ease: 'easeInOut' }}
+                  className="w-full max-w-sm border border-gray-300 rounded-lg shadow-lg bg-white p-4 sm:p-6 space-y-3 sm:space-y-4"
+                >
+                  <div className="flex items-center space-x-3 sm:space-x-4">
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 flex items-center justify-center bg-orange-500 text-white text-base sm:text-lg font-semibold rounded-full font-montserrat flex-shrink-0">
+                      {getInitials(testimonios[currentIndex].nombre)}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-gray-900 font-medium font-montserrat text-sm sm:text-base truncate">
+                        {testimonios[currentIndex].nombre}
+                      </div>
+                      <div className="text-gray-600 text-xs sm:text-sm font-montserrat">
+                        {testimonios[currentIndex].cargo}
                       </div>
                     </div>
-
-                    {/* Testimonial Text */}
-                    <p className="text-sm sm:text-base md:text-lg text-black/80 italic text-center font-montserrat mb-4 sm:mb-5 leading-relaxed min-h-[60px] sm:min-h-[80px] flex items-center justify-center">
-                      "{currentTestimonio.texto}"
-                    </p>
-
-                    {/* Stars */}
-                    <div className="flex justify-center gap-1 mb-3 sm:mb-4">
-                      {Array.from({ length: currentTestimonio.rating }).map(
-                        (_, i) => (
-                          <Star
-                            key={i}
-                            className="h-4 w-4 sm:h-5 sm:w-5 fill-orange-500 text-orange-500"
-                          />
-                        )
-                      )}
-                    </div>
-
-                    {/* Author Name */}
-                    <p className="text-center font-semibold text-black font-montserrat text-sm sm:text-base">
-                      — {currentTestimonio.nombre}
-                    </p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </motion.div>
+                  </div>
+                  <div className="flex text-orange-500 text-lg sm:text-xl">
+                    ★★★★★
+                  </div>
+                  <p className="text-gray-700 font-montserrat text-sm sm:text-base leading-relaxed">
+                    {testimonios[currentIndex].texto}
+                  </p>
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </div>
 
-          {/* Pagination Dots */}
-          <div className="flex justify-center gap-1.5 sm:gap-2 mt-4 sm:mt-6">
-            {testimonios.map((_, index) => {
-              const isActive = currentIndex === index;
-
-              return (
-                <button
-                  key={index}
-                  onClick={() => goToSlide(index)}
-                  className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 ${
-                    isActive
-                      ? "w-6 sm:w-8 bg-orange-500 shadow-[0_0_8px_rgba(255,165,0,0.4)]"
-                      : "w-1.5 sm:w-2 bg-orange-500/40 hover:bg-orange-500/60 hover:w-2.5 sm:hover:w-3"
-                  }`}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              );
-            })}
+          {/* Markers */}
+          <div className="flex justify-center gap-3 mt-8">
+            {testimonios.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  setIsAutoPlaying(false);
+                  scrollToIndex(index);
+                  setTimeout(() => setIsAutoPlaying(true), 5000);
+                }}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                className={`h-4 w-4 rounded-full border transition-all duration-300 ${
+                  index === currentIndex
+                    ? 'bg-orange-500 border-orange-500 outline outline-2 outline-offset-2 outline-orange-500/30 scale-110'
+                    : 'bg-transparent border-orange-500 hover:bg-orange-500/50'
+                }`}
+                aria-label={`Go to testimonial ${index + 1}`}
+              />
+            ))}
           </div>
         </div>
       </div>
-      {/* Attribution */}
-      <div className="mt-3 text-center text-[10px] sm:text-[11px] text-black/50 font-montserrat">
-        Fuente: reseñas públicas en Google Maps
-      </div>
+
+      <style>{`
+        ul::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </section>
   );
 }

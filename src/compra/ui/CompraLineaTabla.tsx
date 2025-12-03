@@ -154,10 +154,10 @@ export function CompraLineaTabla({
                           const isCordobas = mName.includes('CORDOBA');
                           const isDolares = mName.includes('DOLAR');
                           const priceStr = isCordobas
-                            ? item.precioBaseLocal
+                            ? item.precioAdquisicionLocal
                             : isDolares
-                            ? item.precioBaseDolar
-                            : item.precioBaseLocal;
+                            ? item.precioAdquisicionDolar
+                            : item.precioAdquisicionLocal;
                           const autoPrice = Number(priceStr) || 0;
                           const newLines = [...lines];
                           const current = newLines[index];

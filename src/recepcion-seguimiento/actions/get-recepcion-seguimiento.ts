@@ -7,93 +7,145 @@ import type {
 
 export const getRecepcionSeguimientoAction = async (
   params?: PaginationParams
-) => {
-  const queryParams: Record<string, number> = {};
-  if (params?.limit !== undefined) queryParams.limit = params.limit;
-  if (params?.offset !== undefined) queryParams.offset = params.offset;
+): Promise<RecepcionSeguimiento[] | PaginatedResponse<RecepcionSeguimiento>> => {
+  try {
+    const queryParams = params
+      ? {
+          limit: params.limit,
+          offset: params.offset,
+        }
+      : undefined;
 
-  const { data } = await RecepcionSeguimientoApi.get<
-    RecepcionSeguimiento[] | PaginatedResponse<RecepcionSeguimiento>
-  >('/', {
-    params: Object.keys(queryParams).length > 0 ? queryParams : undefined,
-  });
-
-  if (
-    data &&
-    typeof data === 'object' &&
-    'data' in data &&
-    Array.isArray((data as any).data)
-  ) {
-    const paged = data as PaginatedResponse<RecepcionSeguimiento>;
-    const pageData = paged.data || [];
-    // Ordenar por fecha DESC (más recientes primero)
-    pageData.sort((a, b) => {
-      const dateA = new Date(a.fecha || 0).getTime();
-      const dateB = new Date(b.fecha || 0).getTime();
-      return dateB - dateA; // DESC
+    const response = await RecepcionSeguimientoApi.get<any>('/', {
+      params: queryParams,
     });
 
-    const limitValue = params?.limit ?? paged.limit ?? pageData.length;
-    const offsetValue = params?.offset ?? paged.offset ?? 0;
+    // Si hay parámetros de paginación, el backend DEBE devolver un objeto con data y total
+    if (params?.limit !== undefined || params?.offset !== undefined) {
+      const limit = params.limit || 10;
+      const offset = params.offset || 0;
 
-    let totalValue = paged.total ?? 0;
-    const coverage = offsetValue + pageData.length;
-
-    if (!totalValue || totalValue <= coverage) {
-      if (limitValue > 0 && pageData.length === limitValue) {
-        totalValue = coverage + limitValue;
-      } else {
-        totalValue = coverage;
+      // Si el backend devuelve un array cuando se espera paginación, necesitamos obtener el total
+      if (Array.isArray(response.data)) {
+        // SIEMPRE obtener el total real del backend cuando devuelve un array
+        try {
+          const totalResponse = await RecepcionSeguimientoApi.get<any>('/', {
+            params: {
+              limit: 10000, // Límite muy alto para obtener todos
+              offset: 0,
+            },
+          });
+          
+          let allSeguimientos: RecepcionSeguimiento[] = [];
+          if (Array.isArray(totalResponse.data)) {
+            allSeguimientos = totalResponse.data;
+          } else if (
+            totalResponse.data &&
+            typeof totalResponse.data === 'object' &&
+            'data' in totalResponse.data
+          ) {
+            allSeguimientos = (totalResponse.data as any).data || [];
+          }
+          
+          // Ordenar todos
+          allSeguimientos.sort((a, b) => {
+            const dateA = new Date(a.fecha || 0).getTime();
+            const dateB = new Date(b.fecha || 0).getTime();
+            return dateB - dateA; // DESC
+          });
+          
+          const total = allSeguimientos.length;
+          
+          // Ordenar la página actual
+          const currentData = response.data as RecepcionSeguimiento[];
+          currentData.sort((a, b) => {
+            const dateA = new Date(a.fecha || 0).getTime();
+            const dateB = new Date(b.fecha || 0).getTime();
+            return dateB - dateA; // DESC
+          });
+          
+          return {
+            data: currentData,
+            total: total,
+          };
+        } catch (totalError) {
+          // Si falla obtener el total, usar lógica de fallback
+          const currentData = response.data as RecepcionSeguimiento[];
+          currentData.sort((a, b) => {
+            const dateA = new Date(a.fecha || 0).getTime();
+            const dateB = new Date(b.fecha || 0).getTime();
+            return dateB - dateA; // DESC
+          });
+          
+          if (currentData.length < limit) {
+            const calculatedTotal = offset + currentData.length;
+            return {
+              data: currentData,
+              total: calculatedTotal,
+            };
+          }
+          const estimatedTotal = offset + currentData.length + 1;
+          return {
+            data: currentData,
+            total: estimatedTotal,
+          };
+        }
+      }
+      
+      // Si el backend devuelve un objeto con data y total, usarlo directamente
+      if (
+        response.data &&
+        typeof response.data === 'object' &&
+        'data' in response.data
+      ) {
+        const allData = (response.data.data || []) as RecepcionSeguimiento[];
+        const total = response.data.total ?? 0;
+        
+        // Ordenar
+        allData.sort((a, b) => {
+          const dateA = new Date(a.fecha || 0).getTime();
+          const dateB = new Date(b.fecha || 0).getTime();
+          return dateB - dateA; // DESC
+        });
+        
+        return {
+          data: allData,
+          total: total,
+        };
       }
     }
 
-    return {
-      ...paged,
-      data: pageData,
-      total: totalValue,
-      limit: limitValue,
-      offset: offsetValue,
-    } as PaginatedResponse<RecepcionSeguimiento>;
-  }
-
-  const allItems = Array.isArray(data) ? data : [];
-  // Ordenar por fecha DESC (más recientes primero)
-  allItems.sort((a, b) => {
-    const dateA = new Date(a.fecha || 0).getTime();
-    const dateB = new Date(b.fecha || 0).getTime();
-    return dateB - dateA; // DESC
-  });
-  const limitValue = params?.limit;
-  const offsetValue = params?.offset ?? 0;
-
-  let paginatedData = allItems;
-  let totalValue = allItems.length;
-
-  if (limitValue !== undefined || offsetValue > 0) {
-    const serverAppliedPagination =
-      limitValue !== undefined && allItems.length <= limitValue;
-
-    if (serverAppliedPagination) {
-      const coverage = offsetValue + paginatedData.length;
-      if (limitValue > 0 && allItems.length === limitValue) {
-        totalValue = coverage + limitValue;
-      } else {
-        totalValue = coverage;
-      }
-    } else {
-      const start = offsetValue;
-      const end = limitValue !== undefined ? start + limitValue : undefined;
-      paginatedData = allItems.slice(start, end);
-      const coverage = offsetValue + paginatedData.length;
-      totalValue = Math.max(allItems.length, coverage);
+    // Sin paginación, devolver array directamente
+    if (Array.isArray(response.data)) {
+      const allData = response.data as RecepcionSeguimiento[];
+      allData.sort((a, b) => {
+        const dateA = new Date(a.fecha || 0).getTime();
+        const dateB = new Date(b.fecha || 0).getTime();
+        return dateB - dateA; // DESC
+      });
+      return allData;
     }
-  }
 
-  return {
-    data: paginatedData,
-    total: totalValue,
-    limit: limitValue,
-    offset: offsetValue,
-  } as PaginatedResponse<RecepcionSeguimiento>;
+    if (
+      response.data &&
+      typeof response.data === 'object' &&
+      'data' in response.data
+    ) {
+      const allData = (response.data.data || []) as RecepcionSeguimiento[];
+      allData.sort((a, b) => {
+        const dateA = new Date(a.fecha || 0).getTime();
+        const dateB = new Date(b.fecha || 0).getTime();
+        return dateB - dateA; // DESC
+      });
+      return {
+        data: allData,
+        total: response.data.total ?? allData.length,
+      };
+    }
+
+    return [];
+  } catch (error) {
+    throw error;
+  }
 };
 

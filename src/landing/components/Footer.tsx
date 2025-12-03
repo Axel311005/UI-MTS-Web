@@ -1,14 +1,14 @@
-import { MapPin, Phone, Clock } from "lucide-react";
-import { Link } from "react-router";
-import { motion } from "framer-motion";
+import { MapPin, Phone, Clock } from 'lucide-react';
+import { Link } from 'react-router';
+import { motion } from 'framer-motion';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-black text-white">
-      <div className="mx-auto w-full px-4 sm:px-6 lg:px-12 xl:px-20 max-w-[min(100vw,1760px)] py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+    <footer className="bg-gradient-to-b from-neutral-900 via-neutral-800 to-neutral-900 text-white">
+      <div className="mx-auto w-full px-4 sm:px-6 lg:px-12 xl:px-20 max-w-[min(100vw,1760px)] py-6 sm:py-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           {/* Información del taller */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -16,33 +16,33 @@ export function Footer() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <h3 className="text-2xl font-bold mb-4 text-orange-500 font-montserrat">
+            <h3 className="text-2xl font-bold mb-4 text-white font-title">
               MST MOTO SERVICIOS TERRY
             </h3>
-            <p className="text-white/70 mb-4 font-montserrat">
+            <p className="text-white/80 mb-4 font-montserrat">
               ¡TU MOTO COMO NUEVA!
             </p>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <MapPin className="h-5 w-5 text-orange-500" />
-                <span className="text-white/70 font-montserrat">
+                <MapPin className="h-5 w-5 text-orange-500 flex-shrink-0" />
+                <span className="text-white/80 font-montserrat">
                   Barrio Riguero, Talleres Modernos 1c n, 1 c abajo
                 </span>
               </div>
               <div className="flex items-center gap-3">
-                <Phone className="h-5 w-5 text-orange-500" />
+                <Phone className="h-5 w-5 text-orange-500 flex-shrink-0" />
                 <a
                   href="https://wa.me/50584809632"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white/70 hover:text-orange-500 transition-colors font-montserrat"
+                  className="text-white/80 hover:text-orange-400 transition-colors font-montserrat"
                 >
                   +505 84809632
                 </a>
               </div>
               <div className="flex items-center gap-3">
-                <Clock className="h-5 w-5 text-orange-500" />
-                <span className="text-white/70 font-montserrat">
+                <Clock className="h-5 w-5 text-orange-500 flex-shrink-0" />
+                <span className="text-white/80 font-montserrat">
                   Lunes a sábado | 8:00 a.m. - 5:00 p.m.
                 </span>
               </div>
@@ -63,7 +63,7 @@ export function Footer() {
               <li>
                 <Link
                   to="/"
-                  className="text-white/70 hover:text-orange-500 transition-colors font-montserrat"
+                  className="text-white/80 hover:text-orange-400 transition-colors font-montserrat"
                 >
                   Inicio
                 </Link>
@@ -71,7 +71,7 @@ export function Footer() {
               <li>
                 <Link
                   to="/cotizacion"
-                  className="text-white/70 hover:text-orange-500 transition-colors font-montserrat"
+                  className="text-white/80 hover:text-orange-400 transition-colors font-montserrat"
                 >
                   Cotización
                 </Link>
@@ -79,7 +79,7 @@ export function Footer() {
               <li>
                 <Link
                   to="/cita"
-                  className="text-white/70 hover:text-orange-500 transition-colors font-montserrat"
+                  className="text-white/80 hover:text-orange-400 transition-colors font-montserrat"
                 >
                   Agendar Cita
                 </Link>
@@ -87,7 +87,7 @@ export function Footer() {
               <li>
                 <Link
                   to="/seguimiento"
-                  className="text-white/70 hover:text-orange-500 transition-colors font-montserrat"
+                  className="text-white/80 hover:text-orange-400 transition-colors font-montserrat"
                 >
                   Seguimiento
                 </Link>
@@ -108,7 +108,7 @@ export function Footer() {
                 Ubicación
               </h3>
               <div className="rounded-lg overflow-hidden shadow-lg border-2 border-orange-500/20">
-                <div className="relative w-full h-48 bg-black/20 rounded-lg overflow-hidden">
+                <div className="relative w-full h-24 sm:h-28 md:h-32 bg-neutral-800/50 rounded-lg overflow-hidden border border-neutral-700/50">
                   <iframe
                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.1234567890!2d-86.25123456789012!3d12.12345678901234!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTLCsDA3JzI0LjQiTiA4NsKwMTUnMDQuNCJX!5e0!3m2!1ses!2sni!4v1234567890123!5m2!1ses!2sni&q=Barrio+Riguero,+Talleres+Modernos"
                     width="100%"
@@ -118,15 +118,16 @@ export function Footer() {
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
                     title="Ubicación de MTS Moto Servicios Terry - Barrio Riguero"
-                    className="absolute inset-0"
+                    className="absolute inset-0 w-full h-full"
+                    sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
                   ></iframe>
                 </div>
-                <div className="p-3 bg-black/50">
+                <div className="p-3 bg-neutral-800/30 backdrop-blur-sm">
                   <a
                     href="https://maps.app.goo.gl/riLpecd1xVPSbVBw6"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-orange-500 hover:text-orange-400 transition-colors font-montserrat text-sm font-semibold flex items-center gap-2"
+                    className="text-orange-400 hover:text-orange-300 transition-colors font-montserrat text-sm font-semibold flex items-center gap-2"
                   >
                     <MapPin className="h-4 w-4" />
                     Ver en Google Maps
@@ -143,7 +144,7 @@ export function Footer() {
                   href="https://www.tiktok.com/@taller.terry"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-3 bg-white/10 rounded-full hover:bg-orange-500 transition-colors"
+                  className="p-3 bg-neutral-800/50 rounded-full hover:bg-orange-500/80 transition-colors"
                   aria-label="TikTok"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
@@ -173,22 +174,22 @@ export function Footer() {
           </motion.div>
         </div>
 
-        <div className="border-t border-white/10 pt-8 mt-8">
+        <div className="border-t border-white/10 pt-4 mt-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-white/50 text-sm font-montserrat">
               © {currentYear} MST Moto Servicios Terry – Todos los derechos
               reservados
             </p>
-            <div className="flex gap-6 text-sm">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 text-sm">
               <Link
                 to="/privacidad"
-                className="text-white/50 hover:text-orange-500 transition-colors font-montserrat"
+                className="text-white/50 hover:text-orange-500 transition-colors font-montserrat text-center sm:text-left"
               >
                 Política de Privacidad
               </Link>
               <Link
                 to="/terminos"
-                className="text-white/50 hover:text-orange-500 transition-colors font-montserrat"
+                className="text-white/50 hover:text-orange-500 transition-colors font-montserrat text-center sm:text-left"
               >
                 Términos de Servicio
               </Link>

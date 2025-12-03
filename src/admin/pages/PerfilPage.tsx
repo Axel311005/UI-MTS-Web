@@ -1,13 +1,32 @@
+import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/auth/store/auth.store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 import { Badge } from '@/shared/components/ui/badge';
 import { Separator } from '@/shared/components/ui/separator';
-import { User, Mail, Shield, Building2, CheckCircle, XCircle } from 'lucide-react';
+import { User, Mail, Shield, Building2, CheckCircle, XCircle, Clock, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { getTokenExpirationDate, getTokenIssuedAt, getTokenTimeRemaining } from '@/shared/utils/tokenUtils';
 
 export default function PerfilPage() {
   const { user } = useAuthStore();
+  const [expirationDate, setExpirationDate] = useState<Date | null>(null);
+  const [issuedAt, setIssuedAt] = useState<Date | null>(null);
+  const [timeRemaining, setTimeRemaining] = useState<number>(0);
+
+  // Calcular información del token solo una vez al montar el componente
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      const expDate = getTokenExpirationDate(token);
+      const iat = getTokenIssuedAt(token);
+      const remaining = getTokenTimeRemaining(token);
+      
+      setExpirationDate(expDate);
+      setIssuedAt(iat);
+      setTimeRemaining(remaining);
+    }
+  }, []); // Solo ejecutar una vez al montar
 
   if (!user) {
     return (
@@ -66,6 +85,23 @@ export default function PerfilPage() {
 
   // Estado activo
   const isActive = user.isActive !== undefined ? user.isActive : true;
+
+  // Formatear tiempo restante
+  const formatTimeRemaining = (ms: number): string => {
+    if (ms <= 0) return 'Sesión expirada';
+    
+    const hours = Math.floor(ms / (1000 * 60 * 60));
+    const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((ms % (1000 * 60)) / 1000);
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m ${seconds}s`;
+    } else if (minutes > 0) {
+      return `${minutes}m ${seconds}s`;
+    } else {
+      return `${seconds}s`;
+    }
+  };
 
   return (
     <div className="space-y-6 p-4 sm:p-6">
@@ -235,6 +271,64 @@ export default function PerfilPage() {
                 </div>
               </>
             )}
+
+            {/* Información de Sesión */}
+            <Separator />
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                Información de Sesión
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {issuedAt && (
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground">Inicio de Sesión</p>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <p className="text-sm font-medium">
+                        {issuedAt.toLocaleString('es-ES', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {expirationDate && (
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground">Expiración de Sesión</p>
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <p className="text-sm font-medium">
+                        {expirationDate.toLocaleString('es-ES', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                <div className="space-y-1 md:col-span-2">
+                  <p className="text-sm font-medium text-muted-foreground">Tiempo Restante</p>
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <p className={`text-sm font-medium ${
+                      timeRemaining < 300000 ? 'text-destructive' : 
+                      timeRemaining < 600000 ? 'text-orange-500' : 
+                      'text-green-600'
+                    }`}>
+                      {formatTimeRemaining(timeRemaining)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* Nota informativa - Solo para vendedores */}
             {roles.some(role => role.toLowerCase() === 'vendedor') && 

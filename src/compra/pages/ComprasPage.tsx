@@ -204,6 +204,34 @@ export function ComprasPage() {
   const totalPages = Math.max(1, totalRows > 0 ? Math.ceil(totalRows / pageSize) : 1);
   const isLoading = hasAnyFilter ? isLoadingFiltradas : isLoadingCompras;
 
+  // Validar página cuando cambian los datos
+  useEffect(() => {
+    if (isLoading) return;
+    const computedTotalPages = totalRows
+      ? Math.ceil(totalRows / pageSize)
+      : 1;
+
+    if (totalRows === 0) {
+      if (page !== 1) {
+        const params = new URLSearchParams(searchParams);
+        params.delete('page');
+        setSearchParams(params, { replace: true });
+      }
+      return;
+    }
+
+    if (page > computedTotalPages) {
+      const lastPage = Math.max(1, computedTotalPages);
+      const params = new URLSearchParams(searchParams);
+      if (lastPage > 1) {
+        params.set('page', lastPage.toString());
+      } else {
+        params.delete('page');
+      }
+      setSearchParams(params, { replace: true });
+    }
+  }, [isLoading, page, pageSize, searchParams, setSearchParams, totalRows]);
+
   return (
     <div className="space-y-4 md:space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">

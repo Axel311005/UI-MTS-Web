@@ -1,30 +1,31 @@
 import { motion } from 'framer-motion';
-import { MapPin, Phone, Clock } from 'lucide-react';
+import { HiLocationMarker, HiPhone, HiClock } from 'react-icons/hi';
+import { FaTiktok } from 'react-icons/fa';
 
 export function SobreTaller() {
   const infoItems = [
     {
-      icon: MapPin,
+      icon: HiLocationMarker,
       title: 'Dirección',
       content: ['Barrio Riguero, Talleres Modernos', '1c n, 1 c abajo'],
       link: 'https://maps.app.goo.gl/riLpecd1xVPSbVBw6',
       isClickable: true,
     },
     {
-      icon: Phone,
+      icon: HiPhone,
       title: 'WhatsApp',
       content: ['+505 84809632'],
       link: 'https://wa.me/50584809632',
       isClickable: true,
     },
     {
-      icon: Clock,
+      icon: HiClock,
       title: 'Horario',
       content: ['Lunes a sábado | 8:00 a.m.', '- 5:00 p.m.'],
       isClickable: false,
     },
     {
-      icon: Phone, // Placeholder, se reemplazará con SVG en el render
+      icon: FaTiktok,
       title: 'Redes Sociales',
       content: ['@taller.terry'],
       link: 'https://www.tiktok.com/@taller.terry',
@@ -33,7 +34,7 @@ export function SobreTaller() {
   ];
 
   return (
-    <section className="py-20 bg-gradient-to-b from-white to-orange-50/20">
+    <section className="py-20 bg-gradient-to-b from-white via-orange-50/30 to-white">
       <div className="mx-auto w-full px-4 sm:px-6 lg:px-12 xl:px-20 max-w-[min(100vw,1760px)]">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -48,54 +49,52 @@ export function SobreTaller() {
             viewport={{ once: true }}
             className="text-sm uppercase tracking-wider text-orange-500 mb-4 font-montserrat font-semibold"
           ></motion.p>
-          <h2 className="text-4xl md:text-5xl font-bold text-black mb-4 font-montserrat">
+          <h2 className="text-4xl md:text-5xl font-bold text-neutral-900 mb-4 font-title">
             MST MOTO SERVICIOS TERRY
           </h2>
-          <p className="text-xl text-orange-500 font-semibold font-montserrat">
+          <p className="text-xl text-orange-600 font-semibold font-montserrat">
             ¡TU MOTO COMO NUEVA!
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {infoItems.map((item, index) => {
             const Icon = item.icon;
-            const isTikTok = item.title === 'Redes Sociales';
             const CardContent = (
               <div
-                className={`h-full bg-white border-2 border-orange-500/20 rounded-xl p-6 hover:border-orange-500/50 hover:shadow-xl transition-all duration-300 shadow-lg ${
-                  item.isClickable ? 'cursor-pointer' : ''
+                className={`contact-card relative bg-white rounded-[10px] p-6 sm:p-8 md:p-10 overflow-hidden border-2 border-gray-200 shadow-[0px_2px_10px_rgba(0,0,0,0.08)] transition-all duration-300 flex flex-col items-center justify-center cursor-pointer min-h-[220px] sm:min-h-[240px] md:min-h-[260px] w-full max-w-[320px] mx-auto ${
+                  item.isClickable
+                    ? 'hover:border-orange-500/60 hover:shadow-xl'
+                    : ''
                 }`}
               >
-                {/* Icon Container */}
-                <div className="flex justify-center mb-6">
-                  <div className="w-16 h-16 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg">
-                    {isTikTok ? (
-                      <svg
-                        className="h-8 w-8 text-white"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
-                      </svg>
-                    ) : (
-                      <Icon className="h-8 w-8 text-white" strokeWidth={2} />
-                    )}
+                {/* Icon Container con efecto animado */}
+                <div className="contact-icon-wrapper mb-4 sm:mb-5 md:mb-6">
+                  <div
+                    className="contact-icon w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center transition-all duration-800 ease-in-out relative overflow-hidden"
+                    style={{
+                      background: `linear-gradient(90deg, #f97316 0%, #f97316 20%, #ea580c 50%, #ea580c 70%, rgba(0, 0, 0, 0.05) 80%, rgba(0, 0, 0, 0.1) 100%)`,
+                      backgroundPosition: '0px',
+                      backgroundSize: '300px',
+                    }}
+                  >
+                    <Icon
+                      className="contact-icon-svg w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 transition-all duration-300 relative z-10"
+                      style={{ color: 'white', fill: 'currentColor' }}
+                    />
                   </div>
                 </div>
 
                 {/* Title */}
-                <h3 className="font-bold text-black text-lg mb-4 text-center font-montserrat">
+                <h3 className="contact-title w-full text-center mt-0 mb-3 sm:mb-4 text-neutral-900 font-semibold uppercase tracking-[3px] sm:tracking-[4px] text-sm sm:text-base md:text-lg">
                   {item.title}
                 </h3>
 
-                {/* Content */}
-                <div className="space-y-1">
+                {/* Content que aparece en hover */}
+                <div className="contact-text w-[90%] mx-auto text-xs sm:text-sm md:text-base text-center mt-3 sm:mt-4 text-neutral-600 font-light tracking-[1px] sm:tracking-[2px] opacity-0 max-h-0 transition-all duration-300 ease-in-out leading-relaxed">
                   {item.content.map((line, lineIndex) => (
-                    <div key={lineIndex} className="text-center">
-                      <p className="text-black/70 font-montserrat text-sm md:text-base">
-                        {line}
-                      </p>
+                    <div key={lineIndex} className="mb-1">
+                      {line}
                     </div>
                   ))}
                 </div>

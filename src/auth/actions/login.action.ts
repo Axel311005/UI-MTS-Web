@@ -1,5 +1,6 @@
 import { tallerApi } from '@/shared/api/tallerApi';
 import type { AuthResponse } from '../types/auth.response';
+import { clearTokenCache, clearExpirationCache } from '@/shared/utils/tokenUtils';
 
 export const loginAction = async (
   email: string,
@@ -7,6 +8,15 @@ export const loginAction = async (
 ): Promise<AuthResponse> => {
   try {
     const { data } = await tallerApi.post('/auth/login', { email, password });
+    
+    // Guardar token en localStorage
+    if (data.token) {
+      localStorage.setItem('token', data.token);
+      // Limpiar caché del token anterior y del interceptor
+      clearTokenCache();
+      clearExpirationCache();
+    }
+    
     return data;
   } catch (error: any) {
     // Manejar errores específicos del backend (bloqueo de cuenta, intentos fallidos, etc.)

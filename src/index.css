@@ -1,3 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -171,6 +176,93 @@ Todos los colores en HSL para theming perfecto y accesibilidad ISO/WCAG.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', 'Montserrat', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Tipografías mejoradas - ISO 25000: Accesibilidad y Estética */
+  h1, h2, h3, h4, h5, h6, .font-title {
+    font-family: 'Poppins', 'Inter', 'Montserrat', sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
+
+  .font-title-large {
+    font-family: 'Poppins', 'Montserrat', sans-serif;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+  }
+
+  .font-hero {
+    font-family: 'Cormorant Garamond', 'Playfair Display', 'DM Serif Display', serif;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  /* Mejoras de accesibilidad - Contraste y legibilidad */
+  p, span, div, a, button, input, textarea, select, label {
+    font-size: clamp(0.875rem, 1vw, 1rem);
+    line-height: 1.6;
+  }
+
+  /* Estilos modernos para cards - Inspirados en floristería pero adaptados */
+  .card-modern {
+    @apply bg-white rounded-2xl border-2 border-orange-500/20 shadow-lg hover:shadow-xl hover:border-orange-500/50 transition-all duration-300 overflow-hidden;
+  }
+
+  .card-modern:hover {
+    transform: translateY(-4px);
+  }
+
+  /* Efecto de gradiente animado para fondos */
+  .gradient-orange-subtle {
+    background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 50%, #fff7ed 100%);
+    background-size: 200% 200%;
+    animation: gradient-flow 8s ease infinite;
+  }
+
+  /* Animación de gradiente para fondos naranjas */
+  @keyframes gradient-flow {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  /* Efecto shimmer para botones y elementos destacados */
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+
+  .shimmer-effect {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
+    background-size: 1000px 100%;
+    animation: shimmer 3s infinite;
+  }
+
+  /* Tamaños de texto responsivos y accesibles */
+  @media (max-width: 768px) {
+    h1 { font-size: clamp(1.5rem, 5vw, 2.5rem); }
+    h2 { font-size: clamp(1.25rem, 4vw, 2rem); }
+    h3 { font-size: clamp(1.125rem, 3vw, 1.5rem); }
   }
 
   .responsive-table {
@@ -275,6 +367,282 @@ Todos los colores en HSL para theming perfecto y accesibilidad ISO/WCAG.
     .responsive-table th,
     .responsive-table td {
       padding: 0.625rem 0.75rem;
+    }
+  }
+
+  /* Cards de contacto con hover - estilo infografía */
+  .contact-card {
+    transition: all 0.3s ease;
+  }
+
+  .contact-card:hover {
+    min-height: auto !important;
+    height: auto;
+    padding-bottom: 1.5rem !important;
+  }
+
+  .contact-icon {
+    transition: all 0.8s ease;
+  }
+
+  .contact-card:hover .contact-icon {
+    background-position: -120px !important;
+  }
+
+  .contact-card:hover .contact-icon-svg {
+    color: white;
+    filter: brightness(1.2);
+  }
+
+  .contact-text {
+    transition: all 0.3s ease;
+    opacity: 0;
+    max-height: 0;
+  }
+
+  .contact-card:hover .contact-text {
+    opacity: 1 !important;
+    max-height: 200px !important;
+    margin-top: 0.75rem !important;
+  }
+
+  /* Dazzle Button Styles - Exacto del ejemplo con colores MTS */
+  .dazzle {
+    --font-level: 0;
+    --font-size: 1em;
+    --padding: 0.5em;
+    --hover: 0.4;
+    --pos: 0;
+    --color: hsl(25deg 95% 53%);
+    --shadow: hsl(25deg 100% 50%);
+    --glare: white;
+    padding: 0.625em 1.25em;
+    border-radius: 0.5em;
+    text-decoration: none;
+    color: transparent;
+    position: relative;
+    transition: all 0.2s 0.1s;
+    font-weight: 600;
+    border: 2px solid hsl(25deg 95% 53%);
+    background: rgba(255, 165, 0, 0.05);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: clamp(0.875rem, 1.5vw, 1rem);
+    line-height: 1.4;
+    white-space: nowrap;
+    backdrop-filter: blur(4px);
+  }
+
+  .dazzle:hover {
+    background: rgba(255, 165, 0, 0.1);
+    border-color: hsl(25deg 100% 50%);
+    box-shadow: 0 4px 12px rgba(255, 165, 0, 0.2);
+  }
+
+  .dazzle:is(:hover, :focus-visible) {
+    --hover: 1;
+    --pos: 1;
+    background: color-mix(in hsl, canvasText, #0000 86%);
+  }
+
+  .dazzle:active {
+    --hover: 0;
+  }
+
+  .dazzle:active span:last-of-type {
+    --hover: 0;
+    --pos: 1;
+  }
+
+  .dazzle span {
+    display: inline-block;
+    transition: all 0.2s;
+    text-decoration: none;
+    text-shadow: calc(var(--hover) * (var(--font-size) * 0))
+        calc(var(--hover) * (var(--font-size) * 0)) var(--shadow),
+      calc(var(--hover) * (var(--font-size) * -0.02))
+        calc(var(--hover) * (var(--font-size) * 0.02)) var(--shadow),
+      calc(var(--hover) * (var(--font-size) * -0.04))
+        calc(var(--hover) * (var(--font-size) * 0.04)) var(--shadow),
+      calc(var(--hover) * (var(--font-size) * -0.06))
+        calc(var(--hover) * (var(--font-size) * 0.06)) var(--shadow),
+      calc(var(--hover) * (var(--font-size) * -0.08))
+        calc(var(--hover) * (var(--font-size) * 0.08)) var(--shadow),
+      calc(var(--hover) * (var(--font-size) * -0.1))
+        calc(var(--hover) * (var(--font-size) * 0.1)) var(--shadow);
+    transform: translate(
+      calc(var(--hover) * (var(--font-size) * 0.1)),
+      calc(var(--hover) * (var(--font-size) * -0.1))
+    );
+  }
+
+  .dazzle span:last-of-type {
+    position: absolute;
+    inset: var(--padding) calc(var(--padding) * 2);
+    background: linear-gradient(
+          108deg,
+          transparent 0 55%,
+          var(--glare) 55% 60%,
+          transparent 60% 70%,
+          var(--glare) 70% 85%,
+          transparent 85%
+        )
+        calc(var(--pos) * -200%) 0% / 200% 100%,
+      var(--color);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    z-index: 2;
+    text-shadow: none;
+    transform: translate(
+      calc(var(--hover) * (var(--font-size) * 0.1)),
+      calc(var(--hover) * (var(--font-size) * -0.1))
+    );
+    transition: transform 0.2s, background-position 0s;
+  }
+
+  .dazzle:is(:hover, :focus-visible) span:last-of-type {
+    transition: transform 0.2s,
+      background-position calc(var(--hover) * 1.5s) calc(var(--hover) * 0.25s);
+    background-position: calc(var(--pos) * 200%) 0%;
+  }
+
+  .dazzle svg {
+    position: absolute;
+    z-index: 3;
+    width: calc(var(--font-size) * 0.5);
+    aspect-ratio: 1;
+    --delay-step: 0.15;
+    top: calc(var(--y, 50) * 1%);
+    left: calc(var(--x, 0) * 1%);
+    transform: translate(-50%, -50%) scale(0);
+    stroke-width: 1;
+    stroke: black;
+    pointer-events: none;
+  }
+
+  .dazzle svg path {
+    fill: white;
+  }
+
+  .dazzle:focus-visible {
+    outline: none;
+  }
+
+  .dazzle:is(:hover, :focus-visible) svg {
+    animation: sparkle 0.75s calc(0.1s + ((var(--delay-step) * var(--d)) * 1s)) both;
+  }
+
+  @keyframes sparkle {
+    50% {
+      transform: translate(-50%, -50%) scale(var(--s, 1));
+    }
+  }
+
+  .dazzle svg:nth-of-type(1) {
+    --x: 0;
+    --y: 20;
+    --s: 1.1;
+    --d: 1;
+  }
+
+  .dazzle svg:nth-of-type(2) {
+    --x: 15;
+    --y: 80;
+    --s: 1.25;
+    --d: 2;
+  }
+
+  .dazzle svg:nth-of-type(3) {
+    --x: 45;
+    --y: 40;
+    --s: 1.1;
+    --d: 3;
+  }
+
+  .dazzle svg:nth-of-type(4) {
+    --x: 75;
+    --y: 60;
+    --s: 0.9;
+    --d: 2;
+  }
+
+  .dazzle svg:nth-of-type(5) {
+    --x: 100;
+    --y: 30;
+    --s: 0.8;
+    --d: 4;
+  }
+
+  /* Fluid typography para dazzle - más pequeño y responsive */
+  .dazzle .fluid {
+    font-size: inherit;
+    line-height: inherit;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 640px) {
+    .dazzle {
+      font-size: 0.875rem;
+      padding: 0.5em 0.875em;
+    }
+  }
+
+  @media (min-width: 641px) and (max-width: 1024px) {
+    .dazzle {
+      font-size: 0.9375rem;
+      padding: 0.5em 1em;
+    }
+  }
+
+  @media (min-width: 1025px) {
+    .dazzle {
+      font-size: 1rem;
+      padding: 0.5em 1.25em;
+    }
+  }
+
+  /* Hero Background - Diagonales deslizantes */
+  .hero-bg-diagonal {
+    position: fixed;
+    bottom: 0;
+    left: -50%;
+    right: -50%;
+    top: 0;
+    opacity: 0.4;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  .hero-bg-1 {
+    z-index: -3;
+    opacity: 0.5;
+  }
+
+  .hero-bg-2 {
+    z-index: -2;
+    opacity: 0.4;
+  }
+
+  .hero-bg-3 {
+    z-index: -1;
+    opacity: 0.3;
+  }
+
+  .hero-bg-animate {
+    animation: slide-diagonal 3s ease-in-out infinite alternate;
+  }
+
+  .hero-bg-animate-reverse {
+    animation: slide-diagonal 4s ease-in-out infinite alternate-reverse;
+  }
+
+  @keyframes slide-diagonal {
+    0% {
+      transform: translateX(-25%);
+    }
+    100% {
+      transform: translateX(25%);
     }
   }
 }

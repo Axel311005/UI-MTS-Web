@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Tag } from '@/shared/icons';
@@ -16,8 +16,11 @@ import { EstadoActivo } from '@/shared/types/status';
 export function ClasificacionesPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Leer parámetros de URL o usar valores por defecto
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
   const limit = pageSize;
   const offset = (page - 1) * pageSize;
   const [searchTerm, setSearchTerm] = useState('');
@@ -40,16 +43,32 @@ export function ClasificacionesPage() {
     });
   }, [clasificacionItems, searchTerm]);
 
+  // Validar página cuando cambian los datos
   useEffect(() => {
-    const computedTotalPages = Math.max(
-      Math.ceil((totalItems || 0) / pageSize),
-      1
-    );
+    const computedTotalPages = totalItems
+      ? Math.ceil(totalItems / pageSize)
+      : 1;
+
+    if (totalItems === 0) {
+      if (page !== 1) {
+        const params = new URLSearchParams(searchParams);
+        params.delete('page');
+        setSearchParams(params, { replace: true });
+      }
+      return;
+    }
 
     if (page > computedTotalPages) {
-      setPage(computedTotalPages);
+      const lastPage = Math.max(1, computedTotalPages);
+      const params = new URLSearchParams(searchParams);
+      if (lastPage > 1) {
+        params.set('page', lastPage.toString());
+      } else {
+        params.delete('page');
+      }
+      setSearchParams(params, { replace: true });
     }
-  }, [page, totalItems, pageSize]);
+  }, [page, pageSize, searchParams, setSearchParams, totalItems]);
 
   const handleDelete = async (id: number) => {
     if (deletingId !== null) return;
@@ -91,7 +110,9 @@ export function ClasificacionesPage() {
         value={searchTerm}
         onValueChange={(value) => {
           setSearchTerm(value);
-          setPage(1);
+          const params = new URLSearchParams(searchParams);
+          params.delete('page');
+          setSearchParams(params, { replace: true });
         }}
         showFilters={showFilters}
         onToggleFilters={() => setShowFilters((prev) => !prev)}
@@ -138,12 +159,24 @@ export function ClasificacionesPage() {
             pageSize={pageSize}
             totalItems={totalItems}
             onPageChange={(newPage) => {
-              setPage(newPage);
+              const params = new URLSearchParams(searchParams);
+              if (newPage > 1) {
+                params.set('page', newPage.toString());
+              } else {
+                params.delete('page');
+              }
+              setSearchParams(params, { replace: true });
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
             onPageSizeChange={(newSize) => {
-              setPageSize(newSize);
-              setPage(1);
+              const params = new URLSearchParams(searchParams);
+              params.delete('page'); // Reset a página 1
+              if (newSize !== 10) {
+                params.set('pageSize', newSize.toString());
+              } else {
+                params.delete('pageSize');
+              }
+              setSearchParams(params, { replace: true });
             }}
           />
         </div>
