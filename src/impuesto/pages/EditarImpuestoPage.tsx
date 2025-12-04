@@ -7,6 +7,7 @@ import { getImpuestoById } from '../actions/get-impuesto-by-id';
 import { patchImpuesto } from '../actions/patch-impuesto';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { sanitizeText, VALIDATION_RULES } from '@/shared/utils/validation';
 
 interface ImpuestoFormValues {
   descripcion: string;
@@ -84,7 +85,13 @@ export default function EditarImpuestoPage() {
 
     try {
       await patchImpuesto(numericId, {
-        descripcion: formValues.descripcion,
+        descripcion: sanitizeText(
+          formValues.descripcion.trim(),
+          VALIDATION_RULES.descripcion.min,
+          VALIDATION_RULES.descripcion.max,
+          false, // allowRepeats: false
+          true // preserveSpaces: true para ser consistente con ImpuestoForm
+        ),
         porcentaje: Number(formValues.porcentaje),
       });
       toast.success('Impuesto actualizado exitosamente');
