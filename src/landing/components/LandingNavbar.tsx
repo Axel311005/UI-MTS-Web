@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate, useLocation } from 'react-router';
 import { motion } from 'framer-motion';
 import { Button } from '@/shared/components/ui/button';
 import { Menu, X, LogOut, User } from 'lucide-react';
@@ -24,6 +24,7 @@ export function LandingNavbar() {
   const authUser = useAuthStore((s) => s.user);
   const logoutPanel = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Obtener usuario desde landingUser o desde authUser como fallback
   const user =
@@ -55,6 +56,31 @@ export function LandingNavbar() {
     setMobileMenuOpen(false);
   };
 
+  const handleInicioClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    if (location.pathname === '/') {
+      // Si ya estamos en la página principal, hacer scroll al hero
+      const heroElement = document.getElementById('hero');
+      if (heroElement) {
+        const navbarHeight = 80; // Altura aproximada del navbar
+        const heroPosition = heroElement.offsetTop - navbarHeight;
+        window.scrollTo({ top: heroPosition, behavior: 'smooth' });
+      }
+    } else {
+      // Si estamos en otra página, navegar y luego hacer scroll
+      navigate('/');
+      setTimeout(() => {
+        const heroElement = document.getElementById('hero');
+        if (heroElement) {
+          const navbarHeight = 80; // Altura aproximada del navbar
+          const heroPosition = heroElement.offsetTop - navbarHeight;
+          window.scrollTo({ top: heroPosition, behavior: 'smooth' });
+        }
+      }, 300);
+    }
+    setMobileMenuOpen(false);
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/98 backdrop-blur-md border-b border-neutral-200/60 shadow-sm">
       {/* Main nav */}
@@ -74,6 +100,7 @@ export function LandingNavbar() {
           <div className="hidden md:flex items-center space-x-8">
             <Link
               to="/"
+              onClick={handleInicioClick}
               className="text-neutral-800 hover:text-orange-600 transition-colors font-semibold text-sm uppercase tracking-wide relative group font-montserrat"
             >
               Inicio
@@ -192,8 +219,8 @@ export function LandingNavbar() {
           >
             <Link
               to="/"
+              onClick={handleInicioClick}
               className="block text-neutral-700 hover:text-orange-600 transition-colors uppercase text-sm font-medium"
-              onClick={() => setMobileMenuOpen(false)}
             >
               Inicio
             </Link>

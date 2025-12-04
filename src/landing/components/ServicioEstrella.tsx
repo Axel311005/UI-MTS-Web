@@ -85,6 +85,7 @@ const servicios = [
 export function ServicioEstrella() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  const [isTouching, setIsTouching] = useState(false);
 
   const nextSlide = () => {
     setCurrentIndex((prev) => (prev + 1) % servicios.length);
@@ -107,6 +108,27 @@ export function ServicioEstrella() {
     } else {
       setExpandedIndex(currentIndex);
     }
+  };
+
+  const handleButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isTouching) {
+      toggleExpand();
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLButtonElement>) => {
+    setIsTouching(true);
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleExpand();
+    setTimeout(() => setIsTouching(false), 300);
   };
 
   const currentService = servicios[currentIndex];
@@ -145,10 +167,10 @@ export function ServicioEstrella() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -100 }}
                 transition={{ duration: 0.5 }}
-                className="service-card"
+                className={`service-card ${isExpanded ? 'service-card-expanded-state' : ''}`}
                 style={{
                   height: isExpanded ? 'auto' : '380px',
-                  minHeight: '380px',
+                  minHeight: isExpanded ? 'auto' : '380px',
                 }}
               >
                 <div className="service-card-imgBox">
@@ -170,7 +192,12 @@ export function ServicioEstrella() {
                   <p className="service-card-description">
                     {currentService.description}
                   </p>
-                  <button onClick={toggleExpand} className="service-card-buy">
+                  <button 
+                    onClick={handleButtonClick}
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={handleTouchEnd}
+                    className="service-card-buy"
+                  >
                     {isExpanded ? 'Ver menos' : 'Ver más'}
                   </button>
                 </div>
@@ -185,22 +212,22 @@ export function ServicioEstrella() {
                       transition={{ duration: 0.3 }}
                       className="service-card-expanded"
                     >
-                      <div className="p-6 pt-0">
-                        <p className="text-neutral-300 mb-6 font-montserrat text-sm leading-relaxed">
+                      <div className="service-card-expanded-content">
+                        <p className="service-card-expanded-description">
                           {currentService.fullDescription}
                         </p>
 
-                        <div className="space-y-3">
-                          <h4 className="text-base font-bold text-white font-title">
+                        <div className="service-card-expanded-features">
+                          <h4 className="service-card-expanded-title">
                             Características:
                           </h4>
-                          <ul className="space-y-2">
+                          <ul className="service-card-expanded-list">
                             {currentService.features.map((feature, idx) => (
                               <li
                                 key={idx}
-                                className="flex items-start gap-3 text-neutral-200 text-sm font-montserrat"
+                                className="service-card-expanded-item"
                               >
-                                <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-orange-500 flex-shrink-0" />
+                                <div className="service-card-expanded-bullet" />
                                 <span>{feature}</span>
                               </li>
                             ))}
@@ -373,11 +400,22 @@ export function ServicioEstrella() {
           font-weight: 600;
           border: none;
           cursor: pointer;
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
+          user-select: none;
+          min-height: 44px;
+          min-width: 120px;
+          z-index: 10;
         }
 
         .service-card-buy:hover {
           background: #ff9500;
           transform: scale(1.05);
+        }
+
+        .service-card-buy:active {
+          background: #ff9500;
+          transform: scale(0.98);
         }
 
         .service-card-expanded {
@@ -386,10 +424,64 @@ export function ServicioEstrella() {
           overflow: hidden;
         }
 
+        .service-card-expanded-content {
+          padding: 24px 20px;
+        }
+
+        .service-card-expanded-description {
+          color: rgba(255, 255, 255, 0.9);
+          margin-bottom: 20px;
+          font-family: 'Montserrat', sans-serif;
+          font-size: 14px;
+          line-height: 1.6;
+        }
+
+        .service-card-expanded-features {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .service-card-expanded-title {
+          font-size: 16px;
+          font-weight: 700;
+          color: white;
+          font-family: 'Montserrat', sans-serif;
+        }
+
+        .service-card-expanded-list {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .service-card-expanded-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          color: rgba(255, 255, 255, 0.85);
+          font-size: 13px;
+          font-family: 'Montserrat', sans-serif;
+          line-height: 1.5;
+        }
+
+        .service-card-expanded-bullet {
+          margin-top: 6px;
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #ff8c00;
+          flex-shrink: 0;
+        }
+
         @media (max-width: 640px) {
           .service-card {
             min-height: 320px;
-            height: 320px !important;
+          }
+          
+          .service-card.service-card-expanded-state {
+            min-height: auto !important;
+            height: auto !important;
           }
           
           .service-card-image {
@@ -409,8 +501,45 @@ export function ServicioEstrella() {
           }
 
           .service-card-buy {
-            padding: 8px 20px;
-            font-size: 12px;
+            padding: 12px 24px;
+            font-size: 13px;
+            min-height: 44px;
+            min-width: 100px;
+          }
+
+          .service-card-expanded {
+            padding-bottom: 20px;
+          }
+
+          .service-card-expanded-content {
+            padding: 16px 15px 20px !important;
+          }
+
+          .service-card-expanded-description {
+            font-size: 13px !important;
+            line-height: 1.6 !important;
+            margin-bottom: 16px !important;
+          }
+
+          .service-card-expanded-title {
+            font-size: 14px !important;
+            margin-bottom: 4px !important;
+          }
+
+          .service-card-expanded-list {
+            gap: 8px !important;
+          }
+
+          .service-card-expanded-item {
+            font-size: 12px !important;
+            line-height: 1.5 !important;
+            gap: 10px !important;
+          }
+
+          .service-card-expanded-bullet {
+            margin-top: 5px !important;
+            width: 5px !important;
+            height: 5px !important;
           }
         }
       `}</style>

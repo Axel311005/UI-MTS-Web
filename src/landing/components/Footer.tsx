@@ -1,9 +1,35 @@
 import { MapPin, Phone, Clock } from 'lucide-react';
-import { Link } from 'react-router';
+import { Link, useNavigate, useLocation } from 'react-router';
 import { motion } from 'framer-motion';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleInicioClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    if (location.pathname === '/') {
+      // Si ya estamos en la página principal, hacer scroll al hero
+      const heroElement = document.getElementById('hero');
+      if (heroElement) {
+        const navbarHeight = 80; // Altura aproximada del navbar
+        const heroPosition = heroElement.offsetTop - navbarHeight;
+        window.scrollTo({ top: heroPosition, behavior: 'smooth' });
+      }
+    } else {
+      // Si estamos en otra página, navegar y luego hacer scroll
+      navigate('/');
+      setTimeout(() => {
+        const heroElement = document.getElementById('hero');
+        if (heroElement) {
+          const navbarHeight = 80; // Altura aproximada del navbar
+          const heroPosition = heroElement.offsetTop - navbarHeight;
+          window.scrollTo({ top: heroPosition, behavior: 'smooth' });
+        }
+      }, 300);
+    }
+  };
 
   return (
     <footer className="bg-gradient-to-b from-neutral-900 via-neutral-800 to-neutral-900 text-white">
@@ -63,6 +89,7 @@ export function Footer() {
               <li>
                 <Link
                   to="/"
+                  onClick={handleInicioClick}
                   className="text-white/80 hover:text-orange-400 transition-colors font-montserrat"
                 >
                   Inicio

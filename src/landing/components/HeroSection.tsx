@@ -39,6 +39,7 @@ export function HeroSection() {
 
   return (
     <section
+      id="hero"
       ref={heroRef}
       data-hero-section
       className="relative min-h-screen flex items-center justify-center overflow-hidden"
@@ -52,18 +53,24 @@ export function HeroSection() {
           <motion.div
             initial={{ opacity: 0, x: -60 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{
+              duration: 1.0,
+              ease: [0.25, 0.1, 0.25, 1],
+              delay: 0.1,
+            }}
             className="text-neutral-900 max-w-xl lg:max-w-2xl z-10"
+            style={{ willChange: 'transform, opacity' }}
           >
             <motion.p
               initial={{ opacity: 0, y: 30, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{
-                delay: 0.3,
-                duration: 0.9,
+                delay: 0.2,
+                duration: 0.8,
                 ease: [0.25, 0.1, 0.25, 1],
               }}
               className="text-sm uppercase tracking-wider text-orange-600 mb-4 font-montserrat font-semibold"
+              style={{ willChange: 'transform, opacity' }}
             >
               {heroContent.title}
             </motion.p>
@@ -72,11 +79,12 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 40, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{
-                delay: 0.5,
-                duration: 1.0,
+                delay: 0.35,
+                duration: 0.85,
                 ease: [0.25, 0.1, 0.25, 1],
               }}
               className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-4 md:mb-6 leading-[1.05] tracking-tight font-title text-neutral-900"
+              style={{ willChange: 'transform, opacity' }}
             >
               {heroContent.subtitle}
             </motion.h1>
@@ -85,11 +93,12 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{
-                delay: 0.7,
-                duration: 0.9,
+                delay: 0.5,
+                duration: 0.8,
                 ease: [0.25, 0.1, 0.25, 1],
               }}
               className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-neutral-600 mb-6 md:mb-8 font-montserrat leading-relaxed"
+              style={{ willChange: 'transform, opacity' }}
             >
               {heroContent.description}
             </motion.p>
@@ -98,11 +107,12 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{
-                delay: 0.9,
-                duration: 0.9,
+                delay: 0.65,
+                duration: 0.8,
                 ease: [0.25, 0.1, 0.25, 1],
               }}
               className="mb-6 md:mb-8"
+              style={{ willChange: 'transform, opacity' }}
             >
               <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-orange-600 mb-2 font-title">
                 {heroContent.price}
@@ -118,11 +128,12 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{
-                delay: 1.1,
-                duration: 0.9,
+                delay: 0.8,
+                duration: 0.8,
                 ease: [0.25, 0.1, 0.25, 1],
               }}
               className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 w-full sm:w-auto"
+              style={{ willChange: 'transform, opacity' }}
             >
               <DazzleButton
                 onClick={handleCita}
@@ -145,11 +156,12 @@ export function HeroSection() {
             initial={{ opacity: 0, x: 60, scale: 0.9 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             transition={{
-              duration: 1.2,
-              delay: 0.6,
+              duration: 1.0,
+              delay: 0.4,
               ease: [0.25, 0.1, 0.25, 1],
             }}
             className="relative flex justify-center z-10"
+            style={{ willChange: 'transform, opacity' }}
           >
             <motion.div
               animate={
