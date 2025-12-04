@@ -27,9 +27,9 @@ import type { MotivoCita, Vehiculo } from '../types/cita.types';
 import { useLandingAuthStore } from '../store/landing-auth.store';
 import { useAuthStore } from '@/auth/store/auth.store';
 import { useNavigate } from 'react-router';
-import { validateCode, smartValidate, validateFecha, getFechaMinima, getFechaMaxima } from '@/shared/utils/validation';
+import { validateFecha, getFechaMinima, getFechaMaxima, validateText } from '@/shared/utils/validation';
 import { sanitizeString } from '@/shared/utils/security';
-import { PlacaInput, validatePlacaFormat } from '@/shared/components/PlacaInput';
+import { PlacaInput } from '@/shared/components/PlacaInput';
 import { MarcaSelect } from '@/shared/components/selects/MarcaSelect';
 
 interface FormData {
@@ -319,9 +319,27 @@ export function CitaForm() {
       return;
     }
 
-    const colorValidation = validateField(colorLimpio, 'text');
-    if (!colorValidation.isValid) {
-      toast.error(colorValidation.error || 'El color no es válido');
+    // Validar motor con validación de basura
+    if (motorLimpio) {
+      const motorValidation = validateText(motorLimpio, 1, 50, false);
+      if (!motorValidation.isValid) {
+        toast.error(motorValidation.error || 'El motor no es válido');
+        return;
+      }
+    }
+
+    // Validar chasis con validación de basura
+    if (numChasisLimpio) {
+      const chasisValidation = validateText(numChasisLimpio, 1, 50, false);
+      if (!chasisValidation.isValid) {
+        toast.error(chasisValidation.error || 'El número de chasis no es válido');
+        return;
+      }
+    }
+
+    // Validar que se haya seleccionado un color
+    if (!colorLimpio) {
+      toast.error('Debe seleccionar un color');
       return;
     }
 
