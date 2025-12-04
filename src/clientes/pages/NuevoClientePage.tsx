@@ -45,19 +45,20 @@ export default function NuevoClientePage() {
     // RUC es opcional, pero si se ingresa debe tener el formato correcto
     const rucTrimmed = formValues.ruc?.trim() || '';
     if (rucTrimmed) {
-      // Validar formato: J seguido de 13 dígitos
-      if (!validateRUC(rucTrimmed)) {
-        newErrors.ruc = 'El RUC debe tener el formato J seguido de 13 dígitos. Ejemplo: J1234567890123';
+      // Validar formato: debe tener exactamente 13 dígitos (la J se agrega automáticamente)
+      const rucConJ = `J${rucTrimmed}`;
+      if (!validateRUC(rucConJ)) {
+        newErrors.ruc = 'El RUC debe tener 13 dígitos. Ejemplo: 1234567890123';
       }
     }
 
-    // Validar dirección
+    // Validar dirección (más flexible, permite repeticiones)
     if (formValues.direccion.trim()) {
       const direccionValidation = validateText(
         formValues.direccion.trim(),
         VALIDATION_RULES.direccion.min,
         VALIDATION_RULES.direccion.max,
-        false
+        true // allowRepeats: true para ser más permisivo con direcciones
       );
       if (!direccionValidation.isValid) {
         newErrors.direccion = direccionValidation.error;
@@ -105,7 +106,10 @@ export default function NuevoClientePage() {
       primerApellido: formValues.primerApellido.trim()
         ? sanitizeName(formValues.primerApellido.trim(), 2, 30) || null
         : null,
-      ruc: formValues.ruc && typeof formValues.ruc === 'string' ? formValues.ruc.trim() || null : null, // RUC opcional, enviar null si está vacío
+      // Agregar J automáticamente al RUC si tiene 13 dígitos
+      ruc: formValues.ruc && typeof formValues.ruc === 'string' && formValues.ruc.trim().length === 13
+        ? `J${formValues.ruc.trim()}` 
+        : null, // RUC opcional, enviar null si está vacío o no tiene 13 dígitos
       esExonerado: formValues.esExonerado,
       porcentajeExonerado: formValues.esExonerado
         ? toNumberOrZero(formValues.porcentajeExonerado)

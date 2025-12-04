@@ -76,7 +76,8 @@ export default function NuevaImpuestoPage() {
           formValues.descripcion.trim(),
           VALIDATION_RULES.descripcion.min,
           VALIDATION_RULES.descripcion.max,
-          false
+          false, // allowRepeats: false
+          true // preserveSpaces: true para ser consistente con ImpuestoForm
         ),
         porcentaje: Number(formValues.porcentaje),
         activo: EstadoActivo.ACTIVO,
