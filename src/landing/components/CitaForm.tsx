@@ -164,30 +164,6 @@ export function CitaForm() {
     loadData();
   }, [user, isAuthenticated, token]);
 
-  // Validar campo con validaciones inteligentes (solo para color)
-  const validateField = (value: string, fieldType: 'code' | 'text'): { isValid: boolean; error?: string } => {
-    if (!value || value.trim().length === 0) {
-      return { isValid: false, error: 'Este campo es requerido' };
-    }
-
-    switch (fieldType) {
-      case 'code':
-        return validateCode(value);
-      case 'text':
-        return smartValidate(value, {
-          minLength: 2,
-          maxLength: 50,
-          allowNumbers: true,
-          allowSpecialChars: false,
-          maxRepetitions: 3,
-          maxConsonantsInRow: 4,
-          maxRepetitivePercentage: 50,
-          maxSymbolPercentage: 25, // Aumentado de 10 a 25 para permitir códigos y números
-        });
-      default:
-        return { isValid: true };
-    }
-  };
 
   // Validar fecha y hora
   const validateFechaHora = (fecha: string, hora: string): boolean => {

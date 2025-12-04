@@ -31,7 +31,7 @@ import { io, Socket } from 'socket.io-client';
 import { SOCKET_URL_CLIENTE } from '@/shared/config/socket.config';
 import { useLandingAuthStore } from '../store/landing-auth.store';
 import { useAuthStore } from '@/auth/store/auth.store';
-import { validateCode } from '@/shared/utils/validation';
+import { validateCode } from '@/shared/utils/smart-validation';
 
 const estadoConfig: Record<
   string,
