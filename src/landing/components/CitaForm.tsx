@@ -273,10 +273,9 @@ export function CitaForm() {
     const numChasisLimpio = sanitizeString(vehiculoForm.numChasis.trim(), 50);
     const anio = Number(vehiculoForm.anio);
 
-    // Validar placa con formato departamento + números
-    const placaValidation = validatePlacaFormat(placaLimpia);
-    if (!placaValidation.isValid) {
-      toast.error(placaValidation.error || 'La placa no es válida');
+    // Validar placa (solo que no esté vacía)
+    if (!placaLimpia) {
+      toast.error('La placa es requerida');
       return;
     }
 

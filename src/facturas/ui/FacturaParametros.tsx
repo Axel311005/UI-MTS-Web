@@ -8,7 +8,6 @@ import {
 import { Textarea } from '@/shared/components/ui/textarea';
 import {
   validateDescuento,
-  validateText,
   sanitizeText,
   VALIDATION_RULES,
 } from '@/shared/utils/validation';
