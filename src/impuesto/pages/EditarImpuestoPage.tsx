@@ -85,13 +85,7 @@ export default function EditarImpuestoPage() {
 
     try {
       await patchImpuesto(numericId, {
-        descripcion: sanitizeText(
-          formValues.descripcion.trim(),
-          VALIDATION_RULES.descripcion.min,
-          VALIDATION_RULES.descripcion.max,
-          false, // allowRepeats: false
-          true // preserveSpaces: true para ser consistente con ImpuestoForm
-        ),
+        descripcion: formValues.descripcion,
         porcentaje: Number(formValues.porcentaje),
       });
       toast.success('Impuesto actualizado exitosamente');

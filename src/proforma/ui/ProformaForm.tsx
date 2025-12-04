@@ -255,9 +255,17 @@ export function ProformaForm({
               e.target.value,
               VALIDATION_RULES.observaciones.min,
               VALIDATION_RULES.observaciones.max,
-              false
+              false, // No permitir 3 caracteres repetidos
+              true // Preservar espacios (permitir espacios en observaciones)
             );
             setValues((s) => ({ ...s, observaciones: sanitized }));
+          }}
+          onBlur={(e) => {
+            // Limpiar si solo contiene espacios
+            const trimmed = e.target.value.trim();
+            if (e.target.value.length > 0 && trimmed.length === 0) {
+              setValues((s) => ({ ...s, observaciones: '' }));
+            }
           }}
           maxLength={VALIDATION_RULES.observaciones.max}
         />
