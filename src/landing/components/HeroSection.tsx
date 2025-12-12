@@ -25,8 +25,6 @@ export function HeroSection() {
     );
   }, []);
 
-  // El background siempre debe animarse (no depende de isInView)
-  // Solo se desactiva si el usuario tiene preferencia de movimiento reducido
   const shouldAnimate = !prefersReducedMotion;
 
   const handleCita = () => {
@@ -58,7 +56,8 @@ export function HeroSection() {
               ease: [0.25, 0.1, 0.25, 1],
               delay: 0.1,
             }}
-            className="text-neutral-900 max-w-xl lg:max-w-2xl z-10"
+            className="text-white
+             max-w-xl lg:max-w-2xl z-10"
             style={{ willChange: 'transform, opacity' }}
           >
             <motion.p
@@ -83,7 +82,7 @@ export function HeroSection() {
                 duration: 0.85,
                 ease: [0.25, 0.1, 0.25, 1],
               }}
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-4 md:mb-6 leading-[1.05] tracking-tight font-title text-neutral-900"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-4 md:mb-6 leading-[1.05] tracking-tight font-title text-white"
               style={{ willChange: 'transform, opacity' }}
             >
               {heroContent.subtitle}
@@ -97,7 +96,7 @@ export function HeroSection() {
                 duration: 0.8,
                 ease: [0.25, 0.1, 0.25, 1],
               }}
-              className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-neutral-600 mb-6 md:mb-8 font-montserrat leading-relaxed"
+              className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-white mb-6 md:mb-8 font-montserrat leading-relaxed"
               style={{ willChange: 'transform, opacity' }}
             >
               {heroContent.description}
@@ -118,7 +117,7 @@ export function HeroSection() {
                 {heroContent.price}
               </p>
               {heroContent.priceSubtext && (
-                <p className="text-xs sm:text-sm md:text-base text-neutral-500 font-montserrat">
+                <p className="text-xs sm:text-sm md:text-base text-white font-montserrat">
                   {heroContent.priceSubtext}
                 </p>
               )}

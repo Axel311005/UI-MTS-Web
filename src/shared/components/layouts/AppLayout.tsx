@@ -62,7 +62,7 @@ export const AppLayout = ({
     const roles = Array.isArray(rawRoles)
       ? rawRoles.map((r) => String(r).toLowerCase().trim())
       : [];
-    
+
     // Si el usuario tiene múltiples roles, obtener items para todos los roles
     // Priorizar superuser > gerente > vendedor para determinar el tipo principal
     let userType: PanelRole = 'vendedor';
@@ -73,7 +73,7 @@ export const AppLayout = ({
     } else if (roles.includes('vendedor')) {
       userType = 'vendedor';
     }
-    
+
     // Obtener items para el tipo principal
     const grouped = getGroupedNavigationItems(userType);
     return {
@@ -83,7 +83,14 @@ export const AppLayout = ({
       finalClientPortalItems: grouped.clientPortalItems,
       finalSystemItems: grouped.systemItems,
     };
-  }, [user?.roles, navigationItems, catalogItems, segurosItems, clientPortalItems, systemItems]);
+  }, [
+    user?.roles,
+    navigationItems,
+    catalogItems,
+    segurosItems,
+    clientPortalItems,
+    systemItems,
+  ]);
 
   const {
     finalNavigationItems,

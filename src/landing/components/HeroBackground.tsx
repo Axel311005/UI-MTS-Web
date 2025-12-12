@@ -23,15 +23,15 @@ export const HeroBackground = memo(
         style={{
           ...baseStyle,
           background:
-            'linear-gradient(-60deg, #ff8c00 0%, #ffa500 50%, #ffffff 50%, #ffffff 100%)',
-          opacity: 0.7,
+            'linear-gradient(-60deg, #ff8c00 0%, #ff6600 50%, #000000 50%, #000000 100%)',
+          opacity: 1,
         }}
         initial={
           shouldAnimate
             ? { x: '-100%', y: '-100%', opacity: 0 }
-            : { x: 0, y: 0, opacity: 0.7 }
+            : { x: 0, y: 0, opacity: 1 }
         }
-        animate={{ x: 0, y: 0, opacity: 0.7 }}
+        animate={{ x: 0, y: 0, opacity: 1 }}
         transition={
           shouldAnimate
             ? {
