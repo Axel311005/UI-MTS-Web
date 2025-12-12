@@ -11,7 +11,7 @@ interface SEOProps {
 export function SEO({
   title = 'MST - Taller de Motos Especializado',
   description = 'Especialistas en alineación de chasis, mantenimiento y reparación de motos con tecnología hidráulica y diagnóstico eléctrico.',
-  image = '/logo-mts-trans.png?v=3',
+  image = '/logo-mts-trans.png?v=4',
   url,
   type = 'website',
 }: SEOProps) {
@@ -87,7 +87,7 @@ export function SEO({
       description: description,
       image: `${baseUrl}${image}`,
       url: baseUrl,
-      telephone: '+505-0000-0000', // Actualizar con teléfono real
+      telephone: '+50584809632',
       address: {
         '@type': 'PostalAddress',
         addressCountry: 'NI',
