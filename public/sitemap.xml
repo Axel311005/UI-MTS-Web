@@ -7,20 +7,20 @@
   
   <!-- Homepage -->
   <url>
-    <loc>https://mts.com/</loc>
+    <loc>https://tallermst.netlify.app/</loc>
     <lastmod>2025-01-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
-      <image:loc>https://mts.com/Moto Hero.png</image:loc>
-      <image:title>MTS - Taller de Motos Especializado</image:title>
+      <image:loc>https://tallermst.netlify.app/Moto Hero.png</image:loc>
+      <image:title>MST - Taller de Motos Especializado</image:title>
       <image:caption>Especialistas en alineación de chasis y mantenimiento de motos</image:caption>
     </image:image>
   </url>
   
   <!-- Seguimiento -->
   <url>
-    <loc>https://mts.com/seguimiento</loc>
+    <loc>https://tallermst.netlify.app/seguimiento</loc>
     <lastmod>2025-01-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -28,7 +28,7 @@
   
   <!-- Cotización -->
   <url>
-    <loc>https://mts.com/cotizacion</loc>
+    <loc>https://tallermst.netlify.app/cotizacion</loc>
     <lastmod>2025-01-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -36,7 +36,7 @@
   
   <!-- Cita -->
   <url>
-    <loc>https://mts.com/cita</loc>
+    <loc>https://tallermst.netlify.app/cita</loc>
     <lastmod>2025-01-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
