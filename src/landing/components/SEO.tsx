@@ -11,7 +11,7 @@ interface SEOProps {
 export function SEO({
   title = 'MST - Taller de Motos Especializado',
   description = 'Especialistas en alineación de chasis, mantenimiento y reparación de motos con tecnología hidráulica y diagnóstico eléctrico.',
-  image = '/Moto%20Hero.png',
+  image = '/logo-mts-trans.png',
   url,
   type = 'website',
 }: SEOProps) {
@@ -48,7 +48,12 @@ export function SEO({
     // Open Graph tags
     setMetaTag('og:title', title, 'property');
     setMetaTag('og:description', description, 'property');
-    setMetaTag('og:image', `${baseUrl}${image}`, 'property');
+    const absoluteImage = `${baseUrl}${image}`;
+    setMetaTag('og:image', absoluteImage, 'property');
+    setMetaTag('og:image:secure_url', absoluteImage, 'property');
+    setMetaTag('og:image:width', '1200', 'property');
+    setMetaTag('og:image:height', '1200', 'property');
+    setMetaTag('og:image:type', 'image/png', 'property');
     setMetaTag('og:url', baseUrl, 'property');
     setMetaTag('og:type', type, 'property');
     setMetaTag('og:site_name', 'MST - Taller de Motos', 'property');
@@ -58,7 +63,8 @@ export function SEO({
     setMetaTag('twitter:card', 'summary_large_image');
     setMetaTag('twitter:title', title);
     setMetaTag('twitter:description', description);
-    setMetaTag('twitter:image', `${baseUrl}${image}`);
+    setMetaTag('twitter:image', absoluteImage);
+    setMetaTag('twitter:image:alt', 'MST - Taller de Motos');
 
     // Canonical URL - usar la URL completa de la página actual
     const currentUrl =
