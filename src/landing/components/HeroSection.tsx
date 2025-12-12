@@ -136,14 +136,18 @@ export function HeroSection() {
             >
               <DazzleButton
                 onClick={handleCita}
-                className="w-full sm:w-auto text-center"
+                className="w-full sm:w-auto text-center 
+               bg-black text-orange-600 
+               md:bg-transparent md:text-white"
               >
                 Agenda tu revisión
               </DazzleButton>
 
               <DazzleButton
                 onClick={handleCotizacion}
-                className="w-full sm:w-auto text-center"
+                className="w-full sm:w-auto text-center 
+               bg-black text-orange-600 
+               md:bg-transparent md:text-white"
               >
                 Cotiza en línea
               </DazzleButton>

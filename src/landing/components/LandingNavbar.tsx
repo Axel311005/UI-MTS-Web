@@ -79,18 +79,11 @@ export function LandingNavbar() {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/98 backdrop-blur-md border-b border-neutral-200/60 shadow-sm">
-      {/* CORRECCIÓN AQUÍ: 
-         1. Se eliminó 'xl:px-12' para reducir el margen interno exagerado.
-         2. Si quieres que el logo toque el borde de la pantalla completamente,
-            elimina 'max-w-7xl' y 'mx-auto'. 
-            (Aquí lo dejé como 'container' estándar para que se alinee con el texto del cuerpo).
-      */}
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/98 backdrop-blur-md border-b border-transparent shadow-sm">
       <div className="mx-auto w-full px-4 sm:px-6 lg:px-8 max-w-7xl">
         <div className="flex items-center justify-between h-16 sm:h-18 md:h-20">
-          
           {/* Logo alineado a la izquierda */}
-          <Link to="/" className="flex items-center justify-start shrink-0">
+          <div className="flex items-center justify-start shrink-0">
             <motion.img
               src="/logo-mts-trans.png"
               alt="MTS - Taller de Motos - Logo"
@@ -99,7 +92,7 @@ export function LandingNavbar() {
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.2 }}
             />
-          </Link>
+          </div>
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
@@ -270,7 +263,7 @@ export function LandingNavbar() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full border-2 border-neutral-300 text-neutral-700 hover:bg-neutral-50 hover:border-orange-500 hover:text-orange-600 bg-white font-semibold transition-all duration-300 shadow-md hover:shadow-lg min-h-[44px] touch-manipulation"
+                  className="w-full border-2 border-neutral-300 text-black hover:bg-neutral-50 hover:border-orange-500 hover:text-orange-600 bg-white font-semibold transition-all duration-300 shadow-md hover:shadow-lg min-h-[44px] touch-manipulation"
                   onClick={() => {
                     navigate('/login');
                     setMobileMenuOpen(false);
