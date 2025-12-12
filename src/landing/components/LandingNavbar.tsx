@@ -50,7 +50,6 @@ export function LandingNavbar() {
 
   const handleLogout = () => {
     logout();
-    // También limpiar el auth store del panel si está activo
     logoutPanel();
     navigate('/');
     setMobileMenuOpen(false);
@@ -59,20 +58,18 @@ export function LandingNavbar() {
   const handleInicioClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     if (location.pathname === '/') {
-      // Si ya estamos en la página principal, hacer scroll al hero
       const heroElement = document.getElementById('hero');
       if (heroElement) {
-        const navbarHeight = 80; // Altura aproximada del navbar
+        const navbarHeight = 80;
         const heroPosition = heroElement.offsetTop - navbarHeight;
         window.scrollTo({ top: heroPosition, behavior: 'smooth' });
       }
     } else {
-      // Si estamos en otra página, navegar y luego hacer scroll
       navigate('/');
       setTimeout(() => {
         const heroElement = document.getElementById('hero');
         if (heroElement) {
-          const navbarHeight = 80; // Altura aproximada del navbar
+          const navbarHeight = 80;
           const heroPosition = heroElement.offsetTop - navbarHeight;
           window.scrollTo({ top: heroPosition, behavior: 'smooth' });
         }
@@ -83,14 +80,22 @@ export function LandingNavbar() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/98 backdrop-blur-md border-b border-neutral-200/60 shadow-sm">
-      {/* Main nav */}
-      <div className="mx-auto w-full px-4 sm:px-6 lg:px-8 xl:px-12 max-w-7xl">
+      {/* CORRECCIÓN AQUÍ: 
+         1. Se eliminó 'xl:px-12' para reducir el margen interno exagerado.
+         2. Si quieres que el logo toque el borde de la pantalla completamente,
+            elimina 'max-w-7xl' y 'mx-auto'. 
+            (Aquí lo dejé como 'container' estándar para que se alinee con el texto del cuerpo).
+      */}
+      <div className="mx-auto w-full px-4 sm:px-6 lg:px-8 max-w-7xl">
         <div className="flex items-center justify-between h-16 sm:h-18 md:h-20">
-          <Link to="/" className="flex items-center">
+          
+          {/* Logo alineado a la izquierda */}
+          <Link to="/" className="flex items-center justify-start shrink-0">
             <motion.img
               src="/logo-mts-trans.png"
               alt="MTS - Taller de Motos - Logo"
-              className="h-14 sm:h-18 md:h-24 lg:h-28 w-auto"
+              // Ajuste de clases para asegurar que no tenga márgenes extraños
+              className="h-14 sm:h-18 md:h-24 lg:h-28 w-auto object-contain object-left"
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.2 }}
             />
@@ -101,7 +106,7 @@ export function LandingNavbar() {
             <Link
               to="/"
               onClick={handleInicioClick}
-              className="text-neutral-800 hover:text-orange-600 transition-colors font-semibold text-sm uppercase tracking-wide relative group font-montserrat"
+              className="text-white hover:text-black transition-colors font-semibold text-sm uppercase tracking-wide relative group font-montserrat"
             >
               Inicio
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300"></span>
@@ -131,7 +136,6 @@ export function LandingNavbar() {
                 </Link>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    {/* Este botón ya estaba perfecto para tu tema oscuro */}
                     <Button
                       variant="ghost"
                       size="sm"
@@ -160,11 +164,7 @@ export function LandingNavbar() {
                         )}
                       </div>
                     </DropdownMenuLabel>
-
-                    {/* 4. Separador: Color añadido para que sea visible en fondo oscuro */}
                     <DropdownMenuSeparator className="bg-neutral-200" />
-
-                    {/* Esta parte ya estaba perfecta */}
                     <DropdownMenuItem
                       onClick={handleLogout}
                       className="text-neutral-700 focus:bg-neutral-50 focus:text-orange-600 cursor-pointer transition-all duration-200 hover:bg-neutral-50 hover:text-orange-600 font-montserrat"
@@ -198,7 +198,7 @@ export function LandingNavbar() {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 text-black"
+            className="md:hidden p-2 text-white"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? (
@@ -215,12 +215,12 @@ export function LandingNavbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden py-4 space-y-4 border-t border-neutral-200 bg-white"
+            className="md:hidden py-4 space-y-4 border-t border-neutral-200 bg-transparent"
           >
             <Link
               to="/"
               onClick={handleInicioClick}
-              className="block text-neutral-700 hover:text-orange-600 transition-colors uppercase text-sm font-medium"
+              className="block text-white hover:text-orange-600 transition-colors uppercase text-sm font-medium"
             >
               Inicio
             </Link>
@@ -258,7 +258,7 @@ export function LandingNavbar() {
                     variant="ghost"
                     size="sm"
                     onClick={handleLogout}
-                    className="w-full"
+                    className="w-full justify-start pl-0 hover:bg-transparent hover:text-orange-600"
                   >
                     <LogOut className="h-4 w-4 mr-2" />
                     Salir
