@@ -9,9 +9,9 @@ interface SEOProps {
 }
 
 export function SEO({
-  title = 'MTS - Servicio Profesional de Alineación de Chasis para Motos',
-  description = 'Especialistas en alineación de chasis, mantenimiento profesional y reparación de motos. Tecnología hidráulica de precisión, electromecánica, escaneado eléctrico y overhaul. Servicio premium con seguimiento en tiempo real.',
-  image = '/Moto Hero.png',
+  title = 'MST - Taller de Motos Especializado',
+  description = 'Especialistas en alineación de chasis, mantenimiento y reparación de motos con tecnología hidráulica y diagnóstico eléctrico.',
+  image = '/Moto%20Hero.png',
   url,
   type = 'website',
 }: SEOProps) {
@@ -21,7 +21,7 @@ export function SEO({
       url ||
       (typeof window !== 'undefined'
         ? window.location.origin
-        : 'https://mts.com');
+        : 'https://tallermst.netlify.app');
     // Actualizar título
     document.title = title;
 
@@ -51,7 +51,7 @@ export function SEO({
     setMetaTag('og:image', `${baseUrl}${image}`, 'property');
     setMetaTag('og:url', baseUrl, 'property');
     setMetaTag('og:type', type, 'property');
-    setMetaTag('og:site_name', 'MTS - Taller de Motos', 'property');
+    setMetaTag('og:site_name', 'MST - Taller de Motos', 'property');
     setMetaTag('og:locale', 'es_ES', 'property');
 
     // Twitter Card tags
@@ -77,11 +77,11 @@ export function SEO({
     const structuredData = {
       '@context': 'https://schema.org',
       '@type': 'AutoRepair',
-      name: 'MTS - Taller de Motos',
+      name: 'MST - Taller de Motos',
       description: description,
       image: `${baseUrl}${image}`,
       url: baseUrl,
-      telephone: '+505-XXXX-XXXX', // Actualizar con teléfono real
+      telephone: '+505-0000-0000', // Actualizar con teléfono real
       address: {
         '@type': 'PostalAddress',
         addressCountry: 'NI',
