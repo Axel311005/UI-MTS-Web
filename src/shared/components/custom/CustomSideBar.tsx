@@ -55,7 +55,7 @@ export const CustomSideBar = ({
             <span className="font-semibold text-sidebar-foreground">
               Taller
             </span>
-            <span className="text-xs text-sidebar-foreground/70">MTS</span>
+            <span className="text-xs text-sidebar-foreground/70">MST</span>
           </div>
         </div>
 
