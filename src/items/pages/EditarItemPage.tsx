@@ -16,10 +16,7 @@ import { patchItem } from '../actions/patch-item';
 import { EstadoActivo } from '@/shared/types/status';
 import { VALIDATION_RULES } from '@/shared/utils/validation';
 import { useMoneda } from '@/moneda/hook/useMoneda';
-import {
-  parseCodigoItem,
-  validateCodigoItemFormat,
-} from '../config/codigo-item-categorias';
+import { parseCodigoItem } from '../config/codigo-item-categorias';
 
 export default function EditarItemPage() {
   const navigate = useNavigate();
@@ -31,7 +28,7 @@ export default function EditarItemPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formValues, setFormValues] = useState<ItemFormValues>(
-    INITIAL_ITEM_FORM_VALUES
+    INITIAL_ITEM_FORM_VALUES,
   );
   const [errors, setErrors] = useState<ItemFormErrors>({});
 
@@ -136,17 +133,9 @@ export default function EditarItemPage() {
   const validateForm = () => {
     const newErrors: ItemFormErrors = {};
 
-    // Validar código
+    // Validar código (solo requerido, sin forzar formato específico)
     if (!formValues.codigoItem.trim()) {
       newErrors.codigoItem = 'El código es requerido';
-    } else {
-      const codigoTrimmed = formValues.codigoItem.trim().toUpperCase();
-
-      // Validar formato específico: 3 letras mayúsculas + guion + 5 dígitos (ejemplo: ACE-00001)
-      if (!validateCodigoItemFormat(codigoTrimmed)) {
-        newErrors.codigoItem =
-          'El código debe tener el formato: 3 letras mayúsculas + guion + 5 dígitos (ejemplo: ACE-00001)';
-      }
     }
 
     // Validar descripción

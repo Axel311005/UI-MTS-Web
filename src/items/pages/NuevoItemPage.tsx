@@ -19,14 +19,13 @@ import { postItem, type CreateItemPayload } from '../actions/post-item';
 import { useAuthStore } from '@/auth/store/auth.store';
 import { ItemForm } from '../ui/ItemForm';
 import { useMoneda } from '@/moneda/hook/useMoneda';
-import { validateCodigoItemFormat } from '../config/codigo-item-categorias';
 
 export default function NuevoItemPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
   const [formValues, setFormValues] = useState<ItemFormValues>(
-    INITIAL_ITEM_FORM_VALUES
+    INITIAL_ITEM_FORM_VALUES,
   );
   const [errors, setErrors] = useState<ItemFormErrors>({});
   const user = useAuthStore((s) => s.user);
@@ -50,20 +49,9 @@ export default function NuevoItemPage() {
   const validateForm = () => {
     const newErrors: ItemFormErrors = {};
 
-    // Validar código
+    // Validar código (solo requerido, sin forzar formato específico)
     if (!formValues.codigoItem.trim()) {
       newErrors.codigoItem = 'El código es requerido';
-    } else {
-      const codigoTrimmed = formValues.codigoItem.trim().toUpperCase();
-
-      // Validar formato específico: 3 letras mayúsculas + guion + 5 dígitos (ejemplo: ACE-00001)
-      if (!validateCodigoItemFormat(codigoTrimmed)) {
-        newErrors.codigoItem =
-          'El código debe tener el formato: 3 letras mayúsculas + guion + 5 dígitos (ejemplo: ACE-00001)';
-      }
-      // No aplicar validateNoRandomString a códigos con formato SKU válido
-      // porque los códigos estructurados (como ACE-00001) pueden tener patrones
-      // que parecen "aleatorios" pero son válidos según el formato requerido
     }
 
     // Validar descripción
@@ -74,7 +62,7 @@ export default function NuevoItemPage() {
         formValues.descripcion.trim(),
         VALIDATION_RULES.descripcion.min,
         VALIDATION_RULES.descripcion.max,
-        false
+        false,
       );
       if (!descripcionValidation.isValid) {
         newErrors.descripcion =
@@ -178,7 +166,7 @@ export default function NuevoItemPage() {
         formValues.descripcion.trim(),
         VALIDATION_RULES.descripcion.min,
         VALIDATION_RULES.descripcion.max,
-        false
+        false,
       ),
       tipo: formValues.tipo,
       precioBaseLocal: isServicio
@@ -230,7 +218,7 @@ export default function NuevoItemPage() {
         (response as any)?.idItem ??
           (response as any)?.id_item ??
           (response as any)?.id ??
-          (response as any)?.Id
+          (response as any)?.Id,
       );
 
       if (!Number.isFinite(newItemId)) {
