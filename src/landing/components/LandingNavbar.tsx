@@ -113,6 +113,8 @@ export function LandingNavbar() {
                   Seguimiento
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300"></span>
                 </Link>
+                {/* Links de Cotización y Cita ocultos temporalmente en el menú principal */}
+                {/**
                 <Link
                   to="/cotizacion"
                   className="text-neutral-800 hover:text-orange-600 transition-colors font-semibold text-sm uppercase tracking-wide relative group font-montserrat"
@@ -127,6 +129,7 @@ export function LandingNavbar() {
                   Cita
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300"></span>
                 </Link>
+                */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -226,6 +229,8 @@ export function LandingNavbar() {
                 >
                   Seguimiento
                 </Link>
+                {/* Links de Cotización y Cita ocultos temporalmente en el menú móvil */}
+                {/**
                 <Link
                   to="/cotizacion"
                   className="block text-neutral-700 hover:text-orange-600 transition-colors uppercase text-sm font-medium"
@@ -240,6 +245,7 @@ export function LandingNavbar() {
                 >
                   Cita
                 </Link>
+                */}
                 <div className="pt-4 border-t border-orange-500/20">
                   <div className="flex items-center gap-2 mb-2">
                     <User className="h-4 w-4 text-orange-600" />

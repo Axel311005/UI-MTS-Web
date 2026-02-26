@@ -1,8 +1,8 @@
 import { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router';
+// import { useNavigate } from 'react-router';
 import { HeroBackground } from './HeroBackground';
-import { DazzleButton } from './DazzleButton';
+// import { DazzleButton } from './DazzleButton';
 
 const heroContent = {
   title: 'ALINEACIÓN DE CHASIS',
@@ -15,25 +15,26 @@ const heroContent = {
 };
 
 export function HeroSection() {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const heroRef = useRef<HTMLElement>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   useEffect(() => {
     setPrefersReducedMotion(
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches,
     );
   }, []);
 
   const shouldAnimate = !prefersReducedMotion;
 
-  const handleCita = () => {
-    navigate('/cita');
-  };
+  // Navegación a Cita / Cotización deshabilitada temporalmente en el landing
+  // const handleCita = () => {
+  //   navigate('/cita');
+  // };
 
-  const handleCotizacion = () => {
-    navigate('/cotizacion');
-  };
+  // const handleCotizacion = () => {
+  //   navigate('/cotizacion');
+  // };
 
   return (
     <section
@@ -123,6 +124,8 @@ export function HeroSection() {
               )}
             </motion.div>
 
+            {/* Botones de Cita y Cotización ocultos temporalmente en el front del taller */}
+            {/*
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -152,6 +155,7 @@ export function HeroSection() {
                 Cotiza en línea
               </DazzleButton>
             </motion.div>
+            */}
           </motion.div>
 
           {/* Right Side - Image */}

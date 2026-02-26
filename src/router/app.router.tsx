@@ -14,398 +14,399 @@ import { RouterErrorBoundary } from '@/shared/components/ErrorBoundary';
 import { LandingPage } from '@/landing/pages/LandingPage';
 import { SeguimientoPage } from '@/landing/pages/SeguimientoPage';
 const LandingRegisterPage = lazy(() =>
-  import('@/landing/pages/RegisterPage').then((m) => ({ default: m.default }))
+  import('@/landing/pages/RegisterPage').then((m) => ({ default: m.default })),
 );
-const CotizacionPage = lazy(() =>
-  import('@/landing/pages/CotizacionPage').then((m) => ({ default: m.default }))
-);
-const CitaPage = lazy(() =>
-  import('@/landing/pages/CitaPage').then((m) => ({ default: m.default }))
-);
+// Landing pages de Cotización y Cita deshabilitadas temporalmente
+// const CotizacionPage = lazy(() =>
+//   import('@/landing/pages/CotizacionPage').then((m) => ({ default: m.default }))
+// );
+// const CitaPage = lazy(() =>
+//   import('@/landing/pages/CitaPage').then((m) => ({ default: m.default }))
+// );
 const AseguradorasPage = lazy(() =>
   import('@/aseguradora/pages/AseguradoraPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const NuevaAseguradoraPage = lazy(() =>
   import('@/aseguradora/pages/NuevaAseguradoraPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const EditarAseguradoraPage = lazy(() =>
   import('@/aseguradora/pages/EditarAseguradoraPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const TramitesSegurosPage = lazy(() =>
   import('@/tramite-seguro/pages/TramiteSeguroPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const NuevoTramiteSeguroPage = lazy(() =>
   import('@/tramite-seguro/pages/NuevoTramiteSeguro').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const EditarTramiteSeguroPage = lazy(() =>
   import('@/tramite-seguro/pages/EditarTramiteSeguro').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 // Proformas
 const ProformasPage = lazy(() =>
   import('@/proforma/pages/ProformaPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const NuevaProformaPage = lazy(() =>
   import('@/proforma/pages/NuevaProformaPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const EditarProformaPage = lazy(() =>
   import('@/proforma/pages/EditarProformaPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const NuevaFacturaFromProformaPage = lazy(() =>
   import('@/facturas/pages/NuevaFacturaFormProformaPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 // Cotizaciones
 const CotizacionesPage = lazy(() =>
   import('@/cotizacion/page/CotizacionPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const EditarCotizacionPage = lazy(() =>
   import('@/cotizacion/page/EditarCotizacionPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const VerDetallesCotizacionPage = lazy(() =>
   import('@/cotizacion/page/VerDetallesCotizacionPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 // Citas
 const CitasPage = lazy(() =>
   import('@/cita/page/CitasPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const NuevaCitaPage = lazy(() =>
   import('@/cita/page/NuevaCitaPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const EditarCitasPage = lazy(() =>
   import('@/cita/page/EditarCitasPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const VerDetallesCitaPage = lazy(() =>
   import('@/cita/page/VerDetallesCitaPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const MotivosCitaPage = lazy(() =>
   import('@/cita/pages/MotivosCitaPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 // Recepciones
 const RecepcionesPage = lazy(() =>
   import('@/recepcion/page/RecepcionPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const NuevaRecepcionPage = lazy(() =>
   import('@/recepcion/page/NuevaRecepcionPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const EditarRecepcionPage = lazy(() =>
   import('@/recepcion/page/EditarRecepcionPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 // Recepción Seguimiento
 const RecepcionSeguimientoPage = lazy(() =>
   import('@/recepcion-seguimiento/page/RecepcionSeguimientoPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const NuevaRecepcionSeguimientoPage = lazy(() =>
   import('@/recepcion-seguimiento/page/NuevaRecepcionSeguimientoPage').then(
     (m) => ({
       default: m.default,
-    })
-  )
+    }),
+  ),
 );
 const EditarRecepcionSeguimientoPage = lazy(() =>
   import('@/recepcion-seguimiento/page/EditarRecepcionSeguimientoPage').then(
     (m) => ({
       default: m.default,
-    })
-  )
+    }),
+  ),
 );
 // Vehículos
 const VehiculosPage = lazy(() =>
   import('@/vehiculo/pages/VehiculosPage').then((m) => ({
     default: m.VehiculosPage,
-  }))
+  })),
 );
 const NuevoVehiculoPage = lazy(() =>
   import('@/vehiculo/pages/NuevoVehiculoPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const EditarVehiculoPage = lazy(() =>
   import('@/vehiculo/pages/EditarVehiculoPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 
 // Lazy loaded pages
 const FacturasPage = lazy(() =>
   import('@/facturas/pages/FacturasPage').then((m) => ({
     default: m.FacturasPage,
-  }))
+  })),
 );
 
 const NuevaFacturaPage = lazy(() =>
   import('@/facturas/pages/NuevaFacturaPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 
 const EditarFacturaPage = lazy(() =>
   import('@/facturas/pages/EditarFacturaPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 
 const VerDetallesFacturaPage = lazy(() =>
   import('@/facturas/pages/VerDetallesFacturaPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 
 const ClientePage = lazy(() =>
   import('@/clientes/pages/ClientePage').then((m) => ({
     default: m.ClientesPage,
-  }))
+  })),
 );
 
 const NuevoClientePage = lazy(() =>
   import('@/clientes/pages/NuevoClientePage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 
 const EditarClientePage = lazy(() =>
   import('@/clientes/pages/EditarClientePage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 
 const VerDetallesClientePage = lazy(() =>
   import('@/clientes/pages/VerDetallesClientePage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 
 const ItemPage = lazy(() =>
   import('@/items/pages/ItemPage').then((m) => ({
     default: m.ItemPage,
-  }))
+  })),
 );
 const EditarItemPage = lazy(() =>
   import('@/items/pages/EditarItemPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const NuevoItemPage = lazy(() =>
   import('@/items/pages/NuevoItemPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const VerDetallesItemPage = lazy(() =>
   import('@/items/pages/VerDetallesItemPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 
 // Compras
 const ComprasPage = lazy(() =>
   import('@/compra/pages/ComprasPage').then((m) => ({
     default: m.ComprasPage,
-  }))
+  })),
 );
 const NuevaCompraPage = lazy(() =>
   import('@/compra/pages/NuevaCompraPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const EditarCompraPage = lazy(() =>
   import('@/compra/pages/EditarCompraPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const VerDetallesCompraPage = lazy(() =>
   import('@/compra/pages/VerDetallesCompraPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 
 // Clasificaciones
 const ClasificacionesPage = lazy(() =>
   import('@/clasificacion-item/pages/ClasificacionesPage').then((m) => ({
     default: m.ClasificacionesPage,
-  }))
+  })),
 );
 const NuevaClasificacionPage = lazy(() =>
   import('@/clasificacion-item/pages/NuevaClasificacionPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const EditarClasificacionPage = lazy(() =>
   import('@/clasificacion-item/pages/EditarClasifacionPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 
 // Unidades de Medida
 const UnidadesMedidaPage = lazy(() =>
   import('@/unidad-medida/pages/UnidadMedidaPage').then((m) => ({
     default: m.UnidadesMedidaPage,
-  }))
+  })),
 );
 const NuevaUnidadMedidaPage = lazy(() =>
   import('@/unidad-medida/pages/NuevaUnidadMedidaPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const EditarUnidadMedidaPage = lazy(() =>
   import('@/unidad-medida/pages/EditarUnidadMedida').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 
 // Tipos de Pago
 const TiposPagoPage = lazy(() =>
   import('@/tiposPago/pages/TipoPagoPage').then((m) => ({
     default: m.TiposPagoPage,
-  }))
+  })),
 );
 const NuevoTipoPagoPage = lazy(() =>
   import('@/tiposPago/pages/NuevoTipoPago').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const EditarTipoPagoPage = lazy(() =>
   import('@/tiposPago/pages/EditarTipoPago').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 
 // Monedas
 const MonedaPage = lazy(() =>
   import('@/moneda/pages/MonedaPage').then((m) => ({
     default: m.MonedaPage,
-  }))
+  })),
 );
 const NuevaMonedaPage = lazy(() =>
   import('@/moneda/pages/NuevaMonedaPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const EditarMonedaPage = lazy(() =>
   import('@/moneda/pages/EditarMonedaPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 
 // Impuestos
 const ImpuestoPage = lazy(() =>
   import('@/impuesto/pages/ImpuestoPage').then((m) => ({
     default: m.ImpuestoPage,
-  }))
+  })),
 );
 const NuevaImpuestoPage = lazy(() =>
   import('@/impuesto/pages/NuevaImpuestoPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const EditarImpuestoPage = lazy(() =>
   import('@/impuesto/pages/EditarImpuestoPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 
 const BodegasPage = lazy(() =>
   import('@/bodega/pages/BodegasPage').then((m) => ({
     default: m.BodegasPage,
-  }))
+  })),
 );
 
 const NuevaBodegaPage = lazy(() =>
   import('@/bodega/pages/NuevaBodegaPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 
 const EditarBodegaPage = lazy(() =>
   import('@/bodega/pages/EditarBodegaPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 
 const ExistenciaBodegaPage = lazy(() =>
   import('@/existencia-bodega/pages/ExistenciaBodegaPage').then((m) => ({
     default: m.ExistenciaBodegaPage,
-  }))
+  })),
 );
 
 const NuevaExistenciaPage = lazy(() =>
   import('@/existencia-bodega/pages/NuevaExistenciaPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 
 const EditarExistenciaPage = lazy(() =>
   import('@/existencia-bodega/pages/EditarExistenciaPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 // Admin
 const AdministracionPage = lazy(() =>
   import('@/admin/pages/AdministracionPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 
 const EditarEmpleadoPage = lazy(() =>
   import('@/empleados/pages/EditarEmpleadoPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const ReportesPage = lazy(() =>
   import('@/admin/pages/ReportesPage').then((m) => ({
     default: m.ReportesPage,
-  }))
+  })),
 );
 const HomePage = lazy(() =>
   import('@/home/pages/HomePage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const PerfilPage = lazy(() =>
   import('@/admin/pages/PerfilPage').then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 
 export const appRouter = createBrowserRouter([
@@ -446,24 +447,25 @@ export const appRouter = createBrowserRouter([
   },
 
   // Landing Protected Routes (requieren autenticación de landing)
-  {
-    path: '/cotizacion',
-    element: (
-      <LandingProtectedRoute>
-        <CotizacionPage />
-      </LandingProtectedRoute>
-    ),
-    errorElement: <RouterErrorBoundary />,
-  },
-  {
-    path: '/cita',
-    element: (
-      <LandingProtectedRoute>
-        <CitaPage />
-      </LandingProtectedRoute>
-    ),
-    errorElement: <RouterErrorBoundary />,
-  },
+  // Rutas de Cotización y Cita comentadas temporalmente para ocultarlas en el front del taller
+  // {
+  //   path: '/cotizacion',
+  //   element: (
+  //     <LandingProtectedRoute>
+  //       <CotizacionPage />
+  //     </LandingProtectedRoute>
+  //   ),
+  //   errorElement: <RouterErrorBoundary />,
+  // },
+  // {
+  //   path: '/cita',
+  //   element: (
+  //     <LandingProtectedRoute>
+  //       <CitaPage />
+  //     </LandingProtectedRoute>
+  //   ),
+  //   errorElement: <RouterErrorBoundary />,
+  // },
 
   // Redirecciones de rutas cortas a rutas completas del panel (con soporte para subrutas)
   {

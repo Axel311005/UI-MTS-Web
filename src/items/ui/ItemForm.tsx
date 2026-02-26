@@ -25,10 +25,6 @@ import { useForm } from 'react-hook-form';
 import { sanitizeString } from '@/shared/utils/security';
 import { sanitizeText, VALIDATION_RULES } from '@/shared/utils/validation';
 import DOMPurify from 'dompurify';
-import {
-  getCategoriasByTipo,
-  generateCodigoItem,
-} from '../config/codigo-item-categorias';
 
 interface ItemFormProps {
   values: ItemFormValues;
@@ -91,63 +87,8 @@ export function ItemForm({
     }));
   }, [unidadMedidas]);
 
-  // Obtener categorías filtradas por tipo seleccionado
-  const categoriasDisponibles = useMemo(() => {
-    return getCategoriasByTipo(watchedValues.tipo || 'PRODUCTO');
-  }, [watchedValues.tipo]);
-
-  // Opciones para el SearchableSelect de categorías (formato: "CÓDIGO (Descripción)")
-  const categoriaOptions = useMemo(() => {
-    return categoriasDisponibles.map((cat) => ({
-      value: `${cat.codigo}-`, // Value incluye el guion
-      label: `${cat.codigo} (${cat.nombre})`, // Label muestra "CÓDIGO (Descripción)"
-    }));
-  }, [categoriasDisponibles]);
-
-  // Generar codigoItem automáticamente cuando cambien codigoCategoria o codigoConsecutivo
-  useMemo(() => {
-    if (watchedValues.codigoCategoria && watchedValues.codigoConsecutivo) {
-      const codigoGenerado = generateCodigoItem(
-        watchedValues.codigoCategoria,
-        watchedValues.codigoConsecutivo
-      );
-      if (codigoGenerado !== watchedValues.codigoItem) {
-        form.setValue('codigoItem', codigoGenerado, { shouldValidate: false });
-        onChange({
-          ...watchedValues,
-          codigoItem: codigoGenerado,
-        });
-      }
-    } else if (
-      !watchedValues.codigoCategoria ||
-      !watchedValues.codigoConsecutivo
-    ) {
-      // Limpiar codigoItem si falta alguno de los componentes
-      if (watchedValues.codigoItem) {
-        form.setValue('codigoItem', '', { shouldValidate: false });
-        onChange({
-          ...watchedValues,
-          codigoItem: '',
-        });
-      }
-    }
-  }, [
-    watchedValues.codigoCategoria,
-    watchedValues.codigoConsecutivo,
-    watchedValues.codigoItem,
-  ]);
-
-  // Limpiar campos de código cuando cambie el tipo (usando useEffect para evitar loops)
-  const prevTipoRef = useRef(watchedValues.tipo);
-  if (prevTipoRef.current !== watchedValues.tipo) {
-    prevTipoRef.current = watchedValues.tipo;
-    // Limpiar solo si realmente cambió
-    if (watchedValues.codigoCategoria || watchedValues.codigoConsecutivo) {
-      form.setValue('codigoCategoria', '', { shouldValidate: false });
-      form.setValue('codigoConsecutivo', '', { shouldValidate: false });
-      form.setValue('codigoItem', '', { shouldValidate: false });
-    }
-  }
+  // Ya no se genera el código automáticamente por categoría/consecutivo.
+  // El usuario ingresa directamente el código completo del item (SKU).
 
   // Función para convertir de Córdobas a Dólares
   const convertirLocalADolar = (valorLocal: string): string => {
@@ -399,70 +340,20 @@ export function ItemForm({
 
   const handleChange = (
     field: keyof ItemFormValues,
-    value: string | boolean
+    value: string | boolean,
   ) => {
     let sanitizedValue: string | boolean = value;
 
     // Aplicar sanitización y validación de caracteres repetidos
     if (typeof value === 'string') {
-      if (field === 'codigoConsecutivo') {
-        // Solo permitir números, máximo 5 dígitos
-        const numeros = value.replace(/\D/g, '');
-        let numerosLimpios = numeros;
-
-        if (numeros.length > 5) {
-          numerosLimpios = numeros.slice(0, 5);
-        }
-
-        // Remover ceros a la izquierda para obtener el número real
-        const sinCerosIzq = numerosLimpios.replace(/^0+/, '');
-
-        // Validar: no permitir que sea solo ceros (00000, 0, etc.)
-        // Si después de remover ceros a la izquierda queda vacío, significa que era solo ceros
-        if (!sinCerosIzq) {
-          // Si el campo está vacío o solo tiene ceros, limpiar
-          sanitizedValue = '';
-        } else {
-          // Permitir el valor sin ceros a la izquierda
-          sanitizedValue = sinCerosIzq;
-        }
-
-        // Formatear automáticamente el codigoItem si hay categoría y consecutivo válido
-        const currentValues = form.getValues();
-        if (currentValues.codigoCategoria && sanitizedValue) {
-          const codigoGenerado = generateCodigoItem(
-            currentValues.codigoCategoria,
-            sanitizedValue
-          );
-          form.setValue('codigoItem', codigoGenerado, {
-            shouldValidate: false,
-          });
-        } else {
-          // Limpiar codigoItem si el consecutivo no es válido
-          form.setValue('codigoItem', '', { shouldValidate: false });
-        }
-      } else if (field === 'codigoCategoria') {
-        // El valor ya viene con el guion del select
-        sanitizedValue = value.toUpperCase();
-        // Formatear automáticamente el codigoItem si hay consecutivo
-        const currentValues = form.getValues();
-        if (currentValues.codigoConsecutivo && sanitizedValue) {
-          const codigoGenerado = generateCodigoItem(
-            sanitizedValue,
-            currentValues.codigoConsecutivo
-          );
-          form.setValue('codigoItem', codigoGenerado, {
-            shouldValidate: false,
-          });
-        }
-      } else if (field === 'codigoItem') {
+      if (field === 'codigoItem') {
         // Permitir edición manual del código completo (para compatibilidad)
         // Permitir caracteres repetidos (ceros en formato XXX-00000)
         sanitizedValue = sanitizeText(
           value,
           VALIDATION_RULES.codigo.min,
           VALIDATION_RULES.codigo.max,
-          true // allowRepeats: true para permitir ceros consecutivos en formato SKU
+          true, // allowRepeats: true para permitir ceros consecutivos en formato SKU
         ).toUpperCase();
       } else if (field === 'descripcion') {
         // Para descripción, preservar espacios mientras el usuario escribe
@@ -652,57 +543,19 @@ export function ItemForm({
           </div>
 
           <div className="space-y-1.5 sm:space-y-2 md:col-span-2">
-            <Label className="text-sm">
+            <Label htmlFor="codigoItem" className="text-sm">
               Código de Item (SKU) <span className="text-destructive">*</span>
             </Label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-              <SearchableSelect
-                options={categoriaOptions}
-                value={watchedValues.codigoCategoria || ''}
-                onValueChange={(value) =>
-                  handleChange('codigoCategoria', value)
-                }
-                placeholder="Buscar codigo..."
-                emptyMessage="No se encontraron categorías"
-                className="h-10 sm:h-11 text-sm sm:text-base"
-              />
-              <Input
-                id="codigoConsecutivo"
-                type="text"
-                inputMode="numeric"
-                value={watchedValues.codigoConsecutivo || ''}
-                onChange={(e) =>
-                  handleChange('codigoConsecutivo', e.target.value)
-                }
-                placeholder="00001"
-                maxLength={5}
-                className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation"
-              />
-            </div>
-            {/* Mostrar el código generado */}
-            {watchedValues.codigoItem && (
-              <div className="mt-2 p-2 bg-muted rounded-md">
-                <p className="text-xs text-muted-foreground mb-1">
-                  Código generado:
-                </p>
-                <p className="text-sm font-mono font-semibold">
-                  {watchedValues.codigoItem}
-                </p>
-              </div>
-            )}
+            <Input
+              id="codigoItem"
+              value={watchedValues.codigoItem || ''}
+              onChange={(e) => handleChange('codigoItem', e.target.value)}
+              placeholder="ACE-00001"
+              className="h-10 sm:h-11 text-sm sm:text-base touch-manipulation font-mono"
+            />
             {errors.codigoItem && (
               <p className="text-xs sm:text-sm text-destructive">
                 {errors.codigoItem}
-              </p>
-            )}
-            {errors.codigoCategoria && (
-              <p className="text-xs sm:text-sm text-destructive">
-                {errors.codigoCategoria}
-              </p>
-            )}
-            {errors.codigoConsecutivo && (
-              <p className="text-xs sm:text-sm text-destructive">
-                {errors.codigoConsecutivo}
               </p>
             )}
           </div>
@@ -924,7 +777,7 @@ export function ItemForm({
                 onCheckedChange={(checked) =>
                   handleChange(
                     'activo',
-                    checked ? EstadoActivo.ACTIVO : EstadoActivo.INACTIVO
+                    checked ? EstadoActivo.ACTIVO : EstadoActivo.INACTIVO,
                   )
                 }
                 className="touch-manipulation"
