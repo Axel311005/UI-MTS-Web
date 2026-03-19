@@ -18,7 +18,7 @@ export default function NuevaExistenciaPage() {
       await postExistenciaBodega({
         itemId: data.itemId,
         bodegaId: data.bodegaId,
-        cantDisponible: 0, // Always send 0
+        cantDisponible: Number(data.disponible),
         existenciaMaxima: Number(data.existenciaMaxima),
         existenciaMinima: Number(data.existenciaMinima),
         puntoDeReorden: Number(data.puntoDeReorden),

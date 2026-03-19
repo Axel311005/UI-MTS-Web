@@ -1,6 +1,7 @@
 import { existenciaBodegaApi } from '../api/existenciaBodega.api';
 
 export interface UpdateExistenciaBodegaPayload {
+  cantDisponible?: number;
   existenciaMaxima?: number;
   existenciaMinima?: number;
   puntoDeReorden?: number;
@@ -17,6 +18,10 @@ export const patchExistenciaBodega = async (
   }
 
   const body: Record<string, unknown> = {};
+
+  if (typeof payload.cantDisponible === 'number' && payload.cantDisponible >= 0) {
+    body.cantDisponible = payload.cantDisponible;
+  }
 
   if (typeof payload.existenciaMaxima === 'number' && payload.existenciaMaxima >= 0) {
     body.existenciaMaxima = payload.existenciaMaxima;

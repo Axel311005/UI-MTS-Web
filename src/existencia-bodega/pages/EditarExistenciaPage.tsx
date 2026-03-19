@@ -40,6 +40,7 @@ export default function EditarExistenciaPage() {
       setInitialData({
         itemId: existencia.item.idItem,
         bodegaId: existencia.bodega.idBodega,
+        disponible: existencia.cantDisponible,
         existenciaMaxima: existencia.existenciaMaxima,
         existenciaMinima: existencia.existenciaMinima,
         puntoDeReorden: existencia.puntoDeReorden,
@@ -59,6 +60,7 @@ export default function EditarExistenciaPage() {
     const dismiss = toast.loading('Actualizando existencia en bodega...');
     try {
       await patchExistenciaBodega(existenciaId, {
+        cantDisponible: Number(data.disponible),
         existenciaMaxima: Number(data.existenciaMaxima),
         existenciaMinima: Number(data.existenciaMinima),
         puntoDeReorden: Number(data.puntoDeReorden),

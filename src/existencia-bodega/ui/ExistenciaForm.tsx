@@ -26,6 +26,7 @@ import {
 export interface ExistenciaFormData {
   itemId: number;
   bodegaId: number;
+  disponible: string;
   existenciaMaxima: string;
   existenciaMinima: string;
   puntoDeReorden: string;
@@ -49,6 +50,7 @@ export function ExistenciaForm({
     defaultValues || {
       itemId: 0,
       bodegaId: 0,
+      disponible: '',
       existenciaMaxima: '',
       existenciaMinima: '',
       puntoDeReorden: '',
@@ -94,6 +96,19 @@ export function ExistenciaForm({
       }
     }
     
+    // Validar disponible
+    if (!formValues.disponible.trim()) {
+      newErrors.disponible = 'El disponible es requerido';
+    } else {
+      const validation = validateExistencia(
+        formValues.disponible,
+        VALIDATION_RULES.existencia.max
+      );
+      if (!validation.isValid) {
+        newErrors.disponible = validation.error || 'Disponible inválido';
+      }
+    }
+
     // Validar punto de reorden
     if (!formValues.puntoDeReorden.trim()) {
       newErrors.puntoDeReorden = 'El punto de reorden es requerido';
@@ -103,7 +118,8 @@ export function ExistenciaForm({
         VALIDATION_RULES.existencia.max
       );
       if (!validation.isValid) {
-        newErrors.puntoDeReorden = validation.error || 'Punto de reorden inválido';
+        newErrors.puntoDeReorden =
+          validation.error || 'Punto de reorden inválido';
       }
     }
     
@@ -200,6 +216,22 @@ export function ExistenciaForm({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
+              <Label htmlFor="disponible">Disponible</Label>
+              <Input
+                id="disponible"
+                type="number"
+                min="0"
+                placeholder="0"
+                value={formValues.disponible}
+                onChange={(e) => handleChange('disponible', e.target.value)}
+                className={errors.disponible ? 'border-destructive' : ''}
+              />
+              {errors.disponible && (
+                <p className="text-sm text-destructive">{errors.disponible}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="existenciaMaxima">Existencia Máxima</Label>
               <Input
                 id="existenciaMaxima"
@@ -258,6 +290,7 @@ export function ExistenciaForm({
                 </p>
               )}
             </div>
+
           </div>
 
           <div className="flex gap-4 pt-4">
