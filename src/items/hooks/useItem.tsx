@@ -5,6 +5,7 @@ import type { ItemResponse } from '../types/item.response';
 import type { PaginatedResponse } from '@/shared/types/pagination';
 import { useExistenciaBodega } from '@/existencia-bodega/hook/useExistenciaBodega';
 import { EstadoActivo } from '@/shared/types/status';
+import type { ExistenciaBodega } from '@/existencia-bodega/types/existenciaBodega.interface';
 
 interface UseItemOptions {
   bodegaId?: number | '';
@@ -31,10 +32,10 @@ export const useItem = (options?: UseItemOptions) => {
   const stockMap = useMemo(() => {
     const map = new Map<string, number>();
     for (const ex of existencias ?? []) {
-      const bId = (ex as any)?.bodega?.idBodega;
-      const iId = (ex as any)?.item?.idItem;
+      const bId = (ex as ExistenciaBodega)?.bodega?.idBodega;
+      const iId = (ex as ExistenciaBodega)?.item?.idItem;
       const key = `${bId}-${iId}`;
-      const cantidad = Number((ex as any)?.cantDisponible ?? 0) || 0;
+      const cantidad = Number((ex as ExistenciaBodega)?.cantDisponible ?? 0) || 0;
       map.set(key, cantidad);
     }
     return map;
